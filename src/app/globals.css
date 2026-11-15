@@ -140,3 +140,19 @@ input, select, textarea { font-size: 16px; }
   .topbar-logo { font-size: 1rem; }
   .grid { grid-template-columns: 1fr; }
 }
+
+/* ===== Botón flotante de WhatsApp ===== */
+.wsp { position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 40; display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.wsp-boton { position: relative; width: 60px; height: 60px; border-radius: 50%; background: #25d366; color: #fff; display: grid; place-items: center; box-shadow: 0 6px 18px rgba(0, 0, 0, .55); transition: transform .2s ease, background .2s ease; }
+.wsp-boton::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: #25d366; z-index: -1; animation: wspPulso 2.2s ease-out infinite; }
+.wsp:hover .wsp-boton { transform: scale(1.08); background: #1ebe5a; }
+.wsp:active .wsp-boton { transform: scale(.96); }
+.wsp:focus-visible { outline: 3px solid var(--crema); outline-offset: 4px; border-radius: 40px; }
+.wsp-etiqueta { background: var(--panel); color: var(--crema); border: 1px solid var(--bronce); padding: 8px 14px; font: 700 .95rem Oswald, sans-serif; text-transform: uppercase; letter-spacing: .04em; box-shadow: 0 6px 18px rgba(0, 0, 0, .5); }
+@keyframes wspPulso { 0% { transform: scale(1); opacity: .55; } 70%, 100% { transform: scale(1.7); opacity: 0; } }
+@media (max-width: 760px) {
+  .wsp-etiqueta { display: none; }
+  .wsp-boton { width: 56px; height: 56px; }
+  footer { padding-bottom: 96px; }
+}
+@media (prefers-reduced-motion: reduce) { .wsp-boton::before { animation: none; } }

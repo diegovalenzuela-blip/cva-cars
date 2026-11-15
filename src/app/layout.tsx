@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Menu from "@/components/Menu";
+import WhatsAppFlotante from "@/components/WhatsAppFlotante";
 
 export const metadata: Metadata = {
   title: "Chillán Vende Autos",
@@ -15,6 +16,7 @@ export default function RootLayout({
       <body>
         <Menu />
         {children}
+        <WhatsAppFlotante />
       </body>
     </html>
   );
