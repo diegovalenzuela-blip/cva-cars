@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 type Auto = {
   id: string;
   codigo: string;
+  en_exhibicion: boolean;
   marca: string;
   modelo: string;
   version: string | null;
@@ -209,12 +210,66 @@ export default function Admin() {
     setGuardando(false);
   }
 
-  async function cambiarEstado(a: Auto, estado: string) {
-    const { error } = await supabase.from("autos").update({ estado }).eq("id", a.id);
-    if (error) setMsg("Error: " + error.message);
-    else cargar();
+
+async function cambiarEstado(a: Auto, estado: string) {
+  const datos = {
+    estado,
+    ...(estado === "vendido" || estado === "en_preparacion"
+      ? { en_exhibicion: false }
+      : {}),
+  };
+
+  const { error } = await supabase
+    .from("autos")
+    .update(datos)
+    .eq("id", a.id)
+    .eq("automotora_id", automotoraId!);
+
+  if (error) setMsg("Error: " + error.message);
+  else {
+    setMsg("Estado actualizado.");
+    await cargar();
+  }
+}
+
+async function cambiarExhibicion(a: Auto) {
+  const seleccionados = autos.filter(
+    (x) => x.en_exhibicion &&
+      ["disponible", "reservado"].includes(x.estado)
+  ).length;
+
+  if (!a.en_exhibicion && seleccionados >= 8) {
+    setMsg("Ya tienes 8 autos en exhibición. Quita uno antes de agregar otro.");
+    return;
   }
 
+  if (
+    !a.en_exhibicion &&
+    !["disponible", "reservado"].includes(a.estado)
+  ) {
+    setMsg("Solo puedes seleccionar autos disponibles o reservados.");
+    return;
+  }
+
+  setMsg("");
+
+  const { error } = await supabase
+    .from("autos")
+    .update({ en_exhibicion: !a.en_exhibicion })
+    .eq("id", a.id)
+    .eq("automotora_id", automotoraId!);
+
+  if (error) {
+    setMsg("Error al actualizar exhibición: " + error.message);
+  } else {
+    setMsg(
+      a.en_exhibicion
+        ? "Auto quitado de exhibición."
+        : "Auto agregado a exhibición."
+    );
+    await cargar();
+  }
+}
   async function borrar(a: Auto) {
     if (!confirm("¿Borrar " + a.marca + " " + a.modelo + " (" + a.codigo + ")? No se puede deshacer.")) return;
     const { error } = await supabase.from("autos").delete().eq("id", a.id);
@@ -326,7 +381,17 @@ export default function Admin() {
         {msg && <p className="adm-msg">{msg}</p>}
       </form>
 
-      <h2>Mis autos</h2>
+      <div style={{ marginBottom: 20 }}>
+  <h2>Mis autos</h2>
+  <p className="sub">
+    Seleccionados para exhibición: {
+      autos.filter(
+        (a) => a.en_exhibicion &&
+          ["disponible", "reservado"].includes(a.estado)
+      ).length
+    } de 8
+  </p>
+</div>
       {autos.length === 0 && <p className="sub">Aún no hay autos cargados.</p>}
       {autos.map((a) => (
         <div className="adm-item" key={a.id}>
@@ -341,6 +406,24 @@ export default function Admin() {
             <div className="dat">Ref {a.codigo} · ${a.precio.toLocaleString("es-CL")}{a.ubicacion ? " · " + a.ubicacion : ""}</div>
           </div>
           <div className="adm-acc">
+            <button
+  type="button"
+  className={"btn " + (a.en_exhibicion ? "fill" : "")}
+  onClick={() => cambiarExhibicion(a)}
+  disabled={
+    !a.en_exhibicion &&
+    (
+      !["disponible", "reservado"].includes(a.estado) ||
+      autos.filter(
+        (x) => x.en_exhibicion &&
+          ["disponible", "reservado"].includes(x.estado)
+      ).length >= 8
+    )
+  }
+  title="Seleccionar o quitar de autos en exhibición"
+>
+  {a.en_exhibicion ? "Quitar de exhibición" : "Agregar a exhibición"}
+</button>
             <select value={a.estado} onChange={(e) => cambiarEstado(a, e.target.value)}>
               {ESTADOS.map((s) => (
                 <option key={s.v} value={s.v}>{s.t}</option>

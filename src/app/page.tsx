@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from "next/image";
@@ -28,6 +29,7 @@ export default function Home() {
       .from("autos")
       .select("id,codigo,marca,modelo,anio,km,precio,estado,fotos,ubicacion,automotoras!inner(slug)")
       .eq("automotoras.slug", SLUG)
+      .eq("en_exhibicion", true)
       .in("estado", ["disponible", "reservado"])
       .order("creado_en", { ascending: false })
       .then(({ data }) => {
@@ -56,13 +58,25 @@ export default function Home() {
               Camionetas y autos revisados, con ficha clara y trato directo.
               Escríbenos y lo vemos en persona.
             </p>
+
             <div className="acc">
-              <a className="btn fill" href="#autos">Ver autos disponibles</a>
-              <a className="btn" href={wa("Hola, vi la página de Chillán Vende Autos y quiero consultar.")}>
+              <a className="btn fill" href="#autos">
+                Autos en exhibición
+              </a>
+
+              <Link className="btn" href="/catalogo">
+                Catálogo
+              </Link>
+
+              <a
+                className="btn"
+                href={wa("Hola, vi la página de Chillán Vende Autos y quiero consultar.")}
+              >
                 Hablar por WhatsApp
               </a>
             </div>
           </div>
+
           <Image
             className="hero-img"
             src="/logo.jpg"
@@ -78,12 +92,14 @@ export default function Home() {
         <div className="wrap">
           <h2>Míralos en video</h2>
           <p className="sub">Toca un video para verlo con sonido.</p>
+
           <div className="reels">
             {VIDEOS.map((src) => (
               <video
                 key={src}
                 className="reel"
-                src={src + "#t=0.5"} poster={src + ".png"}
+                src={src + "#t=0.5"}
+                poster={src + ".png"}
                 controls
                 playsInline
                 preload="metadata"
@@ -95,8 +111,11 @@ export default function Home() {
 
       <section id="autos">
         <div className="wrap">
-          <h2>Autos disponibles</h2>
-          <p className="sub">Toca un auto para ver todas sus fotos y su descripción.</p>
+          <h2>Autos en exhibición</h2>
+          <p className="sub">
+            Toca un auto para ver todas sus fotos y su descripción.
+          </p>
+
           <div className="grid">
             {autos.slice(0, 8).map((x) => (
               <article className="car" key={x.id}>
@@ -113,20 +132,36 @@ export default function Home() {
                     <div className="foto">Foto próximamente</div>
                   )}
                 </Link>
+
                 <div className="in">
-                  <h3><Link href={"/autos/" + x.codigo}>{x.marca} {x.modelo}</Link></h3>
+                  <h3>
+                    <Link href={"/autos/" + x.codigo}>
+                      {x.marca} {x.modelo}
+                    </Link>
+                  </h3>
+
                   <p className="dat">
                     {x.anio} · {x.km ? x.km.toLocaleString("es-CL") + " km" : "km por confirmar"} · Ref {x.codigo}
                     {x.estado === "reservado" ? " · RESERVADO" : ""}
                   </p>
+
                   {x.ubicacion && (
                     <p className="ubic">
-                      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z" /></svg>
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z" />
+                      </svg>
                       {x.ubicacion}
                     </p>
                   )}
-                  <div className="precio">${x.precio.toLocaleString("es-CL")}</div>
-                  <Link className="btn" href={"/autos/" + x.codigo}>Ver fotos y detalles</Link>
+
+                  <div className="precio">
+                    ${x.precio.toLocaleString("es-CL")}
+                  </div>
+
+                  <Link className="btn" href={"/autos/" + x.codigo}>
+                    Ver fotos y detalles
+                  </Link>
+
                   <a
                     className="btn"
                     href={wa("Hola, me interesa el " + x.marca + " " + x.modelo + " " + x.anio + " (Ref " + x.codigo + ")")}
@@ -137,14 +172,16 @@ export default function Home() {
               </article>
             ))}
           </div>
-          {!cargando && autos.length === 0 && (         
+
+          {!cargando && autos.length === 0 && (
             <div style={{ marginTop: 24 }}>
               <Link className="btn fill" href="/catalogo">
                 Ver catálogo completo ({autos.length} autos)
               </Link>
             </div>
-          )} 
-            <p className="sub">Pronto publicaremos nuevos autos.</p>
+          )}
+
+          <p className="sub">Pronto publicaremos nuevos autos.</p>
         </div>
       </section>
 
@@ -152,13 +189,30 @@ export default function Home() {
         <div className="wrap dos">
           <div>
             <h2>Vende tu auto con nosotros</h2>
-            <p className="sub">Cuéntanos qué auto tienes y te respondemos por WhatsApp con una propuesta.</p>
+            <p className="sub">
+              Cuéntanos qué auto tienes y te respondemos por WhatsApp con una propuesta.
+            </p>
           </div>
+
           <form onSubmit={enviarVenta}>
-            <label>Tu nombre<input name="n" required autoComplete="name" /></label>
-            <label>Marca, modelo y año<input name="a" required placeholder="Ejemplo: Chevrolet C10 1985" /></label>
-            <label>Kilometraje aproximado<input name="k" inputMode="numeric" /></label>
-            <button className="btn fill" type="submit">Enviar por WhatsApp</button>
+            <label>
+              Tu nombre
+              <input name="n" required autoComplete="name" />
+            </label>
+
+            <label>
+              Marca, modelo y año
+              <input name="a" required placeholder="Ejemplo: Chevrolet C10 1985" />
+            </label>
+
+            <label>
+              Kilometraje aproximado
+              <input name="k" inputMode="numeric" />
+            </label>
+
+            <button className="btn fill" type="submit">
+              Enviar por WhatsApp
+            </button>
           </form>
         </div>
       </section>
@@ -170,6 +224,7 @@ export default function Home() {
             Dirección: {DIRECCION}<br />
             Horario: {HORARIO}
           </p>
+
           <div className="acc">
             <a className="btn" href={INSTAGRAM} target="_blank" rel="noopener noreferrer">Instagram</a>
             <a className="btn" href={FACEBOOK} target="_blank" rel="noopener noreferrer">Facebook</a>
