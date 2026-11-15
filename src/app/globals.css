@@ -106,3 +106,37 @@ html { scroll-padding-top: 72px; }
 .info-card { background: var(--panel); border: 1px solid var(--bronce); padding: 18px; margin-bottom: 14px; }
 .info-card h2 { font-size: 1.4rem; margin-bottom: 8px; }
 @media (max-width: 640px) { .filtros { grid-template-columns: 1fr; } }
+
+/* ===== Ajustes celular y computador ===== */
+html { -webkit-text-size-adjust: 100%; }
+body { overflow-x: clip; }
+img, video { max-width: 100%; }
+img { height: auto; }
+input, select, textarea { font-size: 16px; }
+
+.car .foto { width: 100%; aspect-ratio: 4 / 3; height: auto; object-fit: cover; display: block; }
+
+.reels { gap: 14px; padding-bottom: 10px; -webkit-overflow-scrolling: touch; }
+.reel { flex: 0 0 min(260px, 72vw); width: min(260px, 72vw); height: auto; aspect-ratio: 9 / 16; object-fit: contain; background: #000; }
+@media (min-width: 900px) {
+  .reels { overflow: visible; justify-content: center; gap: 22px; }
+  .reel { flex: 0 1 300px; width: auto; max-width: 300px; }
+}
+
+.gal-main { width: 100%; }
+.gal-main img { width: 100%; height: 100%; object-fit: contain; background: #000; }
+.gal-thumbs { -webkit-overflow-scrolling: touch; }
+
+@media (max-width: 760px) {
+  .hero { padding: 20px 0 36px; gap: 20px; }
+  .hero-img { max-width: min(340px, 86vw); }
+  section { padding: 40px 0; }
+  .topbar { padding-left: 16px; padding-right: 16px; }
+  .wrap, .det, .adm { padding-left: 16px; padding-right: 16px; }
+  .btn { padding: 12px 18px; }
+  .acc .btn, .in .btn { flex: 1 1 auto; }
+}
+@media (max-width: 420px) {
+  .topbar-logo { font-size: 1rem; }
+  .grid { grid-template-columns: 1fr; }
+}

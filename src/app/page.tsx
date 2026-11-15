@@ -82,7 +82,7 @@ export default function Home() {
               <video
                 key={src}
                 className="reel"
-                src={src + "#t=0.5"}
+                src={src + "#t=0.5"} poster={src + ".png"}
                 controls
                 playsInline
                 preload="metadata"

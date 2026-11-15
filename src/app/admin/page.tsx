@@ -43,7 +43,7 @@ const VACIO = {
 };
 
 async function reducir(file: File): Promise<Blob> {
-  const bmp = await createImageBitmap(file);
+  const bmp = await createImageBitmap(file, { imageOrientation: "from-image" });
   const max = 1600;
   const esc = Math.min(1, max / Math.max(bmp.width, bmp.height));
   const c = document.createElement("canvas");
