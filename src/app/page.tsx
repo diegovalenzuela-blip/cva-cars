@@ -16,6 +16,7 @@ type Auto = {
   precio: number;
   estado: string;
   fotos: string[];
+  ubicacion: string | null;
 };
 
 export default function Home() {
@@ -25,7 +26,7 @@ export default function Home() {
   useEffect(() => {
     supabase
       .from("autos")
-      .select("id,codigo,marca,modelo,anio,km,precio,estado,fotos,automotoras!inner(slug)")
+      .select("id,codigo,marca,modelo,anio,km,precio,estado,fotos,ubicacion,automotoras!inner(slug)")
       .eq("automotoras.slug", SLUG)
       .in("estado", ["disponible", "reservado"])
       .order("creado_en", { ascending: false })
@@ -118,6 +119,12 @@ export default function Home() {
                     {x.anio} · {x.km ? x.km.toLocaleString("es-CL") + " km" : "km por confirmar"} · Ref {x.codigo}
                     {x.estado === "reservado" ? " · RESERVADO" : ""}
                   </p>
+                  {x.ubicacion && (
+                    <p className="ubic">
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z" /></svg>
+                      {x.ubicacion}
+                    </p>
+                  )}
                   <div className="precio">${x.precio.toLocaleString("es-CL")}</div>
                   <Link className="btn" href={"/autos/" + x.codigo}>Ver fotos y detalles</Link>
                   <a

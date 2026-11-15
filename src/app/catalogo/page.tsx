@@ -15,19 +15,30 @@ type Auto = {
   precio: number;
   estado: string;
   fotos: string[];
+  ubicacion: string | null;
 };
+
+const plata = (n: number) => "$" + n.toLocaleString("es-CL");
+
+function numero(t: string): number | null {
+  const n = Number(t.replace(/\D/g, ""));
+  return t.trim() && n > 0 ? n : null;
+}
 
 export default function Catalogo() {
   const [autos, setAutos] = useState<Auto[]>([]);
   const [cargando, setCargando] = useState(true);
   const [q, setQ] = useState("");
   const [marca, setMarca] = useState("");
+  const [ubic, setUbic] = useState("");
+  const [min, setMin] = useState("");
+  const [max, setMax] = useState("");
   const [orden, setOrden] = useState("recientes");
 
   useEffect(() => {
     supabase
       .from("autos")
-      .select("id,codigo,marca,modelo,anio,km,precio,estado,fotos,automotoras!inner(slug)")
+      .select("id,codigo,marca,modelo,anio,km,precio,estado,fotos,ubicacion,automotoras!inner(slug)")
       .eq("automotoras.slug", SLUG)
       .in("estado", ["disponible", "reservado"])
       .order("creado_en", { ascending: false })
@@ -41,47 +52,110 @@ export default function Catalogo() {
     () => Array.from(new Set(autos.map((a) => a.marca))).sort(),
     [autos]
   );
+  const ubicaciones = useMemo(
+    () => Array.from(new Set(autos.map((a) => a.ubicacion ?? "").filter(Boolean))).sort(),
+    [autos]
+  );
+  const rango = useMemo(() => {
+    if (!autos.length) return null;
+    const p = autos.map((a) => a.precio);
+    return { menor: Math.min(...p), mayor: Math.max(...p) };
+  }, [autos]);
+
+  const desde = numero(min);
+  const hasta = numero(max);
 
   const lista = useMemo(() => {
     const t = q.trim().toLowerCase();
     let r = autos.filter(
       (a) =>
         (!marca || a.marca === marca) &&
-        (!t || (a.marca + " " + a.modelo + " " + a.anio + " " + a.codigo).toLowerCase().includes(t))
+        (!ubic || (a.ubicacion ?? "") === ubic) &&
+        (desde === null || a.precio >= desde) &&
+        (hasta === null || a.precio <= hasta) &&
+        (!t ||
+          (a.marca + " " + a.modelo + " " + a.anio + " " + a.codigo + " " + (a.ubicacion ?? ""))
+            .toLowerCase()
+            .includes(t))
     );
     if (orden === "precio_asc") r = [...r].sort((a, b) => a.precio - b.precio);
     if (orden === "precio_desc") r = [...r].sort((a, b) => b.precio - a.precio);
     if (orden === "anio_desc") r = [...r].sort((a, b) => b.anio - a.anio);
     return r;
-  }, [autos, q, marca, orden]);
+  }, [autos, q, marca, ubic, desde, hasta, orden]);
+
+  const hayFiltros = Boolean(q || marca || ubic || min || max);
+
+  function limpiar() {
+    setQ("");
+    setMarca("");
+    setUbic("");
+    setMin("");
+    setMax("");
+    setOrden("recientes");
+  }
 
   return (
     <main className="det">
       <h1>Catálogo completo</h1>
       <p className="sub">
-        {cargando ? "Cargando..." : lista.length + " auto(s) disponibles"}
+        {rango
+          ? "Precios desde " + plata(rango.menor) + " hasta " + plata(rango.mayor)
+          : cargando
+          ? "Cargando..."
+          : ""}
       </p>
 
-      <div className="filtros">
+      <div className="filtros2">
         <input
+          className="f-buscar"
           type="search"
-          placeholder="Buscar por marca, modelo, año o código"
+          placeholder="Buscar por marca, modelo, año, código o ubicación"
           value={q}
           onChange={(e) => setQ(e.target.value)}
           aria-label="Buscar"
         />
+        <select value={ubic} onChange={(e) => setUbic(e.target.value)} aria-label="Ubicación">
+          <option value="">Todas las ubicaciones</option>
+          {ubicaciones.map((u) => (
+            <option key={u} value={u}>{u}</option>
+          ))}
+        </select>
         <select value={marca} onChange={(e) => setMarca(e.target.value)} aria-label="Marca">
           <option value="">Todas las marcas</option>
           {marcas.map((m) => (
             <option key={m} value={m}>{m}</option>
           ))}
         </select>
+        <input
+          type="text"
+          inputMode="numeric"
+          placeholder={rango ? "Precio desde (" + plata(rango.menor) + ")" : "Precio desde"}
+          value={min}
+          onChange={(e) => setMin(e.target.value)}
+          aria-label="Precio desde"
+        />
+        <input
+          type="text"
+          inputMode="numeric"
+          placeholder={rango ? "Precio hasta (" + plata(rango.mayor) + ")" : "Precio hasta"}
+          value={max}
+          onChange={(e) => setMax(e.target.value)}
+          aria-label="Precio hasta"
+        />
         <select value={orden} onChange={(e) => setOrden(e.target.value)} aria-label="Ordenar">
           <option value="recientes">Más recientes</option>
           <option value="precio_asc">Precio: menor a mayor</option>
           <option value="precio_desc">Precio: mayor a menor</option>
           <option value="anio_desc">Año: más nuevos</option>
         </select>
+      </div>
+
+      <div className="filtros-pie">
+        <span>{cargando ? "Cargando..." : lista.length + " de " + autos.length + " autos"}</span>
+        {hayFiltros && (
+          <button type="button" className="btn" onClick={limpiar}>Limpiar filtros</button>
+        )}
       </div>
 
       <div className="grid">
@@ -106,7 +180,13 @@ export default function Catalogo() {
                 {x.anio} · {x.km ? x.km.toLocaleString("es-CL") + " km" : "km por confirmar"} · Ref {x.codigo}
                 {x.estado === "reservado" ? " · RESERVADO" : ""}
               </p>
-              <div className="precio">${x.precio.toLocaleString("es-CL")}</div>
+              {x.ubicacion && (
+                <p className="ubic">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z" /></svg>
+                  {x.ubicacion}
+                </p>
+              )}
+              <div className="precio">{plata(x.precio)}</div>
               <Link className="btn" href={"/autos/" + x.codigo}>Ver fotos y detalles</Link>
               <a
                 className="btn"
@@ -119,7 +199,7 @@ export default function Catalogo() {
         ))}
       </div>
       {!cargando && lista.length === 0 && (
-        <p className="sub">No encontramos autos con esa búsqueda.</p>
+        <p className="sub">No encontramos autos con esos filtros. Prueba ampliando el rango de precio o la ubicación.</p>
       )}
     </main>
   );

@@ -16,6 +16,7 @@ type Auto = {
   combustible: string | null;
   transmision: string | null;
   color: string | null;
+  ubicacion: string | null;
   descripcion: string | null;
   estado: string;
   fotos: string[];
@@ -28,6 +29,13 @@ const ESTADOS = [
   { v: "vendido", t: "Vendido" },
 ];
 
+const UBICACIONES = [
+  "Chillán", "Chillán Viejo", "Bulnes", "San Carlos", "Quillón", "Coihueco",
+  "Pinto", "Yungay", "El Carmen", "Pemuco", "San Ignacio", "Quirihue",
+  "Coelemu", "Cobquecura", "Ninhue", "Ñiquén", "Portezuelo", "Ránquil",
+  "San Fabián", "San Nicolás", "Treguaco", "Concepción", "Los Ángeles", "Santiago",
+];
+
 const VACIO = {
   marca: "",
   modelo: "",
@@ -38,6 +46,7 @@ const VACIO = {
   combustible: "",
   transmision: "",
   color: "",
+  ubicacion: "Chillán",
   descripcion: "",
   estado: "disponible",
 };
@@ -144,6 +153,7 @@ export default function Admin() {
       combustible: a.combustible ?? "",
       transmision: a.transmision ?? "",
       color: a.color ?? "",
+      ubicacion: a.ubicacion ?? "",
       descripcion: a.descripcion ?? "",
       estado: a.estado,
     });
@@ -181,6 +191,7 @@ export default function Admin() {
         combustible: form.combustible.trim() || null,
         transmision: form.transmision.trim() || null,
         color: form.color.trim() || null,
+        ubicacion: form.ubicacion.trim() || null,
         descripcion: form.descripcion.trim() || null,
         estado: form.estado,
         fotos: urls,
@@ -265,6 +276,12 @@ export default function Admin() {
           <label>Combustible<input value={form.combustible} onChange={campo("combustible")} placeholder="Bencina, diésel..." /></label>
           <label>Transmisión<input value={form.transmision} onChange={campo("transmision")} placeholder="Manual, automática" /></label>
           <label>Color<input value={form.color} onChange={campo("color")} /></label>
+          <label>Ubicación<input list="ubicaciones" value={form.ubicacion} onChange={campo("ubicacion")} placeholder="Chillán, Bulnes..." /></label>
+          <datalist id="ubicaciones">
+            {UBICACIONES.map((u) => (
+              <option key={u} value={u} />
+            ))}
+          </datalist>
           <label>
             Estado
             <select value={form.estado} onChange={campo("estado")}>
@@ -321,7 +338,7 @@ export default function Admin() {
           )}
           <div>
             <strong>{a.marca} {a.modelo} {a.anio}</strong>
-            <div className="dat">Ref {a.codigo} · ${a.precio.toLocaleString("es-CL")}</div>
+            <div className="dat">Ref {a.codigo} · ${a.precio.toLocaleString("es-CL")}{a.ubicacion ? " · " + a.ubicacion : ""}</div>
           </div>
           <div className="adm-acc">
             <select value={a.estado} onChange={(e) => cambiarEstado(a, e.target.value)}>
