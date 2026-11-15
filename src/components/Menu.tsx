@@ -9,6 +9,7 @@ const LINKS = [
   { href: "/", t: "Inicio" },
   { href: "/catalogo", t: "Catálogo completo" },
   { href: "/consignacion", t: "Consignación" },
+  { href: "/servicios", t: "Servicios" },
   { href: "/nosotros", t: "Quiénes somos" },
   { href: "/contacto", t: "Contacto" },
 ];

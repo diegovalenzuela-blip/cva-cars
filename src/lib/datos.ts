@@ -10,3 +10,4 @@ export const VIDEOS = ["/videos/video1.mp4", "/videos/video2.mp4", "/videos/vide
 export function wa(texto: string) {
   return "https://wa.me/" + TEL + "?text=" + encodeURIComponent(texto);
 }
+export const INSTAGRAM_PERSONAL = "https://www.instagram.com/chillanvendeautos?exln=MW9iMDRpMjloZWc1aA==";

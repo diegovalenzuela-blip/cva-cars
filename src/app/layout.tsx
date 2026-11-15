@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Menu from "@/components/Menu";
 import WhatsAppFlotante from "@/components/WhatsAppFlotante";
+import InstagramFlotante from "@/components/InstagramFlotante";
 
 export const metadata: Metadata = {
   title: "Chillán Vende Autos",
@@ -16,6 +17,7 @@ export default function RootLayout({
       <body>
         <Menu />
         {children}
+        <InstagramFlotante />
         <WhatsAppFlotante />
       </body>
     </html>
