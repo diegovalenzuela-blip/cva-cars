@@ -129,17 +129,176 @@ select, textarea { width: 100%; padding: 12px; background: var(--bg); border: 1p
 @media (max-width: 760px) { .det-grid { grid-template-columns: 1fr; } }
 
 html { scroll-padding-top: 72px; }
-.topbar { position: sticky; top: 0; z-index: 50; display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; padding-top: calc(10px + env(safe-area-inset-top, 0px)); background: rgba(0,0,0,.94); border-bottom: 3px solid var(--bronce); }
-.topbar-logo { font: 700 1.2rem Oswald, sans-serif; text-transform: uppercase; letter-spacing: .04em; text-decoration: none; }
-.topbar-btn { background: none; border: 2px solid var(--rojo); padding: 10px 9px; cursor: pointer; display: grid; gap: 5px; }
-.topbar-btn span { display: block; width: 24px; height: 3px; background: var(--crema); }
-.topbar-btn:focus-visible, .menu-x:focus-visible, .menu-link:focus-visible { outline: 3px solid var(--crema); outline-offset: 3px; }
-.menu-fondo { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.7); }
-.menu-panel { position: absolute; top: 0; right: 0; width: min(340px, 86vw); height: 100%; background: var(--panel); border-left: 3px solid var(--bronce); padding: 72px 24px 24px; display: flex; flex-direction: column; overflow-y: auto; }
-.menu-x { position: absolute; top: 12px; right: 16px; background: none; border: 0; color: var(--crema); font-size: 2.4rem; line-height: 1; cursor: pointer; }
-.menu-link { font: 700 1.6rem Oswald, sans-serif; text-transform: uppercase; text-decoration: none; padding: 12px 0; border-bottom: 1px solid var(--bronce); }
-.menu-link.on { color: var(--rojo); }
-.menu-panel .btn { margin-top: 20px; text-align: center; }
+/* ===== Menu premium Chillan Vende Autos ===== */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  padding-top: calc(10px + env(safe-area-inset-top, 0px));
+  background: linear-gradient(110deg, #080808, #17130e 52%, #080808);
+  border-bottom: 2px solid var(--bronce);
+  box-shadow: 0 5px 22px rgba(0,0,0,.55), inset 0 -1px 0 rgba(240,225,166,.12);
+}
+
+.topbar-logo {
+  font: 700 1.2rem Oswald, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  text-decoration: none;
+  color: var(--crema);
+  text-shadow: 0 2px 12px rgba(201,160,75,.2);
+  transition: color .25s ease;
+}
+
+.topbar-logo:hover { color: #fff0bd; }
+
+.topbar-btn {
+  background: linear-gradient(145deg, #19140e, #080808);
+  border: 1px solid var(--bronce);
+  border-radius: 5px;
+  padding: 10px 9px;
+  cursor: pointer;
+  display: grid;
+  gap: 5px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 4px 12px rgba(0,0,0,.35);
+  transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease;
+}
+
+.topbar-btn:hover {
+  border-color: var(--rojo);
+  box-shadow: 0 0 14px rgba(200,55,45,.2);
+  transform: translateY(-1px);
+}
+
+.topbar-btn span {
+  display: block;
+  width: 24px;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--crema);
+}
+
+.topbar-btn:focus-visible, .menu-x:focus-visible, .menu-link:focus-visible {
+  outline: 3px solid var(--crema);
+  outline-offset: 3px;
+}
+
+.menu-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(0,0,0,.78);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+.menu-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: min(360px, 88vw);
+  height: 100%;
+  background:
+    radial-gradient(ellipse at 100% 0%, rgba(139,90,43,.19), transparent 48%),
+    radial-gradient(ellipse at 0% 100%, rgba(200,55,45,.09), transparent 42%),
+    linear-gradient(155deg, #201a12 0%, #100e0b 42%, #050505 100%);
+  border-left: 2px solid var(--bronce);
+  padding: 78px 26px 28px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  box-shadow: -18px 0 55px rgba(0,0,0,.65), inset 1px 0 0 rgba(240,225,166,.08);
+  animation: menuEntrada .3s ease-out both;
+}
+
+.menu-panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--bronce), var(--crema), var(--rojo), transparent);
+}
+
+.menu-x {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,.035);
+  border: 1px solid rgba(201,160,75,.4);
+  border-radius: 50%;
+  color: var(--crema);
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color .25s ease, border-color .25s ease, background .25s ease, transform .25s ease;
+}
+
+.menu-x:hover {
+  color: #fff;
+  border-color: var(--rojo);
+  background: rgba(200,55,45,.16);
+  transform: rotate(90deg);
+}
+
+.menu-link {
+  position: relative;
+  font: 700 1.45rem Oswald, sans-serif;
+  letter-spacing: .035em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: #eee4cf;
+  padding: 15px 12px;
+  border-bottom: 1px solid rgba(139,90,43,.35);
+  transition: color .25s ease, background .25s ease, padding-left .25s ease, border-color .25s ease;
+}
+
+.menu-link:hover {
+  color: #fff0bd;
+  padding-left: 19px;
+  background: linear-gradient(90deg, rgba(139,90,43,.16), transparent);
+  border-bottom-color: var(--bronce);
+}
+
+.menu-link.on {
+  color: var(--rojo);
+  border-bottom-color: rgba(200,55,45,.65);
+  background: linear-gradient(90deg, rgba(200,55,45,.12), transparent);
+}
+
+.menu-panel .btn {
+  margin-top: 25px;
+  text-align: center;
+  border: 1px solid var(--bronce);
+  box-shadow: 0 7px 20px rgba(0,0,0,.35);
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.menu-panel .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 9px 24px rgba(200,55,45,.2);
+}
+
+@keyframes menuEntrada {
+  from { opacity: 0; transform: translateX(22px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-panel { animation: none; }
+  .topbar-logo, .topbar-btn, .menu-x, .menu-link, .menu-panel .btn {
+    transition: none;
+  }
+}
 .filtros { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; margin: 16px 0 24px; }
 .pasos { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin: 20px 0 28px; }
 .paso { background: var(--panel); border: 1px solid var(--bronce); padding: 16px; }
