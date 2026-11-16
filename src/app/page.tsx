@@ -23,6 +23,7 @@ type Auto = {
 export default function Home() {
   const [autos, setAutos] = useState<Auto[]>([]);
   const [cargando, setCargando] = useState(true);
+  const [fondoIndex, setFondoIndex] = useState(0);
 
   useEffect(() => {
     supabase
@@ -37,6 +38,22 @@ export default function Home() {
         setCargando(false);
       });
   }, []);
+    const fotosFondo = autos
+    .filter((auto) => auto.fotos && auto.fotos.length > 0)
+    .map((auto) => auto.fotos[0]);
+
+  useEffect(() => {
+    if (fotosFondo.length < 2) return;
+
+    const intervalo = window.setInterval(() => {
+      setFondoIndex((actual) => (actual + 1) % fotosFondo.length);
+    }, 5000);
+
+    return () => window.clearInterval(intervalo);
+  }, [fotosFondo.length]);
+    const fotoFondo = fotosFondo.length > 0
+  ? fotosFondo[fondoIndex % fotosFondo.length]
+  : "";
 
   function enviarVenta(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -51,41 +68,39 @@ export default function Home() {
   return (
     <>
       <div className="wrap">
-        <header className="hero">
-          <div>
-            <h1>Tu próximo auto está en Chillán</h1>
-            <p>
-              Camionetas y autos revisados, con ficha clara y trato directo.
-              Escríbenos y lo vemos en persona.
-            </p>
+<header className="hero">
+  <div
+    className="hero-copy"
+    style={{
+      backgroundImage: fotoFondo
+        ? `linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url("${fotoFondo}")`
+        : "none",
+    }}
+  >
+    <h1>Tu próximo auto está en Chillán</h1>
+    <p>
+      Camionetas y autos revisados, con ficha clara y trato directo.
+      Escríbenos y lo vemos en persona.
+    </p>
 
-            <div className="acc">
-              <a className="btn fill" href="#autos">
-                Autos en exhibición
-              </a>
+    <div className="acc">
+      <a className="btn fill" href="#autos">Autos en exhibición</a>
+      <Link className="btn" href="/catalogo">Catálogo</Link>
+      <a className="btn" href={wa("Hola, vi la página de Chillán Vende Autos y quiero consultar.")}>
+        WhatsApp
+      </a>
+    </div>
+  </div>
 
-              <Link className="btn" href="/catalogo">
-                Catálogo
-              </Link>
-
-              <a
-                className="btn"
-                href={wa("Hola, vi la página de Chillán Vende Autos y quiero consultar.")}
-              >
-                Hablar por WhatsApp
-              </a>
-            </div>
-          </div>
-
-          <Image
-            className="hero-img"
-            src="/logo.jpg"
-            alt="Logo de Chillán Vende Autos: camioneta roja clásica frente a las montañas"
-            width={520}
-            height={520}
-            priority
-          />
-        </header>
+  <Image
+    className="hero-img"
+    src="/logo.png"
+    alt="Logo de Chillán Vende Autos"
+    width={520}
+    height={520}
+    priority
+  />
+</header>
       </div>
 
       <section id="videos">
