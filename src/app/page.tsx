@@ -94,7 +94,7 @@ export default function Home() {
 
   <Image
     className="hero-img"
-    src="/logo.png"
+    src="/videos/logo.png"
     alt="Logo de Chillán Vende Autos"
     width={520}
     height={520}
