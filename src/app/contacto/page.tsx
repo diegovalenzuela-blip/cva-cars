@@ -1,36 +1,11 @@
-import { DIRECCION, HORARIO, INSTAGRAM, FACEBOOK, TIKTOK, wa } from "@/lib/datos";
+import type { Metadata } from "next";
+import ContactoPagina from "@/components/ContactoPagina";
 
-export default function Contacto() {
-  const mapa = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(DIRECCION);
-  return (
-    <main className="det">
-      <h1>Contacto</h1>
-      <p className="sub">Escríbenos y respondemos lo antes posible.</p>
+export const metadata: Metadata = {
+  title: "Contacto | Chillán Vende Autos",
+  description: "Escríbenos por WhatsApp, llámanos o visítanos en Chillán.",
+};
 
-      <div className="info-card">
-        <h2>WhatsApp</h2>
-        <a className="btn fill" href={wa("Hola, quiero hacer una consulta.")}>Escribir por WhatsApp</a>
-      </div>
-
-      <div className="info-card">
-        <h2>Dirección</h2>
-        <p style={{ margin: "0 0 10px" }}>{DIRECCION}</p>
-        <a className="btn" href={mapa} target="_blank" rel="noopener noreferrer">Ver en el mapa</a>
-      </div>
-
-      <div className="info-card">
-        <h2>Horario</h2>
-        <p style={{ margin: 0 }}>{HORARIO}</p>
-      </div>
-
-      <div className="info-card">
-        <h2>Redes sociales</h2>
-        <div className="acc">
-          <a className="btn" href={INSTAGRAM} target="_blank" rel="noopener noreferrer">Instagram</a>
-          <a className="btn" href={FACEBOOK} target="_blank" rel="noopener noreferrer">Facebook</a>
-          <a className="btn" href={TIKTOK} target="_blank" rel="noopener noreferrer">TikTok</a>
-        </div>
-      </div>
-    </main>
-  );
+export default function Page() {
+  return <ContactoPagina />;
 }
