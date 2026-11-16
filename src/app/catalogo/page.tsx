@@ -36,6 +36,27 @@ export default function Catalogo() {
   const [min, setMin] = useState("");
   const [max, setMax] = useState("");
   const [orden, setOrden] = useState("recientes");
+  const fotosFondo = useMemo(
+    () => autos
+      .filter((auto) => auto.fotos && auto.fotos.length > 0)
+      .map((auto) => auto.fotos[0]),
+    [autos]
+  );
+  const [fotoFondoIndex, setFotoFondoIndex] = useState(0);
+
+  useEffect(() => {
+    if (fotoFondoIndex >= fotosFondo.length) {
+      setFotoFondoIndex(0);
+    }
+  }, [fotoFondoIndex, fotosFondo.length]);
+
+  useEffect(() => {
+    if (fotosFondo.length < 2) return;
+    const intervalo = window.setInterval(() => {
+      setFotoFondoIndex((actual) => (actual + 1) % fotosFondo.length);
+    }, 5000);
+    return () => window.clearInterval(intervalo);
+  }, [fotosFondo.length]);
 
   useEffect(() => {
     supabase
@@ -104,7 +125,19 @@ export default function Catalogo() {
   }
 
   return (
-    <main className="det">
+    <main className="det catalogo-fondo">
+      {autos.some((auto) => auto.fotos && auto.fotos.length > 0) && (
+        <div className="catalogo-fondo-capa" aria-hidden="true">
+          <div
+            key={fotoFondoIndex}
+            className="catalogo-fondo-foto"
+            style={{
+              backgroundImage: `url("${fotosFondo[fotoFondoIndex]}")`,
+            }}
+          />
+        </div>
+      )}
+      <div className="catalogo-contenido">
       <h1>Catálogo completo</h1>
       <p className="sub">
         {rango
@@ -223,6 +256,7 @@ export default function Catalogo() {
       {!cargando && lista.length === 0 && (
         <p className="sub">No encontramos autos con esos filtros. Prueba ampliando el rango de precio o la ubicación.</p>
       )}
+      </div>
     </main>
   );
 }

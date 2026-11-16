@@ -63,6 +63,49 @@ select, textarea { width: 100%; padding: 12px; background: var(--bg); border: 1p
 .adm-msg { margin: 10px 0; }
 @media (max-width: 640px) { .adm-item { grid-template-columns: 80px 1fr; } .adm-acc { grid-column: 1 / -1; justify-content: flex-start; } }
 
+
+/* ===== Fondo animado del catálogo completo ===== */
+.catalogo-fondo {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: #080706;
+}
+.catalogo-fondo-capa {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.catalogo-fondo-capa::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, .76);
+}
+.catalogo-fondo-foto {
+  position: absolute;
+  inset: -3%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: .55;
+  filter: saturate(.8);
+  animation: catalogoFondoEntrada 1.5s ease both;
+}
+.catalogo-contenido {
+  position: relative;
+  z-index: 1;
+}
+@keyframes catalogoFondoEntrada {
+  from { opacity: 0; transform: scale(1.04); }
+  to { opacity: .55; transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .catalogo-fondo-foto { animation: none; }
+}
+
 .det { max-width: 1080px; margin: 0 auto; padding: 24px 20px 80px; }
 .det-volver { display: inline-block; margin-bottom: 16px; text-decoration: none; color: #c9bb88; }
 .det-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 32px; align-items: start; }
