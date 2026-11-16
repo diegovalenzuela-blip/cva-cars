@@ -5,6 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import Portada from "@/components/Portada";
+import VideosDestacados from "@/components/VideosDestacados";
+import Vitrina from "@/components/Vitrina";
 import VendeTuAuto from "@/components/VendeTuAuto";
 import DondeEstamos from "@/components/DondeEstamos";
 import { SLUG, DIRECCION, HORARIO, INSTAGRAM, FACEBOOK, TIKTOK, VIDEOS, wa } from "@/lib/datos";
@@ -30,7 +33,7 @@ export default function Home() {
   useEffect(() => {
     supabase
       .from("autos")
-      .select("id,codigo,marca,modelo,anio,km,precio,estado,fotos,ubicacion,automotoras!inner(slug)")
+      .select("id,codigo,marca,modelo,anio,km,precio,estado,fotos,ubicacion,destacado,automotoras!inner(slug)")
       .eq("automotoras.slug", SLUG)
       .eq("en_exhibicion", true)
       .in("estado", ["disponible", "reservado"])
@@ -69,138 +72,11 @@ export default function Home() {
 
   return (
     <>
-      <div className="wrap">
-<header className="hero">
-  <div
-    className="hero-copy"
-    style={{
-      backgroundImage: fotoFondo
-        ? `linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url("${fotoFondo}")`
-        : "none",
-    }}
-  >
-    <h1>Tu próximo auto está en Chillán</h1>
-    <p>
-      Camionetas y autos revisados, con ficha clara y trato directo.
-      Escríbenos y lo vemos en persona.
-    </p>
+      <Portada />
 
-    <div className="acc">
-      <a className="btn fill" href="#autos">Autos en exhibición</a>
-      <Link className="btn" href="/catalogo">Catálogo</Link>
-      <a className="btn" href={wa("Hola, vi la página de Chillán Vende Autos y quiero consultar.")}>
-        WhatsApp
-      </a>
-    </div>
-  </div>
+      <VideosDestacados />
 
-  <Image
-    className="hero-img"
-    src="/videos/logo.png"
-    alt="Logo de Chillán Vende Autos"
-    width={520}
-    height={520}
-    priority
-  />
-</header>
-      </div>
-
-      <section id="videos">
-        <div className="wrap">
-          <h2>Míralos en video</h2>
-          <p className="sub">Toca un video para verlo con sonido.</p>
-
-          <div className="reels">
-            {VIDEOS.map((src) => (
-              <video
-                key={src}
-                className="reel"
-                src={src + "#t=0.5"}
-                poster={src + ".png"}
-                controls
-                playsInline
-                preload="metadata"
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="autos">
-        <div className="wrap">
-          <h2>Autos en exhibición</h2>
-          <p className="sub">
-            Toca un auto para ver todas sus fotos y su descripción.
-          </p>
-
-          <div className="grid">
-            {autos.slice(0, 8).map((x) => (
-              <article className="car" key={x.id}>
-                <Link href={"/autos/" + x.codigo} style={{ display: "block" }}>
-                  {x.fotos && x.fotos[0] ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      className="foto"
-                      src={x.fotos[0]}
-                      alt={x.marca + " " + x.modelo}
-                      style={{ objectFit: "cover", width: "100%", display: "block" }}
-                    />
-                  ) : (
-                    <div className="foto">Foto próximamente</div>
-                  )}
-                </Link>
-
-                <div className="in">
-                  <h3>
-                    <Link href={"/autos/" + x.codigo}>
-                      {x.marca} {x.modelo}
-                    </Link>
-                  </h3>
-
-                  <p className="dat">
-                    {x.anio} · {x.km ? x.km.toLocaleString("es-CL") + " km" : "km por confirmar"} · Ref {x.codigo}
-                    {x.estado === "reservado" ? " · RESERVADO" : ""}
-                  </p>
-
-                  {x.ubicacion && (
-                    <p className="ubic">
-                      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
-                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z" />
-                      </svg>
-                      {x.ubicacion}
-                    </p>
-                  )}
-
-                  <div className="precio">
-                    ${x.precio.toLocaleString("es-CL")}
-                  </div>
-
-                  <Link className="btn" href={"/autos/" + x.codigo}>
-                    Ver fotos y detalles
-                  </Link>
-
-                  <a
-                    className="btn"
-                    href={wa("Hola, me interesa el " + x.marca + " " + x.modelo + " " + x.anio + " (Ref " + x.codigo + ")")}
-                  >
-                    Consultar por WhatsApp
-                  </a>
-                </div>
-              </article>
-            ))}
-          </div>
-
-          {!cargando && autos.length === 0 && (
-            <div style={{ marginTop: 24 }}>
-              <Link className="btn fill" href="/catalogo">
-                Ver catálogo completo ({autos.length} autos)
-              </Link>
-            </div>
-          )}
-
-          <p className="sub">Pronto publicaremos nuevos autos.</p>
-        </div>
-      </section>
+      <Vitrina autos={autos} cargando={cargando} />
 
       <VendeTuAuto />
 
