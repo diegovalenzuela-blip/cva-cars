@@ -639,3 +639,70 @@ input, select, textarea { font-size: 16px; }
   .topbar-btn { justify-self: end; }
   .topbar-emblema { width: 52px; height: 52px; }
 }
+
+
+/* ===== Acabado premium adicional de la barra ===== */
+.topbar {
+  padding: 11px 22px;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(139,90,43,.18), transparent 65%),
+    linear-gradient(110deg, #050505 0%, #1b160f 50%, #050505 100%);
+  border-bottom: 2px solid var(--bronce);
+  box-shadow:
+    0 6px 24px rgba(0,0,0,.58),
+    inset 0 -1px 0 rgba(240,225,166,.16);
+}
+
+.topbar-logo {
+  font-size: 1.3rem;
+  letter-spacing: .075em;
+  color: var(--crema);
+  text-shadow: 0 2px 14px rgba(201,160,75,.28);
+}
+
+.topbar-logo:hover {
+  color: #fff0bd;
+  text-shadow: 0 0 16px rgba(240,225,166,.32);
+}
+
+.topbar-btn {
+  border: 1px solid var(--crema);
+  border-radius: 7px;
+  background: linear-gradient(145deg, #21190f, #080808);
+  box-shadow:
+    0 0 0 2px rgba(139,90,43,.25),
+    0 4px 14px rgba(0,0,0,.48),
+    inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.topbar-btn:hover {
+  border-color: var(--rojo);
+  box-shadow:
+    0 0 0 2px rgba(200,55,45,.18),
+    0 0 16px rgba(200,55,45,.22);
+}
+
+.topbar-emblema {
+  border: 2px solid var(--crema);
+  box-shadow:
+    0 0 0 3px rgba(139,90,43,.30),
+    0 4px 14px rgba(0,0,0,.55);
+}
+
+.topbar-emblema:hover {
+  border-color: var(--rojo);
+  box-shadow:
+    0 0 0 3px rgba(200,55,45,.22),
+    0 4px 16px rgba(0,0,0,.58);
+}
+
+@media (max-width: 600px) {
+  .topbar {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  .topbar-logo {
+    font-size: 1.12rem;
+  }
+}
