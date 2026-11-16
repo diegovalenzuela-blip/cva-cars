@@ -32,6 +32,9 @@ export default function Menu() {
     <>
       <nav className="topbar" aria-label="Principal">
         <Link href="/" className="topbar-logo">Chillán Vende Autos</Link>
+        <Link href="/" className="topbar-emblema" aria-label="Chillán Vende Autos, ir al inicio">
+          <span style={{ backgroundImage: "url(/logo.jpg)" }} />
+        </Link>
         <button
           className="topbar-btn"
           onClick={() => setAbierto(!abierto)}
