@@ -24,3 +24,40 @@
   .por-sec .hero { padding: 28px 0 44px; }
   .fp-sombra { background: linear-gradient(180deg, rgba(0, 0, 0, .6), rgba(0, 0, 0, .78) 55%, rgba(0, 0, 0, .92)); }
 }
+
+/* ===== Tres botones equilibrados en la portada ===== */
+.por-sec .acc {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+  align-items: stretch;
+}
+
+.por-sec .acc .btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 0;
+  min-height: 54px;
+  margin: 0;
+  padding: 10px 8px;
+  text-align: center;
+  white-space: normal;
+  line-height: 1.25;
+  font-size: 0.88rem;
+}
+
+@media (max-width: 760px) {
+  .por-sec .acc {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .por-sec .acc .btn {
+    width: 100%;
+    min-height: 50px;
+    padding: 12px;
+    font-size: 0.95rem;
+  }
+}

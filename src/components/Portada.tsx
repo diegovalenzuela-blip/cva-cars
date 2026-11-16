@@ -75,6 +75,7 @@ export default function Portada() {
               <a className="btn" href={wa("Hola, vi la página de Chillán Vende Autos y quiero consultar.")}>
                 Hablar por WhatsApp
               </a>
+              <a className="btn" href="/catalogo">Catálogo</a>
             </div>
           </div>
 
