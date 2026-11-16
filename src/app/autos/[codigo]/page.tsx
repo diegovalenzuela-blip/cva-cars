@@ -53,7 +53,7 @@ export default function Detalle() {
       <main className="det">
         <h1>Auto no disponible</h1>
         <p className="sub">Este auto ya no está publicado o el enlace no es correcto.</p>
-        <Link className="btn fill" href="/#autos">Ver autos disponibles</Link>
+        <Link className="btn fill" href="/#autos">Autos en exhibición</Link>
       </main>
     );
   }

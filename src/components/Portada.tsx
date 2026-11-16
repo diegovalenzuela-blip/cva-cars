@@ -71,7 +71,7 @@ export default function Portada() {
               Escríbenos y lo vemos en persona.
             </p>
             <div className="acc">
-              <a className="btn fill" href="#autos">Ver autos disponibles</a>
+              <a className="btn fill" href="#autos">Autos en exhibición</a>
               <a className="btn" href={wa("Hola, vi la página de Chillán Vende Autos y quiero consultar.")}>
                 Hablar por WhatsApp
               </a>
