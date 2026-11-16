@@ -78,7 +78,7 @@ export default function Home() {
 
       <Vitrina autos={autos} cargando={cargando} />
 
-      <VendeTuAuto />
+      <VendeTuAuto fotosFondo={fotosFondo} />
 
       <DondeEstamos />
 

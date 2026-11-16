@@ -71,6 +71,35 @@
 
 /* ===== Vitrina ===== */
 .vit { position: relative; overflow: hidden; }
+/* ===== Fondo de autos en exhibición ===== */
+.vit { isolation: isolate; }
+.vit::before { z-index: 1; }
+.vit .wrap { position: relative; z-index: 2; }
+.vit-fondo {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.vit-fondo-foto {
+  position: absolute;
+  inset: -3%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: .42;
+  filter: saturate(.8);
+  animation: vitFondoEntrada 1.5s ease both;
+}
+@keyframes vitFondoEntrada {
+  from { opacity: 0; transform: scale(1.04); }
+  to { opacity: .42; transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vit-fondo-foto { animation: none; }
+}
+
 .vit::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 0%, rgba(200, 55, 45, .2), transparent 55%); }
 .vit .wrap { position: relative; }
 .vit-titulo { font-size: clamp(2.2rem, 6vw, 3.6rem); }

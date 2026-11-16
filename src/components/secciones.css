@@ -61,3 +61,67 @@
   .vta-enviar::after { content: ""; position: absolute; top: 0; left: -60%; width: 40%; height: 100%; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .35), transparent); transform: skewX(-20deg); animation: vtaBrillo 4.5s 2s infinite; pointer-events: none; }
   .don-pin::before { animation: donPulso 2.2s ease-out infinite; }
 }
+
+/* ===== Fondos dinámicos de Vende tu auto y Quiénes somos ===== */
+.vta,
+.nosotros-seccion {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.vta::before,
+.nosotros-seccion::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, .76),
+    rgba(0, 0, 0, .86)
+  );
+}
+
+.vta > .wrap,
+.nosotros-seccion > .det {
+  position: relative;
+  z-index: 2;
+}
+
+.fondo-exhibicion {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.fondo-exhibicion-foto {
+  position: absolute;
+  inset: -3%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: .42;
+  filter: saturate(.8);
+  animation: fondoExhibicionEntrada 1.5s ease both;
+}
+
+@keyframes fondoExhibicionEntrada {
+  from {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+  to {
+    opacity: .42;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fondo-exhibicion-foto {
+    animation: none;
+  }
+}

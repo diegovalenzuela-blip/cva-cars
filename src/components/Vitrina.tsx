@@ -2,6 +2,7 @@
 
 import "./destacados.css";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { wa } from "@/lib/datos";
 import Aparece from "./Aparece";
 
@@ -36,6 +37,22 @@ export default function Vitrina({
   autos: AutoVitrina[];
   cargando: boolean;
 }) {
+  const fotosFondo = autos
+    .filter((auto) => auto.fotos && auto.fotos.length > 0)
+    .map((auto) => auto.fotos[0]);
+
+  const [fotoIndex, setFotoIndex] = useState(0);
+
+  useEffect(() => {
+    if (fotosFondo.length < 2) return;
+
+    const intervalo = window.setInterval(() => {
+      setFotoIndex((actual) => (actual + 1) % fotosFondo.length);
+    }, 5000);
+
+    return () => window.clearInterval(intervalo);
+  }, [fotosFondo.length]);
+
   const ordenados = [...autos].sort(
     (a, b) => Number(!!b.destacado) - Number(!!a.destacado)
   );
@@ -54,6 +71,17 @@ export default function Vitrina({
 
   return (
     <section id="autos" className="vit">
+      {fotosFondo.length > 0 && (
+        <div className="vit-fondo" aria-hidden="true">
+          <div
+            key={fotoIndex}
+            className="vit-fondo-foto"
+            style={{
+              backgroundImage: `url("${fotosFondo[fotoIndex]}")`,
+            }}
+          />
+        </div>
+      )}
       <div className="wrap">
         <Aparece>
           <h2 className="vit-titulo">Autos en exhibición</h2>

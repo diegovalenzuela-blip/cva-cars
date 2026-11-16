@@ -2,7 +2,7 @@
 
 import "./secciones.css";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
 import { wa } from "@/lib/datos";
 import { useFotos } from "@/lib/useFotos";
@@ -16,8 +16,19 @@ const PASOS = [
 
 const retraso = (ms: number): CSSProperties => ({ transitionDelay: ms + "ms" });
 
-export default function VendeTuAuto() {
+export default function VendeTuAuto({ fotosFondo }: { fotosFondo: string[] }) {
   const fotos = useFotos();
+  const [fotoIndex, setFotoIndex] = useState(0);
+
+  useEffect(() => {
+    if (fotosFondo.length < 2) return;
+
+    const intervalo = window.setInterval(() => {
+      setFotoIndex((actual) => (actual + 1) % fotosFondo.length);
+    }, 5000);
+
+    return () => window.clearInterval(intervalo);
+  }, [fotosFondo.length]);
   const foto = fotos[1] ?? fotos[0] ?? "";
   const { ref, visto } = useReveal<HTMLElement>();
   const [enviado, setEnviado] = useState(false);
@@ -36,6 +47,17 @@ export default function VendeTuAuto() {
 
   return (
     <section id="vende" className={"vta" + (visto ? " in" : "")} ref={ref}>
+      {fotosFondo.length > 0 && (
+        <div className="fondo-exhibicion" aria-hidden="true">
+          <div
+            key={fotoIndex}
+            className="fondo-exhibicion-foto"
+            style={{
+              backgroundImage: `url("${fotosFondo[fotoIndex % fotosFondo.length]}")`,
+            }}
+          />
+        </div>
+      )}
       <div className="wrap">
         <h2 className="rvx" style={retraso(0)}>Vende tu auto con nosotros</h2>
         <p className="sub rvx" style={retraso(80)}>
