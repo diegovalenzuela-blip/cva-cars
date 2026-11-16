@@ -5,6 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import VendeTuAuto from "@/components/VendeTuAuto";
+import DondeEstamos from "@/components/DondeEstamos";
 import { SLUG, DIRECCION, HORARIO, INSTAGRAM, FACEBOOK, TIKTOK, VIDEOS, wa } from "@/lib/datos";
 
 type Auto = {
@@ -200,53 +202,9 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="vende">
-        <div className="wrap dos">
-          <div>
-            <h2>Vende tu auto con nosotros</h2>
-            <p className="sub">
-              Cuéntanos qué auto tienes y te respondemos por WhatsApp con una propuesta.
-            </p>
-          </div>
+      <VendeTuAuto />
 
-          <form onSubmit={enviarVenta}>
-            <label>
-              Tu nombre
-              <input name="n" required autoComplete="name" />
-            </label>
-
-            <label>
-              Marca, modelo y año
-              <input name="a" required placeholder="Ejemplo: Chevrolet C10 1985" />
-            </label>
-
-            <label>
-              Kilometraje aproximado
-              <input name="k" inputMode="numeric" />
-            </label>
-
-            <button className="btn fill" type="submit">
-              Enviar por WhatsApp
-            </button>
-          </form>
-        </div>
-      </section>
-
-      <section id="contacto">
-        <div className="wrap">
-          <h2>Dónde estamos</h2>
-          <p className="sub">
-            Dirección: {DIRECCION}<br />
-            Horario: {HORARIO}
-          </p>
-
-          <div className="acc">
-            <a className="btn" href={INSTAGRAM} target="_blank" rel="noopener noreferrer">Instagram</a>
-            <a className="btn" href={FACEBOOK} target="_blank" rel="noopener noreferrer">Facebook</a>
-            <a className="btn" href={TIKTOK} target="_blank" rel="noopener noreferrer">TikTok</a>
-          </div>
-        </div>
-      </section>
+      <DondeEstamos />
 
       <footer>
         <div className="wrap">
