@@ -5,6 +5,7 @@ import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 
 type Auto = {
+    duenos: number | null;
   id: string;
   codigo: string;
   en_exhibicion: boolean;
@@ -46,13 +47,14 @@ const VACIO = {
   version: "",
   anio: "",
   km: "",
+  duenos: "",
   precio: "",
   combustible: "",
   transmision: "",
   color: "",
   tipo: "Auto",
   ubicacion: "Chillán",
-  descripcion: "",
+    descripcion: "",
   estado: "disponible",
 };
 
@@ -81,6 +83,8 @@ export default function Admin() {
   const [errorLogin, setErrorLogin] = useState("");
   const [automotoraId, setAutomotoraId] = useState<string | null>(null);
   const [autos, setAutos] = useState<Auto[]>([]);
+  const [busqueda, setBusqueda] = useState("");
+const [filtroEstado, setFiltroEstado] = useState("todos");
   const [form, setForm] = useState(VACIO);
   const [editId, setEditId] = useState<string | null>(null);
   const [fotosActuales, setFotosActuales] = useState<string[]>([]);
@@ -154,6 +158,7 @@ export default function Admin() {
       version: a.version ?? "",
       anio: String(a.anio),
       km: a.km ? String(a.km) : "",
+      duenos: a.duenos == null ? "" : String(a.duenos),
       precio: String(a.precio),
       combustible: a.combustible ?? "",
       transmision: a.transmision ?? "",
@@ -193,7 +198,8 @@ export default function Admin() {
         version: form.version.trim() || null,
         anio: Number(form.anio),
         km: form.km ? Number(form.km) : null,
-        precio: Number(form.precio),
+duenos: form.duenos ? Number(form.duenos) : null,
+precio: Number(form.precio),
         combustible: form.combustible.trim() || null,
         transmision: form.transmision.trim() || null,
         color: form.color.trim() || null,
@@ -284,6 +290,24 @@ async function cambiarExhibicion(a: Auto) {
   }
 
   const cuenta = (e: string) => autos.filter((a) => a.estado === e).length;
+  const autosFiltrados = autos.filter((a) => {
+  const termino = busqueda.trim().toLowerCase();
+
+  const coincideTexto =
+    !termino ||
+    [
+      a.marca,
+      a.modelo,
+      a.codigo,
+      String(a.anio),
+      a.version ?? "",
+    ].some((valor) => valor.toLowerCase().includes(termino));
+
+  const coincideEstado =
+    filtroEstado === "todos" || a.estado === filtroEstado;
+
+  return coincideTexto && coincideEstado;
+});
 
   if (!listo) return null;
 
@@ -333,6 +357,7 @@ async function cambiarExhibicion(a: Auto) {
           <label>Versión<input value={form.version} onChange={campo("version")} /></label>
           <label>Año<input type="number" value={form.anio} onChange={campo("anio")} required /></label>
           <label>Kilometraje<input type="number" value={form.km} onChange={campo("km")} /></label>
+          <label>Número de dueños<input type="number" min="0" step="1" value={form.duenos} onChange={campo("duenos")} placeholder="Ej. 2" /></label>
           <label>Precio (CLP)<input type="number" value={form.precio} onChange={campo("precio")} required /></label>
           <label>Combustible<input value={form.combustible} onChange={campo("combustible")} placeholder="Bencina, diésel..." /></label>
           <label>Transmisión<input value={form.transmision} onChange={campo("transmision")} placeholder="Manual, automática" /></label>
@@ -373,7 +398,13 @@ async function cambiarExhibicion(a: Auto) {
             type="file"
             accept="image/*"
             multiple
-            onChange={(e) => setNuevas(Array.from(e.target.files ?? []))}
+            onChange={(e) => {
+  setNuevas((actuales) => [
+    ...actuales,
+    ...Array.from(e.target.files ?? []),
+  ]);
+  setInputKey((k) => k + 1);
+}}
           />
         </label>
         <div className="adm-fotos">
@@ -381,11 +412,23 @@ async function cambiarExhibicion(a: Auto) {
             <div key={u}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={u} alt="Foto del auto" />
-              <button type="button" onClick={() => setFotosActuales(fotosActuales.filter((x) => x !== u))}>×</button>
+              <button
+                type="button"
+                onClick={() =>
+                  setFotosActuales((lista) => lista.filter((x) => x !== u))
+                }
+              >
+                ×
+              </button>
             </div>
           ))}
         </div>
-        {nuevas.length > 0 && <p className="adm-msg">{nuevas.length} foto(s) nueva(s) por subir.</p>}
+
+        {nuevas.length > 0 && (
+          <p className="adm-msg">
+            {nuevas.length} foto(s) nueva(s) por subir.
+          </p>
+        )}
 
         <div className="acc" style={{ marginTop: 14 }}>
           <button className="btn fill" type="submit" disabled={guardando}>
@@ -407,8 +450,39 @@ async function cambiarExhibicion(a: Auto) {
     } de 8
   </p>
 </div>
+<div style={{
+  display: "grid",
+  gridTemplateColumns: "minmax(220px, 2fr) minmax(180px, 1fr)",
+  gap: 12,
+  marginBottom: 18
+}}>
+  <label>
+    Buscar auto
+    <input
+      value={busqueda}
+      onChange={(e) => setBusqueda(e.target.value)}
+      placeholder="Marca, modelo, año o código..."
+    />
+  </label>
+
+  <label>
+    Filtrar por estado
+    <select
+      value={filtroEstado}
+      onChange={(e) => setFiltroEstado(e.target.value)}
+    >
+      <option value="todos">Todos los estados</option>
+      {ESTADOS.map((s) => (
+        <option key={s.v} value={s.v}>{s.t}</option>
+      ))}
+    </select>
+  </label>
+</div>
       {autos.length === 0 && <p className="sub">Aún no hay autos cargados.</p>}
-      {autos.map((a) => (
+      {autos.length > 0 && autosFiltrados.length === 0 && (
+  <p className="sub">No encontramos autos con esos criterios.</p>
+)}
+      {autosFiltrados.map((a) => (
         <div className="adm-item" key={a.id}>
           {a.fotos && a.fotos[0] ? (
             // eslint-disable-next-line @next/next/no-img-element
