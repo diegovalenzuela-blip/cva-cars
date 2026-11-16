@@ -85,7 +85,7 @@ export default function Home() {
       <footer>
         <div className="wrap">
           <span>© Chillán Vende Autos</span>
-          <span>Hecho con CVA Cars</span>
+          <span>Hecho por Chillán Vende Autos</span>
         </div>
       </footer>
     </>
