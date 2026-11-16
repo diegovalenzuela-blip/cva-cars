@@ -3,6 +3,7 @@ import "./globals.css";
 import Menu from "@/components/Menu";
 import WhatsAppFlotante from "@/components/WhatsAppFlotante";
 import InstagramFlotante from "@/components/InstagramFlotante";
+import TikTokFlotante from "@/components/TikTokFlotante";
 
 export const metadata: Metadata = {
   title: "Chillán Vende Autos",
@@ -18,6 +19,7 @@ export default function RootLayout({
         <Menu />
         {children}
         <InstagramFlotante />
+        <TikTokFlotante />
         <WhatsAppFlotante />
       </body>
     </html>

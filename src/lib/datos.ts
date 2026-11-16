@@ -11,3 +11,5 @@ export function wa(texto: string) {
   return "https://wa.me/" + TEL + "?text=" + encodeURIComponent(texto);
 }
 export const INSTAGRAM_PERSONAL = "https://www.instagram.com/chillanvendeautos?exln=MW9iMDRpMjloZWc1aA==";
+export const TIKTOK_PERSONAL = "https://www.tiktok.com/@chillanvendeautos?_r=1&_t=ZS-9BOIMgDYvLC";
+

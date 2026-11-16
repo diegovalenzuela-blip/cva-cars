@@ -18,6 +18,7 @@ type Auto = {
   combustible: string | null;
   transmision: string | null;
   color: string | null;
+  tipo: string | null;
   ubicacion: string | null;
   descripcion: string | null;
   estado: string;
@@ -67,6 +68,7 @@ export default function Detalle() {
     ["Combustible", auto.combustible],
     ["Transmisión", auto.transmision],
     ["Color", auto.color],
+    ["Tipo", auto.tipo],
     ["Ubicación", auto.ubicacion],
     ["Código", auto.codigo],
   ];

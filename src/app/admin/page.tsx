@@ -17,6 +17,7 @@ type Auto = {
   combustible: string | null;
   transmision: string | null;
   color: string | null;
+  tipo: string | null;
   ubicacion: string | null;
   descripcion: string | null;
   estado: string;
@@ -37,6 +38,8 @@ const UBICACIONES = [
   "San Fabián", "San Nicolás", "Treguaco", "Concepción", "Los Ángeles", "Santiago",
 ];
 
+const TIPOS = ["Auto", "SUV", "Camioneta", "Furgón", "Moto", "Camión", "Otro"];
+
 const VACIO = {
   marca: "",
   modelo: "",
@@ -47,6 +50,7 @@ const VACIO = {
   combustible: "",
   transmision: "",
   color: "",
+  tipo: "Auto",
   ubicacion: "Chillán",
   descripcion: "",
   estado: "disponible",
@@ -154,6 +158,7 @@ export default function Admin() {
       combustible: a.combustible ?? "",
       transmision: a.transmision ?? "",
       color: a.color ?? "",
+      tipo: a.tipo ?? "",
       ubicacion: a.ubicacion ?? "",
       descripcion: a.descripcion ?? "",
       estado: a.estado,
@@ -192,6 +197,7 @@ export default function Admin() {
         combustible: form.combustible.trim() || null,
         transmision: form.transmision.trim() || null,
         color: form.color.trim() || null,
+        tipo: form.tipo || null,
         ubicacion: form.ubicacion.trim() || null,
         descripcion: form.descripcion.trim() || null,
         estado: form.estado,
@@ -331,6 +337,15 @@ async function cambiarExhibicion(a: Auto) {
           <label>Combustible<input value={form.combustible} onChange={campo("combustible")} placeholder="Bencina, diésel..." /></label>
           <label>Transmisión<input value={form.transmision} onChange={campo("transmision")} placeholder="Manual, automática" /></label>
           <label>Color<input value={form.color} onChange={campo("color")} /></label>
+          <label>
+            Tipo
+            <select value={form.tipo} onChange={campo("tipo")}>
+              <option value="">Sin definir</option>
+              {TIPOS.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+          </label>
           <label>Ubicación<input list="ubicaciones" value={form.ubicacion} onChange={campo("ubicacion")} placeholder="Chillán, Bulnes..." /></label>
           <datalist id="ubicaciones">
             {UBICACIONES.map((u) => (

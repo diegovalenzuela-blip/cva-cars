@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { SLUG, INSTAGRAM_PERSONAL, TIKTOK, wa } from "@/lib/datos";
+import { SLUG, INSTAGRAM_PERSONAL, wa, TIKTOK_PERSONAL } from "@/lib/datos";
 
 // ================= EDITA AQUÍ =================
 // Auto cuyas fotos se usan. Deja AUTO_CODIGO vacío para buscar la Ford F-150.
@@ -117,10 +117,11 @@ export default function Servicios() {
       ))}
               <section className="srv-fin">
         <div className="wrap">
-          <h2>Mira mi trabajo en Instagram</h2>
+          <h2>Mira mi trabajo en Instagram y TikTok</h2>
           <p>Fotos, videos y contenido automotriz que hacemos para nuestros clientes.</p>
 
-          <a
+          <div className="srv-redes">
+            <a
             className="ig-btn"
             href={INSTAGRAM_PERSONAL}
             target="_blank"
@@ -128,6 +129,10 @@ export default function Servicios() {
           >
             Ver mi Instagram
           </a>
+            <a className="tt-btn" href={TIKTOK_PERSONAL} target="_blank" rel="noopener noreferrer">
+              Ver mi TikTok
+            </a>
+          </div>
         </div>
       </section>
     </main>

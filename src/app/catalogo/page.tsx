@@ -16,6 +16,7 @@ type Auto = {
   estado: string;
   fotos: string[];
   ubicacion: string | null;
+  tipo: string | null;
 };
 
 const plata = (n: number) => "$" + n.toLocaleString("es-CL");
@@ -31,6 +32,7 @@ export default function Catalogo() {
   const [q, setQ] = useState("");
   const [marca, setMarca] = useState("");
   const [ubic, setUbic] = useState("");
+  const [tipo, setTipo] = useState("");
   const [min, setMin] = useState("");
   const [max, setMax] = useState("");
   const [orden, setOrden] = useState("recientes");
@@ -38,7 +40,7 @@ export default function Catalogo() {
   useEffect(() => {
     supabase
       .from("autos")
-      .select("id,codigo,marca,modelo,anio,km,precio,estado,fotos,ubicacion,automotoras!inner(slug)")
+      .select("id,codigo,marca,modelo,anio,km,precio,estado,fotos,ubicacion,tipo,automotoras!inner(slug)")
       .eq("automotoras.slug", SLUG)
       .in("estado", ["disponible", "reservado"])
       .order("creado_en", { ascending: false })
@@ -56,6 +58,10 @@ export default function Catalogo() {
     () => Array.from(new Set(autos.map((a) => a.ubicacion ?? "").filter(Boolean))).sort(),
     [autos]
   );
+  const tipos = useMemo(
+    () => Array.from(new Set(autos.map((a) => a.tipo ?? "").filter(Boolean))).sort(),
+    [autos]
+  );
   const rango = useMemo(() => {
     if (!autos.length) return null;
     const p = autos.map((a) => a.precio);
@@ -71,10 +77,11 @@ export default function Catalogo() {
       (a) =>
         (!marca || a.marca === marca) &&
         (!ubic || (a.ubicacion ?? "") === ubic) &&
+        (!tipo || (a.tipo ?? "") === tipo) &&
         (desde === null || a.precio >= desde) &&
         (hasta === null || a.precio <= hasta) &&
         (!t ||
-          (a.marca + " " + a.modelo + " " + a.anio + " " + a.codigo + " " + (a.ubicacion ?? ""))
+          (a.marca + " " + a.modelo + " " + a.anio + " " + a.codigo + " " + (a.ubicacion ?? "") + " " + (a.tipo ?? ""))
             .toLowerCase()
             .includes(t))
     );
@@ -82,14 +89,15 @@ export default function Catalogo() {
     if (orden === "precio_desc") r = [...r].sort((a, b) => b.precio - a.precio);
     if (orden === "anio_desc") r = [...r].sort((a, b) => b.anio - a.anio);
     return r;
-  }, [autos, q, marca, ubic, desde, hasta, orden]);
+  }, [autos, q, marca, ubic, tipo, desde, hasta, orden]);
 
-  const hayFiltros = Boolean(q || marca || ubic || min || max);
+  const hayFiltros = Boolean(q || marca || ubic || tipo || min || max);
 
   function limpiar() {
     setQ("");
     setMarca("");
     setUbic("");
+    setTipo("");
     setMin("");
     setMax("");
     setOrden("recientes");
@@ -105,6 +113,19 @@ export default function Catalogo() {
           ? "Cargando..."
           : ""}
       </p>
+
+      {tipos.length > 0 && (
+        <div className="chips" role="group" aria-label="Tipo de vehículo">
+          <button type="button" className={"chip" + (tipo === "" ? " on" : "")} aria-pressed={tipo === ""} onClick={() => setTipo("")}>
+            Todos
+          </button>
+          {tipos.map((t) => (
+            <button type="button" key={t} className={"chip" + (tipo === t ? " on" : "")} aria-pressed={tipo === t} onClick={() => setTipo(t)}>
+              {t}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="filtros2">
         <input
@@ -176,6 +197,7 @@ export default function Catalogo() {
             </Link>
             <div className="in">
               <h3><Link href={"/autos/" + x.codigo}>{x.marca} {x.modelo}</Link></h3>
+              {x.tipo && <span className="tipo-tag">{x.tipo}</span>}
               <p className="dat">
                 {x.anio} · {x.km ? x.km.toLocaleString("es-CL") + " km" : "km por confirmar"} · Ref {x.codigo}
                 {x.estado === "reservado" ? " · RESERVADO" : ""}
