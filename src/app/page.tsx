@@ -74,7 +74,7 @@ export default function Home() {
     <>
       <Portada />
 
-      <VideosDestacados />
+      <VideosDestacados fotosFondo={fotosFondo} />
 
       <Vitrina autos={autos} cargando={cargando} />
 

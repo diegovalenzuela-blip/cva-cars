@@ -1,7 +1,7 @@
 "use client";
 
 import "./destacados.css";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { VIDEOS } from "@/lib/datos";
 import Aparece from "./Aparece";
 
@@ -59,8 +59,19 @@ function Tarjeta({
   );
 }
 
-export default function VideosDestacados() {
+export default function VideosDestacados({ fotosFondo }: { fotosFondo: string[] }) {
   const seccion = useRef<HTMLElement>(null);
+  const [fotoIndex, setFotoIndex] = useState(0);
+
+  useEffect(() => {
+    if (fotosFondo.length < 2) return;
+
+    const intervalo = window.setInterval(() => {
+      setFotoIndex((actual) => (actual + 1) % fotosFondo.length);
+    }, 5000);
+
+    return () => window.clearInterval(intervalo);
+  }, [fotosFondo.length]);
 
   function alReproducir(actual: HTMLVideoElement) {
     seccion.current?.querySelectorAll<HTMLVideoElement>("video").forEach((v) => {
@@ -70,6 +81,17 @@ export default function VideosDestacados() {
 
   return (
     <section id="videos" className="vid-sec" ref={seccion}>
+      {fotosFondo.length > 0 && (
+        <div className="vid-fondo" aria-hidden="true">
+          <div
+            key={fotoIndex}
+            className="vid-fondo-foto"
+            style={{
+              backgroundImage: `url("${fotosFondo[fotoIndex]}")`,
+            }}
+          />
+        </div>
+      )}
       <div className="wrap">
         <Aparece>
           <h2 className="vid-titulo">Míralos en video</h2>
