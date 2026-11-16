@@ -9,6 +9,7 @@ import Portada from "@/components/Portada";
 import VideosDestacados from "@/components/VideosDestacados";
 import Vitrina from "@/components/Vitrina";
 import VendeTuAuto from "@/components/VendeTuAuto";
+import RevisionTecnica from "@/components/RevisionTecnica";
 import DondeEstamos from "@/components/DondeEstamos";
 import { SLUG, DIRECCION, HORARIO, INSTAGRAM, FACEBOOK, TIKTOK, VIDEOS, wa } from "@/lib/datos";
 
@@ -79,6 +80,8 @@ export default function Home() {
       <Vitrina autos={autos} cargando={cargando} />
 
       <VendeTuAuto fotosFondo={fotosFondo} />
+
+      <RevisionTecnica fotosFondo={fotosFondo} />
 
       <DondeEstamos />
 
