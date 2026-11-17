@@ -3,8 +3,7 @@
 import Link from "next/link";
 import Aparece from "@/components/Aparece";
 import { useEffect, useMemo, useState } from "react";
-import { supabase } from "@/lib/supabase";
-import { SLUG, wa } from "@/lib/datos";
+import { wa } from "@/lib/datos";
 
 type Auto = {
   id: string;
@@ -27,9 +26,9 @@ function numero(t: string): number | null {
   return t.trim() && n > 0 ? n : null;
 }
 
-export default function Catalogo() {
-  const [autos, setAutos] = useState<Auto[]>([]);
-  const [cargando, setCargando] = useState(true);
+export default function CatalogoCliente({ autosInicial }: { autosInicial: Auto[] }) {
+  const autos = autosInicial;
+  const cargando = false;
   const [q, setQ] = useState("");
   const [marca, setMarca] = useState("");
   const [ubic, setUbic] = useState("");
@@ -58,19 +57,6 @@ export default function Catalogo() {
     }, 5000);
     return () => window.clearInterval(intervalo);
   }, [fotosFondo.length]);
-
-  useEffect(() => {
-    supabase
-      .from("autos")
-      .select("id,codigo,marca,modelo,anio,km,precio,estado,fotos,ubicacion,tipo,automotoras!inner(slug)")
-      .eq("automotoras.slug", SLUG)
-      .in("estado", ["disponible", "reservado"])
-      .order("creado_en", { ascending: false })
-      .then(({ data }) => {
-        setAutos((data as unknown as Auto[]) ?? []);
-        setCargando(false);
-      });
-  }, []);
 
   const marcas = useMemo(
     () => Array.from(new Set(autos.map((a) => a.marca))).sort(),
@@ -225,6 +211,9 @@ export default function Catalogo() {
                   className="foto"
                   src={x.fotos[0]}
                   alt={x.marca + " " + x.modelo}
+                  loading={i === 0 ? "eager" : "lazy"}
+                  fetchPriority={i === 0 ? "high" : "auto"}
+                  decoding="async"
                   style={{ objectFit: "cover", width: "100%", display: "block" }}
                 />
               ) : (
