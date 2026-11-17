@@ -1155,3 +1155,12 @@ input, select, textarea { font-size: 16px; }
     transform: none;
   }
 }
+
+/* Optimización LCP: evitar animación inicial del fondo en móviles */
+@media (max-width: 760px) {
+  .catalogo-fondo-foto {
+    animation: none;
+    opacity: .55;
+    transform: none;
+  }
+}
