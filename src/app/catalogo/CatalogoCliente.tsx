@@ -201,7 +201,7 @@ export default function CatalogoCliente({ autosInicial }: { autosInicial: Auto[]
 
       <div className="grid">
         {lista.map((x, i) => (
-          <Aparece key={x.id} retraso={(i % 4) * 45}>
+          <Aparece key={x.id} retraso={(i % 4) * 45} className={i === 0 ? "in" : ""}>
             <article className="car">
             <Link href={"/autos/" + x.codigo} style={{ display: "block" }}>
               <span className="vit-brillo" aria-hidden="true" />
