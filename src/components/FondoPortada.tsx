@@ -26,17 +26,24 @@ export default function FondoPortada({
 
   if (n === 0) return null;
 
+  const cerca = (k: number) =>
+    k === actual || k === (actual + 1) % n || k === (actual - 1 + n) % n;
+
   return (
     <div className="fp" aria-hidden="true">
-      {fotos.map((f, k) => (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          key={f.url + k}
-          src={f.url}
-          alt=""
-          className={"fp-img" + (k === actual ? " on" : "")}
-        />
-      ))}
+      {fotos.map((f, k) =>
+        cerca(k) ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            key={f.url + k}
+            src={f.url}
+            alt=""
+            decoding="async"
+            fetchPriority={k === 0 ? "high" : "auto"}
+            className={"fp-img" + (k === actual ? " on" : "")}
+          />
+        ) : null
+      )}
       <div className="fp-sombra" />
     </div>
   );

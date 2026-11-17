@@ -178,3 +178,11 @@
   .vit-card .vit-brillo { transition: left .7s ease; }
   .vit-card:hover .vit-brillo { left: 140%; }
 }
+/* ===== Más liviano en celulares ===== */
+@media (max-width: 760px) {
+  .por-halo { display: none; }
+  .por-logo-mov { mix-blend-mode: normal; }
+  .por::before, .vid-sec::before, .vit::before { animation: none; }
+  .vit-estrella { animation: none; box-shadow: 0 0 28px rgba(200, 55, 45, .25); }
+  .vit-estrella-foto img { animation: none; }
+}

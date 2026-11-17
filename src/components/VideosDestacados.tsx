@@ -30,9 +30,9 @@ function Tarjeta({
         ref={video}
         className="vid-video"
         src={src + "#t=0.5"}
-        poster={src + ".png"}
+        poster={src.replace(".mp4", ".jpg")}
         playsInline
-        preload="metadata"
+        preload="none"
         controls={iniciado}
         onPlay={() => {
           setJugando(true);

@@ -15,7 +15,7 @@ const PALABRAS = ["Tu", "próximo", "auto", "está", "en", "Chillán"];
 
 export default function Portada() {
   const ref = useRef<HTMLDivElement>(null);
-  const fotos = useAutosFondo(6);
+  const fotos = useAutosFondo(4);
 
   useEffect(() => {
     const el = ref.current;
