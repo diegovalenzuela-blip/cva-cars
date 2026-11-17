@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Aparece from "@/components/Aparece";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { SLUG, wa } from "@/lib/datos";
@@ -213,9 +214,11 @@ export default function Catalogo() {
       </div>
 
       <div className="grid">
-        {lista.map((x) => (
-          <article className="car" key={x.id}>
+        {lista.map((x, i) => (
+          <Aparece key={x.id} retraso={(i % 4) * 90}>
+            <article className="car">
             <Link href={"/autos/" + x.codigo} style={{ display: "block" }}>
+              <span className="vit-brillo" aria-hidden="true" />
               {x.fotos && x.fotos[0] ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -250,7 +253,8 @@ export default function Catalogo() {
                 Consultar por WhatsApp
               </a>
             </div>
-          </article>
+            </article>
+          </Aparece>
         ))}
       </div>
       {!cargando && lista.length === 0 && (

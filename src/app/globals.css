@@ -1092,3 +1092,70 @@ input, select, textarea { font-size: 16px; }
     height: 190px;
   }
 }
+
+
+/* ===== CATALOGO_MOVIMIENTO_EXHIBICION ===== */
+@media (prefers-reduced-motion: no-preference) {
+  .grid > .apa {
+    display: flex;
+    min-width: 0;
+    opacity: 0;
+    transform: translateY(30px);
+    transition:
+      opacity .7s ease,
+      transform .7s cubic-bezier(.2, .7, .2, 1);
+  }
+
+  .grid > .apa.in {
+    opacity: 1;
+    transform: none;
+  }
+
+  .grid > .apa > .car {
+    flex: 1;
+    min-width: 0;
+    transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+  }
+
+  .grid > .apa > .car:hover {
+    transform: translateY(-8px);
+    border-color: var(--rojo);
+    box-shadow: 0 16px 34px rgba(200, 55, 45, .28);
+  }
+
+  .grid > .apa > .car > a:first-child {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .grid > .apa > .car > a:first-child img.foto {
+    transition: transform .5s ease;
+  }
+
+  .grid > .apa > .car:hover > a:first-child img.foto {
+    transform: scale(1.08);
+  }
+
+  .grid > .apa > .car .vit-brillo {
+    position: absolute;
+    top: 0;
+    left: -60%;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .28), transparent);
+    transform: skewX(-20deg);
+    pointer-events: none;
+    transition: left .7s ease;
+  }
+
+  .grid > .apa > .car:hover .vit-brillo {
+    left: 140%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grid > .apa {
+    opacity: 1;
+    transform: none;
+  }
+}
