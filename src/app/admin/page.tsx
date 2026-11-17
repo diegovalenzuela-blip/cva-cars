@@ -457,55 +457,6 @@ async function cambiarExhibicion(a: Auto) {
         </button>
       </div>
 
-      <section className="adm-exhibicion">
-        <div className="adm-exhibicion-titulo">
-          <div>
-            <h2>Autos en exhibición</h2>
-            <p className="sub">
-              Vehículos que se muestran como destacados en la página pública.
-            </p>
-          </div>
-          <strong>{autosExhibicion.length} / 8 seleccionados</strong>
-        </div>
-
-        {autosExhibicion.length === 0 ? (
-          <p className="adm-exhibicion-vacio">
-            Todavía no tienes autos seleccionados para exhibición.
-            Puedes agregarlos desde la lista de Mis autos.
-          </p>
-        ) : (
-          <div className="adm-exhibicion-lista">
-            {autosExhibicion.map((a) => (
-              <article className="adm-exhibicion-auto" key={a.id}>
-                <div className="adm-exhibicion-foto">
-                  {a.fotos?.[0] ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={a.fotos[0]} alt={`${a.marca} ${a.modelo}`} />
-                  ) : (
-                    <span>Sin foto</span>
-                  )}
-                </div>
-
-                <div className="adm-exhibicion-datos">
-                  <strong>{a.marca} {a.modelo}</strong>
-                  <span>{a.anio} · Ref. {a.codigo}</span>
-                  <b>${a.precio.toLocaleString("es-CL")}</b>
-                </div>
-
-                <button
-                  type="button"
-                  className="btn"
-                  onClick={() => cambiarExhibicion(a)}
-                  title="Quitar este vehículo de exhibición"
-                >
-                  Quitar
-                </button>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
-
       <form className="adm-form" onSubmit={guardar}>
         <h2>{editId ? "Editar auto" : "Agregar auto"}</h2>
         <div className="adm-fila">
@@ -671,6 +622,55 @@ async function cambiarExhibicion(a: Auto) {
         </div>
         {msg && <p className="adm-msg">{msg}</p>}
       </form>
+
+      <section className="adm-exhibicion">
+        <div className="adm-exhibicion-titulo">
+          <div>
+            <h2>Autos en exhibición</h2>
+            <p className="sub">
+              Vehículos que se muestran como destacados en la página pública.
+            </p>
+          </div>
+          <strong>{autosExhibicion.length} / 8 seleccionados</strong>
+        </div>
+
+        {autosExhibicion.length === 0 ? (
+          <p className="adm-exhibicion-vacio">
+            Todavía no tienes autos seleccionados para exhibición.
+            Puedes agregarlos desde la lista de Mis autos.
+          </p>
+        ) : (
+          <div className="adm-exhibicion-lista">
+            {autosExhibicion.map((a) => (
+              <article className="adm-exhibicion-auto" key={a.id}>
+                <div className="adm-exhibicion-foto">
+                  {a.fotos?.[0] ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={a.fotos[0]} alt={`${a.marca} ${a.modelo}`} />
+                  ) : (
+                    <span>Sin foto</span>
+                  )}
+                </div>
+
+                <div className="adm-exhibicion-datos">
+                  <strong>{a.marca} {a.modelo}</strong>
+                  <span>{a.anio} · Ref. {a.codigo}</span>
+                  <b>${a.precio.toLocaleString("es-CL")}</b>
+                </div>
+
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => cambiarExhibicion(a)}
+                  title="Quitar este vehículo de exhibición"
+                >
+                  Quitar
+                </button>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
 
       <div style={{ marginBottom: 20 }}>
   <h2>Mis autos</h2>
