@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://" + "chillanvendeautos.cl";
+  const baseUrl = "https://www.chillanvendeautos.cl";
   const paginas = [
     "",
     "/catalogo",
