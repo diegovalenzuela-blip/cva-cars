@@ -10,12 +10,16 @@ export const revalidate = 60;
 export default async function Home() {
   const autos = await getAutosPublicos();
 
+  const fotosFondo = autos.flatMap((auto) =>
+    auto.fotos && auto.fotos.length > 0 ? [auto.fotos[0]] : []
+  );
+
   return (
     <>
       <Portada />
-      <VideosDestacados />
+      <VideosDestacados fotosFondo={fotosFondo} />
       <Vitrina autos={autos} cargando={false} />
-      <VendeTuAuto />
+      <VendeTuAuto fotosFondo={fotosFondo} />
       <DondeEstamos />
 
       <footer>
