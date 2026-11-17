@@ -14,6 +14,7 @@ type FotoAdmin = {
 type Auto = {
     duenos: number | null;
   id: string;
+  publicado: boolean;
   codigo: string;
   en_exhibicion: boolean;
   marca: string;
@@ -92,6 +93,7 @@ export default function Admin() {
   const [autos, setAutos] = useState<Auto[]>([]);
   const [busqueda, setBusqueda] = useState("");
 const [filtroEstado, setFiltroEstado] = useState("todos");
+  const [publicadoForm, setPublicadoForm] = useState(true);
   const [form, setForm] = useState(VACIO);
   const [editId, setEditId] = useState<string | null>(null);
   const [fotos, setFotos] = useState<FotoAdmin[]>([]);
@@ -151,6 +153,7 @@ const [filtroEstado, setFiltroEstado] = useState("todos");
 
   function limpiar() {
     setForm(VACIO);
+    setPublicadoForm(true);
     setEditId(null);
     fotos.forEach((foto) => {
       if (foto.file) URL.revokeObjectURL(foto.preview);
@@ -162,14 +165,15 @@ const [filtroEstado, setFiltroEstado] = useState("todos");
 
   function editar(a: Auto) {
     setEditId(a.id);
+    setPublicadoForm(a.publicado);
     setForm({
       marca: a.marca,
       modelo: a.modelo,
       version: a.version ?? "",
-      anio: String(a.anio),
+      anio: a.anio ? String(a.anio) : "",
       km: a.km ? String(a.km) : "",
       duenos: a.duenos == null ? "" : String(a.duenos),
-      precio: String(a.precio),
+      precio: a.precio ? String(a.precio) : "",
       combustible: a.combustible ?? "",
       transmision: a.transmision ?? "",
       color: a.color ?? "",
@@ -225,6 +229,24 @@ const [filtroEstado, setFiltroEstado] = useState("todos");
   async function guardar(e: React.FormEvent) {
     e.preventDefault();
     if (!automotoraId) return;
+
+    const submitter = (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
+    const publicar =
+      submitter?.dataset.publicado === "true" ? true :
+      submitter?.dataset.publicado === "false" ? false :
+      publicadoForm;
+
+    if (
+      publicar &&
+      (!form.marca.trim() ||
+        !form.modelo.trim() ||
+        Number(form.anio) <= 0 ||
+        Number(form.precio) <= 0)
+    ) {
+      setMsg("Para publicar debes completar marca, modelo, año y precio.");
+      return;
+    }
+
     setGuardando(true);
     setMsg("");
     try {
@@ -248,10 +270,10 @@ const [filtroEstado, setFiltroEstado] = useState("todos");
         marca: form.marca.trim(),
         modelo: form.modelo.trim(),
         version: form.version.trim() || null,
-        anio: Number(form.anio),
+        anio: Number(form.anio) || 0,
         km: form.km ? Number(form.km) : null,
 duenos: form.duenos ? Number(form.duenos) : null,
-precio: Number(form.precio),
+precio: Number(form.precio) || 0,
         combustible: form.combustible.trim() || null,
         transmision: form.transmision.trim() || null,
         color: form.color.trim() || null,
@@ -259,6 +281,7 @@ precio: Number(form.precio),
         ubicacion: form.ubicacion.trim() || null,
         descripcion: form.descripcion.trim() || null,
         estado: form.estado,
+        publicado: publicar,
         fotos: urls,
       };
       const r = editId
@@ -297,6 +320,11 @@ async function cambiarEstado(a: Auto, estado: string) {
 }
 
 async function cambiarExhibicion(a: Auto) {
+  if (!a.publicado) {
+    setMsg("Primero debes publicar el auto para agregarlo a exhibición.");
+    return;
+  }
+
   const seleccionados = autos.filter(
     (x) => x.en_exhibicion &&
       ["disponible", "reservado"].includes(x.estado)
@@ -341,7 +369,18 @@ async function cambiarExhibicion(a: Auto) {
     else cargar();
   }
 
-  const cuenta = (e: string) => autos.filter((a) => a.estado === e).length;
+  const cuenta = (e: string) =>
+    autos.filter((a) => a.publicado && a.estado === e).length;
+
+  const cuentaBorradores = autos.filter((a) => !a.publicado).length;
+
+  const autosExhibicion = autos.filter(
+    (a) =>
+      a.publicado &&
+      a.en_exhibicion &&
+      ["disponible", "reservado"].includes(a.estado)
+  );
+
   const autosFiltrados = autos.filter((a) => {
   const termino = busqueda.trim().toLowerCase();
 
@@ -356,7 +395,10 @@ async function cambiarExhibicion(a: Auto) {
     ].some((valor) => valor.toLowerCase().includes(termino));
 
   const coincideEstado =
-    filtroEstado === "todos" || a.estado === filtroEstado;
+    filtroEstado === "todos" ||
+    (filtroEstado === "borradores"
+      ? !a.publicado
+      : a.publicado && a.estado === filtroEstado);
 
   return coincideTexto && coincideEstado;
 });
@@ -410,18 +452,70 @@ async function cambiarExhibicion(a: Auto) {
         <button type="button" className={"adm-cuenta " + (filtroEstado === "vendido" ? "activa" : "")} onClick={() => setFiltroEstado("vendido")} aria-pressed={filtroEstado === "vendido"}>
           <b>{cuenta("vendido")}</b>Vendidos
         </button>
+        <button type="button" className={"adm-cuenta " + (filtroEstado === "borradores" ? "activa" : "")} onClick={() => setFiltroEstado("borradores")} aria-pressed={filtroEstado === "borradores"}>
+          <b>{cuentaBorradores}</b>Borradores
+        </button>
       </div>
+
+      <section className="adm-exhibicion">
+        <div className="adm-exhibicion-titulo">
+          <div>
+            <h2>Autos en exhibición</h2>
+            <p className="sub">
+              Vehículos que se muestran como destacados en la página pública.
+            </p>
+          </div>
+          <strong>{autosExhibicion.length} / 8 seleccionados</strong>
+        </div>
+
+        {autosExhibicion.length === 0 ? (
+          <p className="adm-exhibicion-vacio">
+            Todavía no tienes autos seleccionados para exhibición.
+            Puedes agregarlos desde la lista de Mis autos.
+          </p>
+        ) : (
+          <div className="adm-exhibicion-lista">
+            {autosExhibicion.map((a) => (
+              <article className="adm-exhibicion-auto" key={a.id}>
+                <div className="adm-exhibicion-foto">
+                  {a.fotos?.[0] ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={a.fotos[0]} alt={`${a.marca} ${a.modelo}`} />
+                  ) : (
+                    <span>Sin foto</span>
+                  )}
+                </div>
+
+                <div className="adm-exhibicion-datos">
+                  <strong>{a.marca} {a.modelo}</strong>
+                  <span>{a.anio} · Ref. {a.codigo}</span>
+                  <b>${a.precio.toLocaleString("es-CL")}</b>
+                </div>
+
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => cambiarExhibicion(a)}
+                  title="Quitar este vehículo de exhibición"
+                >
+                  Quitar
+                </button>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
 
       <form className="adm-form" onSubmit={guardar}>
         <h2>{editId ? "Editar auto" : "Agregar auto"}</h2>
         <div className="adm-fila">
-          <label>Marca<input value={form.marca} onChange={campo("marca")} required /></label>
-          <label>Modelo<input value={form.modelo} onChange={campo("modelo")} required /></label>
+          <label>Marca<input value={form.marca} onChange={campo("marca")} /></label>
+          <label>Modelo<input value={form.modelo} onChange={campo("modelo")} /></label>
           <label>Versión<input value={form.version} onChange={campo("version")} /></label>
-          <label>Año<input type="number" value={form.anio} onChange={campo("anio")} required /></label>
+          <label>Año<input type="number" value={form.anio} onChange={campo("anio")} /></label>
           <label>Kilometraje<input type="number" value={form.km} onChange={campo("km")} /></label>
           <label>Número de dueños<input type="number" min="0" step="1" value={form.duenos} onChange={campo("duenos")} placeholder="Ej. 2" /></label>
-          <label>Precio (CLP)<input type="number" value={form.precio} onChange={campo("precio")} required /></label>
+          <label>Precio (CLP)<input type="number" value={form.precio} onChange={campo("precio")} /></label>
           <label>Combustible<input value={form.combustible} onChange={campo("combustible")} placeholder="Bencina, diésel..." /></label>
           <label>Transmisión<input value={form.transmision} onChange={campo("transmision")} placeholder="Manual, automática" /></label>
           <label>Color<input value={form.color} onChange={campo("color")} /></label>
@@ -543,10 +637,37 @@ async function cambiarExhibicion(a: Auto) {
         )}
 
         <div className="acc" style={{ marginTop: 14 }}>
-          <button className="btn fill" type="submit" disabled={guardando}>
-            {guardando ? "Guardando..." : editId ? "Guardar cambios" : "Guardar auto"}
+          {editId && (
+            <button
+              className="btn"
+              type="submit"
+              data-publicado={String(publicadoForm)}
+              disabled={guardando}
+            >
+              {guardando ? "Guardando..." : "Guardar cambios"}
+            </button>
+          )}
+          <button
+            className="btn"
+            type="submit"
+            data-publicado="false"
+            disabled={guardando}
+          >
+            Guardar como borrador
           </button>
-          {editId && <button type="button" className="btn" onClick={limpiar}>Cancelar</button>}
+          <button
+            className="btn fill"
+            type="submit"
+            data-publicado="true"
+            disabled={guardando}
+          >
+            {guardando ? "Guardando..." : "Publicar auto"}
+          </button>
+          {editId && (
+            <button type="button" className="btn" onClick={limpiar}>
+              Cancelar
+            </button>
+          )}
         </div>
         {msg && <p className="adm-msg">{msg}</p>}
       </form>
@@ -556,7 +677,7 @@ async function cambiarExhibicion(a: Auto) {
   <p className="sub">
     Seleccionados para exhibición: {
       autos.filter(
-        (a) => a.en_exhibicion &&
+        (a) => a.publicado && a.en_exhibicion &&
           ["disponible", "reservado"].includes(a.estado)
       ).length
     } de 8
@@ -584,6 +705,7 @@ async function cambiarExhibicion(a: Auto) {
       onChange={(e) => setFiltroEstado(e.target.value)}
     >
       <option value="todos">Todos los estados</option>
+      <option value="borradores">Borradores</option>
       {ESTADOS.map((s) => (
         <option key={s.v} value={s.v}>{s.t}</option>
       ))}
@@ -610,23 +732,29 @@ async function cambiarExhibicion(a: Auto) {
 
           <div className="adm-item-info">
             <div className="adm-item-encabezado">
-              <span className={`adm-estado adm-estado-${a.estado}`}>
-                {ESTADOS.find((s) => s.v === a.estado)?.t ?? a.estado}
-              </span>
-              {a.en_exhibicion && (
+              {!a.publicado ? (
+                <span className="adm-estado adm-borrador">Borrador</span>
+              ) : (
+                <span className={`adm-estado adm-estado-${a.estado}`}>
+                  {ESTADOS.find((s) => s.v === a.estado)?.t ?? a.estado}
+                </span>
+              )}
+              {a.publicado && a.en_exhibicion && (
                 <span className="adm-en-exhibicion">En exhibición</span>
               )}
             </div>
 
-            <h3>{a.marca} {a.modelo}</h3>
+            <h3>{a.marca || "Sin marca"} {a.modelo || "Sin modelo"}</h3>
             {a.version && <p className="adm-item-version">{a.version}</p>}
 
             <strong className="adm-item-precio">
-              ${a.precio.toLocaleString("es-CL")}
+              {a.precio > 0
+                ? `$${a.precio.toLocaleString("es-CL")}`
+                : "Precio pendiente"}
             </strong>
 
             <div className="adm-item-datos">
-              <span>{a.anio}</span>
+              <span>{a.anio > 0 ? a.anio : "Año pendiente"}</span>
               <span>Ref. {a.codigo}</span>
               {a.km != null && <span>{a.km.toLocaleString("es-CL")} km</span>}
               {a.ubicacion && <span>{a.ubicacion}</span>}
@@ -639,14 +767,15 @@ async function cambiarExhibicion(a: Auto) {
               className={"btn " + (a.en_exhibicion ? "fill" : "")}
               onClick={() => cambiarExhibicion(a)}
               disabled={
-                !a.en_exhibicion &&
-                (
-                  !["disponible", "reservado"].includes(a.estado) ||
-                  autos.filter(
-                    (x) => x.en_exhibicion &&
-                      ["disponible", "reservado"].includes(x.estado)
-                  ).length >= 8
-                )
+                !a.publicado ||
+                (!a.en_exhibicion &&
+                  (
+                    !["disponible", "reservado"].includes(a.estado) ||
+                    autos.filter(
+                      (x) => x.publicado && x.en_exhibicion &&
+                        ["disponible", "reservado"].includes(x.estado)
+                    ).length >= 8
+                  ))
               }
               title="Seleccionar o quitar de autos en exhibición"
             >
