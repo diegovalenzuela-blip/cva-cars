@@ -75,7 +75,7 @@ export default function Detalle() {
 
   return (
     <main className="det">
-      <Link href="/#autos" className="det-volver">← Volver a los autos</Link>
+      <Link href="/catalogo" className="det-volver">← Volver a catálogo</Link>
       <div className="det-grid">
         <div>
           <div className="gal-main">
