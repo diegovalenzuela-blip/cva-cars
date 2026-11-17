@@ -68,19 +68,34 @@ const VACIO = {
 
 async function reducir(file: File): Promise<Blob> {
   const bmp = await createImageBitmap(file, { imageOrientation: "from-image" });
-  const max = 1280;
-  const esc = Math.min(1, max / Math.max(bmp.width, bmp.height));
-  const c = document.createElement("canvas");
-  c.width = Math.round(bmp.width * esc);
-  c.height = Math.round(bmp.height * esc);
-  c.getContext("2d")!.drawImage(bmp, 0, 0, c.width, c.height);
-  return new Promise((ok, fallo) =>
-    c.toBlob(
-      (b) => (b ? ok(b) : fallo(new Error("No se pudo procesar la foto"))),
-      "image/jpeg",
-      0.85
-    )
-  );
+  try {
+    const max = 1280;
+    const esc = Math.min(1, max / Math.max(bmp.width, bmp.height));
+    const c = document.createElement("canvas");
+    c.width = Math.round(bmp.width * esc);
+    c.height = Math.round(bmp.height * esc);
+
+    const ctx = c.getContext("2d");
+    if (!ctx) throw new Error("No se pudo procesar la foto");
+
+    ctx.drawImage(bmp, 0, 0, c.width, c.height);
+
+    const blob = await new Promise<Blob>((ok, fallo) =>
+      c.toBlob(
+        (b) => (b ? ok(b) : fallo(new Error("No se pudo procesar la foto"))),
+        "image/webp",
+        0.80
+      )
+    );
+
+    if (blob.type !== "image/webp") {
+      throw new Error("Este navegador no pudo generar imágenes WebP");
+    }
+
+    return blob;
+  } finally {
+    bmp.close();
+  }
 }
 
 export default function Admin() {
@@ -259,10 +274,10 @@ const [filtroEstado, setFiltroEstado] = useState("todos");
         if (!foto.file) continue;
         const blob = await reducir(foto.file);
         const ruta =
-          automotoraId + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + ".jpg";
+          automotoraId + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + ".webp";
         const { error } = await supabase.storage
           .from("autos")
-          .upload(ruta, blob, { contentType: "image/jpeg" });
+          .upload(ruta, blob, { contentType: "image/webp" });
         if (error) throw error;
         urls.push(supabase.storage.from("autos").getPublicUrl(ruta).data.publicUrl);
       }
