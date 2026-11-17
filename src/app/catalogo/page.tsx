@@ -215,7 +215,7 @@ export default function Catalogo() {
 
       <div className="grid">
         {lista.map((x, i) => (
-          <Aparece key={x.id} retraso={(i % 4) * 90}>
+          <Aparece key={x.id} retraso={(i % 4) * 45}>
             <article className="car">
             <Link href={"/autos/" + x.codigo} style={{ display: "block" }}>
               <span className="vit-brillo" aria-hidden="true" />

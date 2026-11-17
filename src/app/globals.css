@@ -1098,10 +1098,8 @@ input, select, textarea { font-size: 16px; }
     display: flex;
     min-width: 0;
     opacity: 0;
-    transform: translateY(30px);
-    transition:
-      opacity .7s ease,
-      transform .7s cubic-bezier(.2, .7, .2, 1);
+    transform: translateY(16px);
+    transition: opacity .45s ease, transform .45s cubic-bezier(.2, .7, .2, 1);
   }
 
   .grid > .apa.in {
@@ -1112,7 +1110,7 @@ input, select, textarea { font-size: 16px; }
   .grid > .apa > .car {
     flex: 1;
     min-width: 0;
-    transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+    transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
   }
 
   .grid > .apa > .car:hover {
@@ -1127,7 +1125,7 @@ input, select, textarea { font-size: 16px; }
   }
 
   .grid > .apa > .car > a:first-child img.foto {
-    transition: transform .5s ease;
+    transition: transform .4s ease;
   }
 
   .grid > .apa > .car:hover > a:first-child img.foto {
@@ -1143,7 +1141,7 @@ input, select, textarea { font-size: 16px; }
     background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .28), transparent);
     transform: skewX(-20deg);
     pointer-events: none;
-    transition: left .7s ease;
+    transition: left .6s ease;
   }
 
   .grid > .apa > .car:hover .vit-brillo {
