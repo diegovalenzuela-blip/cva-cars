@@ -57,7 +57,7 @@ export default function Vitrina({
     (a, b) => Number(!!b.destacado) - Number(!!a.destacado)
   );
   const estrella = ordenados[0];
-  const resto = ordenados.slice(1, 8);
+  const resto = ordenados.slice(1, 7);
 
   const fotoEstrella = estrella && estrella.fotos && estrella.fotos[0] ? estrella.fotos[0] : "";
   const datos = estrella
