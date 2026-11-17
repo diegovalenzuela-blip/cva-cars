@@ -4,6 +4,13 @@ import { useCallback, useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 
+type FotoAdmin = {
+  id: string;
+  url?: string;
+  file?: File;
+  preview: string;
+};
+
 type Auto = {
     duenos: number | null;
   id: string;
@@ -87,8 +94,8 @@ export default function Admin() {
 const [filtroEstado, setFiltroEstado] = useState("todos");
   const [form, setForm] = useState(VACIO);
   const [editId, setEditId] = useState<string | null>(null);
-  const [fotosActuales, setFotosActuales] = useState<string[]>([]);
-  const [nuevas, setNuevas] = useState<File[]>([]);
+  const [fotos, setFotos] = useState<FotoAdmin[]>([]);
+  const [fotoArrastrada, setFotoArrastrada] = useState<number | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [msg, setMsg] = useState("");
   const [inputKey, setInputKey] = useState(0);
@@ -145,8 +152,11 @@ const [filtroEstado, setFiltroEstado] = useState("todos");
   function limpiar() {
     setForm(VACIO);
     setEditId(null);
-    setFotosActuales([]);
-    setNuevas([]);
+    fotos.forEach((foto) => {
+      if (foto.file) URL.revokeObjectURL(foto.preview);
+    });
+    setFotos([]);
+    setFotoArrastrada(null);
     setInputKey((k) => k + 1);
   }
 
@@ -168,11 +178,48 @@ const [filtroEstado, setFiltroEstado] = useState("todos");
       descripcion: a.descripcion ?? "",
       estado: a.estado,
     });
-    setFotosActuales(a.fotos ?? []);
-    setNuevas([]);
+    fotos.forEach((foto) => {
+      if (foto.file) URL.revokeObjectURL(foto.preview);
+    });
+    setFotos((a.fotos ?? []).map((url, i) => ({
+      id: `existente-${i}-${url}`,
+      url,
+      preview: url,
+    })));
+    setFotoArrastrada(null);
     setInputKey((k) => k + 1);
     setMsg("");
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function moverFoto(indice: number, direccion: -1 | 1) {
+    setFotos((lista) => {
+      const destino = indice + direccion;
+      if (destino < 0 || destino >= lista.length) return lista;
+      const copia = [...lista];
+      [copia[indice], copia[destino]] = [copia[destino], copia[indice]];
+      return copia;
+    });
+  }
+
+  function reordenarFotos(origen: number, destino: number) {
+    setFotos((lista) => {
+      if (destino < 0 || destino >= lista.length || origen === destino) return lista;
+      const copia = [...lista];
+      const [movida] = copia.splice(origen, 1);
+      copia.splice(destino, 0, movida);
+      return copia;
+    });
+    setFotoArrastrada(null);
+  }
+
+  function quitarFoto(indice: number) {
+    setFotos((lista) => {
+      const copia = [...lista];
+      const [quitada] = copia.splice(indice, 1);
+      if (quitada?.file) URL.revokeObjectURL(quitada.preview);
+      return copia;
+    });
   }
 
   async function guardar(e: React.FormEvent) {
@@ -181,9 +228,14 @@ const [filtroEstado, setFiltroEstado] = useState("todos");
     setGuardando(true);
     setMsg("");
     try {
-      const urls: string[] = [...fotosActuales];
-      for (const f of nuevas) {
-        const blob = await reducir(f);
+      const urls: string[] = [];
+      for (const foto of fotos) {
+        if (foto.url) {
+          urls.push(foto.url);
+          continue;
+        }
+        if (!foto.file) continue;
+        const blob = await reducir(foto.file);
         const ruta =
           automotoraId + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + ".jpg";
         const { error } = await supabase.storage
@@ -343,10 +395,21 @@ async function cambiarExhibicion(a: Auto) {
       </div>
 
       <div className="adm-cuentas">
-        <div className="adm-cuenta"><b>{cuenta("disponible")}</b>Disponibles</div>
-        <div className="adm-cuenta"><b>{cuenta("reservado")}</b>Reservados</div>
-        <div className="adm-cuenta"><b>{cuenta("en_preparacion")}</b>En preparación</div>
-        <div className="adm-cuenta"><b>{cuenta("vendido")}</b>Vendidos</div>
+        <button type="button" className={"adm-cuenta " + (filtroEstado === "todos" ? "activa" : "")} onClick={() => setFiltroEstado("todos")} aria-pressed={filtroEstado === "todos"}>
+          <b>{autos.length}</b>Todos los autos
+        </button>
+        <button type="button" className={"adm-cuenta " + (filtroEstado === "disponible" ? "activa" : "")} onClick={() => setFiltroEstado("disponible")} aria-pressed={filtroEstado === "disponible"}>
+          <b>{cuenta("disponible")}</b>Disponibles
+        </button>
+        <button type="button" className={"adm-cuenta " + (filtroEstado === "reservado" ? "activa" : "")} onClick={() => setFiltroEstado("reservado")} aria-pressed={filtroEstado === "reservado"}>
+          <b>{cuenta("reservado")}</b>Reservados
+        </button>
+        <button type="button" className={"adm-cuenta " + (filtroEstado === "en_preparacion" ? "activa" : "")} onClick={() => setFiltroEstado("en_preparacion")} aria-pressed={filtroEstado === "en_preparacion"}>
+          <b>{cuenta("en_preparacion")}</b>En preparación
+        </button>
+        <button type="button" className={"adm-cuenta " + (filtroEstado === "vendido" ? "activa" : "")} onClick={() => setFiltroEstado("vendido")} aria-pressed={filtroEstado === "vendido"}>
+          <b>{cuenta("vendido")}</b>Vendidos
+        </button>
       </div>
 
       <form className="adm-form" onSubmit={guardar}>
@@ -392,41 +455,90 @@ async function cambiarExhibicion(a: Auto) {
         </label>
 
         <label style={{ display: "block", marginTop: 12 }}>
-          Fotos (la primera es la portada)
+          Agregar fotografías
           <input
             key={inputKey}
             type="file"
             accept="image/*"
             multiple
             onChange={(e) => {
-  setNuevas((actuales) => [
-    ...actuales,
-    ...Array.from(e.target.files ?? []),
-  ]);
-  setInputKey((k) => k + 1);
-}}
+              const archivos = Array.from(e.target.files ?? []);
+              setFotos((lista) => [
+                ...lista,
+                ...archivos.map((file) => ({
+                  id: `${Date.now()}-${Math.random()}`,
+                  file,
+                  preview: URL.createObjectURL(file),
+                })),
+              ]);
+              setInputKey((k) => k + 1);
+            }}
           />
         </label>
+
+        <p className="adm-msg">
+          Ordena las fotografías arrastrándolas o usando las flechas.
+          La primera será la portada.
+        </p>
+
         <div className="adm-fotos">
-          {fotosActuales.map((u) => (
-            <div key={u}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={u} alt="Foto del auto" />
-              <button
-                type="button"
-                onClick={() =>
-                  setFotosActuales((lista) => lista.filter((x) => x !== u))
+          {fotos.map((foto, i) => (
+            <div
+              key={foto.id}
+              draggable
+              onDragStart={() => setFotoArrastrada(i)}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                if (fotoArrastrada !== null) {
+                  reordenarFotos(fotoArrastrada, i);
                 }
-              >
-                ×
-              </button>
+              }}
+              onDragEnd={() => setFotoArrastrada(null)}
+              className={fotoArrastrada === i ? "adm-foto-arrastrada" : ""}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={foto.preview} alt={`Foto ${i + 1} del auto`} />
+
+              <span className="adm-foto-posicion">
+                {i === 0 ? "PORTADA" : `FOTO ${i + 1}`}
+              </span>
+
+              <div className="adm-foto-controles">
+                <button
+                  type="button"
+                  title="Mover a la izquierda"
+                  aria-label="Mover fotografía hacia adelante"
+                  disabled={i === 0}
+                  onClick={() => moverFoto(i, -1)}
+                >
+                  ←
+                </button>
+                <button
+                  type="button"
+                  title="Mover a la derecha"
+                  aria-label="Mover fotografía hacia atrás"
+                  disabled={i === fotos.length - 1}
+                  onClick={() => moverFoto(i, 1)}
+                >
+                  →
+                </button>
+                <button
+                  type="button"
+                  title="Eliminar fotografía"
+                  aria-label="Eliminar fotografía"
+                  onClick={() => quitarFoto(i)}
+                >
+                  ×
+                </button>
+              </div>
             </div>
           ))}
         </div>
 
-        {nuevas.length > 0 && (
+        {fotos.length > 0 && (
           <p className="adm-msg">
-            {nuevas.length} foto(s) nueva(s) por subir.
+            {fotos.length} fotografía(s) en la lista.
           </p>
         )}
 
@@ -483,45 +595,86 @@ async function cambiarExhibicion(a: Auto) {
   <p className="sub">No encontramos autos con esos criterios.</p>
 )}
       {autosFiltrados.map((a) => (
-        <div className="adm-item" key={a.id}>
-          {a.fotos && a.fotos[0] ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={a.fotos[0]} alt="" />
-          ) : (
-            <div className="adm-sinfoto" />
-          )}
-          <div>
-            <strong>{a.marca} {a.modelo} {a.anio}</strong>
-            <div className="dat">Ref {a.codigo} · ${a.precio.toLocaleString("es-CL")}{a.ubicacion ? " · " + a.ubicacion : ""}</div>
+        <article className="adm-item adm-item-nuevo" key={a.id}>
+          <div className="adm-item-foto">
+            {a.fotos && a.fotos[0] ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={a.fotos[0]} alt={`${a.marca} ${a.modelo}`} />
+            ) : (
+              <div className="adm-sinfoto">Sin fotografía</div>
+            )}
+            <span className="adm-item-numfotos">
+              {a.fotos?.length ?? 0} fotos
+            </span>
           </div>
-          <div className="adm-acc">
+
+          <div className="adm-item-info">
+            <div className="adm-item-encabezado">
+              <span className={`adm-estado adm-estado-${a.estado}`}>
+                {ESTADOS.find((s) => s.v === a.estado)?.t ?? a.estado}
+              </span>
+              {a.en_exhibicion && (
+                <span className="adm-en-exhibicion">En exhibición</span>
+              )}
+            </div>
+
+            <h3>{a.marca} {a.modelo}</h3>
+            {a.version && <p className="adm-item-version">{a.version}</p>}
+
+            <strong className="adm-item-precio">
+              ${a.precio.toLocaleString("es-CL")}
+            </strong>
+
+            <div className="adm-item-datos">
+              <span>{a.anio}</span>
+              <span>Ref. {a.codigo}</span>
+              {a.km != null && <span>{a.km.toLocaleString("es-CL")} km</span>}
+              {a.ubicacion && <span>{a.ubicacion}</span>}
+            </div>
+          </div>
+
+          <div className="adm-acc adm-item-acciones">
             <button
-  type="button"
-  className={"btn " + (a.en_exhibicion ? "fill" : "")}
-  onClick={() => cambiarExhibicion(a)}
-  disabled={
-    !a.en_exhibicion &&
-    (
-      !["disponible", "reservado"].includes(a.estado) ||
-      autos.filter(
-        (x) => x.en_exhibicion &&
-          ["disponible", "reservado"].includes(x.estado)
-      ).length >= 8
-    )
-  }
-  title="Seleccionar o quitar de autos en exhibición"
->
-  {a.en_exhibicion ? "Quitar de exhibición" : "Agregar a exhibición"}
-</button>
-            <select value={a.estado} onChange={(e) => cambiarEstado(a, e.target.value)}>
-              {ESTADOS.map((s) => (
-                <option key={s.v} value={s.v}>{s.t}</option>
-              ))}
-            </select>
-            <button className="btn" onClick={() => editar(a)}>Editar</button>
-            <button className="btn" onClick={() => borrar(a)}>Borrar</button>
+              type="button"
+              className={"btn " + (a.en_exhibicion ? "fill" : "")}
+              onClick={() => cambiarExhibicion(a)}
+              disabled={
+                !a.en_exhibicion &&
+                (
+                  !["disponible", "reservado"].includes(a.estado) ||
+                  autos.filter(
+                    (x) => x.en_exhibicion &&
+                      ["disponible", "reservado"].includes(x.estado)
+                  ).length >= 8
+                )
+              }
+              title="Seleccionar o quitar de autos en exhibición"
+            >
+              {a.en_exhibicion ? "Quitar de exhibición" : "Agregar a exhibición"}
+            </button>
+
+            <label className="adm-item-cambiar-estado">
+              Cambiar estado
+              <select
+                value={a.estado}
+                onChange={(e) => cambiarEstado(a, e.target.value)}
+              >
+                {ESTADOS.map((s) => (
+                  <option key={s.v} value={s.v}>{s.t}</option>
+                ))}
+              </select>
+            </label>
+
+            <div className="adm-item-botones">
+              <button type="button" className="btn fill" onClick={() => editar(a)}>
+                Editar vehículo
+              </button>
+              <button type="button" className="btn" onClick={() => borrar(a)}>
+                Borrar
+              </button>
+            </div>
           </div>
-        </div>
+        </article>
       ))}
     </main>
   );

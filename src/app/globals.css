@@ -706,3 +706,283 @@ input, select, textarea { font-size: 16px; }
     font-size: 1.12rem;
   }
 }
+
+/* ===== Panel administrador: tarjetas de estado interactivas ===== */
+.adm-cuenta {
+  width: 100%;
+  color: var(--crema);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .2s ease, background .2s ease, transform .2s ease;
+}
+
+.adm-cuenta:hover {
+  border-color: var(--rojo);
+  transform: translateY(-2px);
+}
+
+.adm-cuenta.activa {
+  border: 2px solid var(--rojo);
+  background: #24130f;
+}
+
+.adm-cuenta:focus-visible {
+  outline: 3px solid var(--crema);
+  outline-offset: 3px;
+}
+
+/* ===== Organizador de fotografías del administrador ===== */
+.adm-fotos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+  gap: 14px;
+  margin: 16px 0;
+}
+
+.adm-fotos > div {
+  min-width: 0;
+  padding: 8px;
+  background: #1d1711;
+  border: 1px solid var(--bronce);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: grab;
+}
+
+.adm-fotos > div:active {
+  cursor: grabbing;
+}
+
+.adm-fotos > div.adm-foto-arrastrada {
+  opacity: .4;
+  border: 2px dashed var(--rojo);
+}
+
+.adm-fotos img {
+  width: 100%;
+  height: 110px;
+  object-fit: cover;
+  border: 0;
+  border-radius: 3px;
+}
+
+.adm-foto-posicion {
+  display: inline-block;
+  align-self: flex-start;
+  padding: 4px 8px;
+  background: #34251a;
+  color: var(--crema);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+}
+
+.adm-fotos .adm-foto-controles {
+  position: static;
+  display: flex;
+  gap: 6px;
+}
+
+.adm-fotos .adm-foto-controles button {
+  position: static;
+  flex: 1;
+  min-height: 34px;
+  background: #34251a;
+  color: var(--crema);
+  border: 1px solid var(--bronce);
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.adm-fotos .adm-foto-controles button:last-child {
+  background: var(--rojo);
+  color: white;
+  border-color: var(--rojo);
+}
+
+.adm-fotos .adm-foto-controles button:disabled {
+  opacity: .3;
+  cursor: not-allowed;
+}
+
+.adm-fotos .adm-foto-controles button:focus-visible {
+  outline: 2px solid var(--crema);
+  outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+  .adm-fotos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .adm-fotos img {
+    height: 100px;
+  }
+}
+
+/* ===== Tarjetas renovadas del inventario ===== */
+.adm-item-nuevo {
+  grid-template-columns: 190px minmax(0, 1fr) 220px;
+  gap: 18px;
+  align-items: stretch;
+  padding: 14px;
+  border-radius: 8px;
+}
+
+.adm-item-foto {
+  position: relative;
+  min-width: 0;
+  min-height: 145px;
+}
+
+.adm-item-nuevo .adm-item-foto img,
+.adm-item-nuevo .adm-item-foto .adm-sinfoto {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 145px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+.adm-item-numfotos {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, .8);
+  color: white;
+  border-radius: 4px;
+  font-size: .75rem;
+}
+
+.adm-item-info {
+  min-width: 0;
+  align-self: center;
+}
+
+.adm-item-encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 8px;
+}
+
+.adm-estado,
+.adm-en-exhibicion {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: .72rem;
+  font-weight: 700;
+  background: #34251a;
+  color: var(--crema);
+}
+
+.adm-estado-disponible {
+  background: #173c27;
+  color: #a9e6bc;
+}
+
+.adm-estado-reservado {
+  background: #493715;
+  color: #f5d48a;
+}
+
+.adm-estado-vendido {
+  background: #49201d;
+  color: #ffb0a9;
+}
+
+.adm-estado-en_preparacion {
+  background: #30323a;
+  color: #d1d4e0;
+}
+
+.adm-en-exhibicion {
+  background: #292d42;
+  color: #c4ccff;
+}
+
+.adm-item-info h3 {
+  margin: 0 0 3px;
+  font-size: 1.2rem;
+}
+
+.adm-item-version {
+  margin: 0 0 7px;
+  color: #b7aa96;
+  font-size: .88rem;
+}
+
+.adm-item-precio {
+  display: block;
+  margin: 7px 0;
+  color: var(--crema);
+  font-size: 1.35rem;
+}
+
+.adm-item-datos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  color: #b7aa96;
+  font-size: .82rem;
+}
+
+.adm-item-acciones {
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  gap: 9px;
+}
+
+.adm-item-acciones .btn {
+  width: 100%;
+}
+
+.adm-item-cambiar-estado {
+  display: grid;
+  gap: 5px;
+  color: #b7aa96;
+  font-size: .8rem;
+}
+
+.adm-item-botones {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 7px;
+}
+
+@media (max-width: 760px) {
+  .adm-item-nuevo {
+    grid-template-columns: 125px minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .adm-item-nuevo .adm-item-foto img,
+  .adm-item-nuevo .adm-item-foto .adm-sinfoto {
+    min-height: 120px;
+    height: 120px;
+  }
+
+  .adm-item-acciones {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 420px) {
+  .adm-item-nuevo {
+    grid-template-columns: 1fr;
+  }
+
+  .adm-item-nuevo .adm-item-foto img,
+  .adm-item-nuevo .adm-item-foto .adm-sinfoto {
+    height: 190px;
+  }
+}
