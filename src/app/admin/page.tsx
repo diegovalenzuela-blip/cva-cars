@@ -341,12 +341,12 @@ async function cambiarExhibicion(a: Auto) {
   }
 
   const seleccionados = autos.filter(
-    (x) => x.en_exhibicion &&
+    (x) => x.publicado && x.en_exhibicion &&
       ["disponible", "reservado"].includes(x.estado)
   ).length;
 
-  if (!a.en_exhibicion && seleccionados >= 8) {
-    setMsg("Ya tienes 8 autos en exhibición. Quita uno antes de agregar otro.");
+  if (!a.en_exhibicion && seleccionados >= 7) {
+    setMsg("Ya tienes 7 autos en exhibición. Quita uno antes de agregar otro.");
     return;
   }
 
@@ -646,7 +646,7 @@ async function cambiarExhibicion(a: Auto) {
               Vehículos que se muestran como destacados en la página pública.
             </p>
           </div>
-          <strong>{autosExhibicion.length} / 8 seleccionados</strong>
+          <strong>{autosExhibicion.length} / 7 seleccionados</strong>
         </div>
 
         {autosExhibicion.length === 0 ? (
@@ -695,7 +695,7 @@ async function cambiarExhibicion(a: Auto) {
         (a) => a.publicado && a.en_exhibicion &&
           ["disponible", "reservado"].includes(a.estado)
       ).length
-    } de 8
+    } de 7
   </p>
 </div>
 <div style={{
@@ -789,7 +789,7 @@ async function cambiarExhibicion(a: Auto) {
                     autos.filter(
                       (x) => x.publicado && x.en_exhibicion &&
                         ["disponible", "reservado"].includes(x.estado)
-                    ).length >= 8
+                    ).length >= 7
                   ))
               }
               title="Seleccionar o quitar de autos en exhibición"

@@ -60,3 +60,36 @@ export async function getAutosPublicos(): Promise<AutoPublico[]> {
     return [];
   }
 }
+
+
+export async function getAutosExhibicion(): Promise<AutoPublico[]> {
+  try {
+    const { data, error } = await supabase
+      .from("autos")
+      .select("*, automotoras!inner(slug)")
+      .eq("automotoras.slug", SLUG)
+      .eq("publicado", true)
+      .eq("en_exhibicion", true)
+      .in("estado", ["disponible", "reservado"])
+      .order("creado_en", { ascending: false });
+
+    if (error || !data) return [];
+
+    return (data as unknown as Fila[]).map((a) => ({
+      id: a.id,
+      codigo: a.codigo,
+      marca: a.marca,
+      modelo: a.modelo,
+      anio: a.anio,
+      km: a.km ?? null,
+      precio: a.precio,
+      estado: a.estado,
+      fotos: a.fotos ?? [],
+      ubicacion: a.ubicacion ?? null,
+      tipo: a.tipo ?? null,
+      destacado: a.destacado ?? false,
+    }));
+  } catch {
+    return [];
+  }
+}

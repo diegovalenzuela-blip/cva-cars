@@ -3,12 +3,12 @@ import VideosDestacados from "@/components/VideosDestacados";
 import Vitrina from "@/components/Vitrina";
 import VendeTuAuto from "@/components/VendeTuAuto";
 import DondeEstamos from "@/components/DondeEstamos";
-import { getAutosPublicos } from "@/lib/autos";
+import { getAutosExhibicion } from "@/lib/autos";
 
 export const revalidate = 60;
 
 export default async function Home() {
-  const autos = await getAutosPublicos();
+  const autos = await getAutosExhibicion();
 
   const fotosFondo = autos.flatMap((auto) =>
     auto.fotos && auto.fotos.length > 0 ? [auto.fotos[0]] : []
