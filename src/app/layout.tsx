@@ -5,18 +5,34 @@ import Menu from "@/components/Menu";
 import WhatsAppFlotante from "@/components/WhatsAppFlotante";
 import InstagramFlotante from "@/components/InstagramFlotante";
 import TikTokFlotante from "@/components/TikTokFlotante";
+import { JsonLd, automotora } from "@/lib/seo";
 
 const oswald = Oswald({ subsets: ["latin"], weight: ["500", "700"], display: "swap", variable: "--f-titulo" });
 const archivo = Archivo({ subsets: ["latin"], weight: ["400", "600"], display: "swap", variable: "--f-texto" });
 
+// Título y descripción con lo que la gente busca en Google: "autos usados Chillán",
+// "camionetas en venta Ñuble", "consignación de autos".
+const TITULO = "Autos y camionetas usados en Chillán | Chillán Vende Autos";
+const DESCRIPCION =
+  "Compra y venta de autos y camionetas usados en Chillán, región de Ñuble. Vehículos revisados, fotos reales y precio claro. Consignamos tu auto. Escríbenos por WhatsApp.";
+
 export const metadata: Metadata = {
-  title: "Chillán Vende Autos",
-  description: "Autos y camionetas en Chillán, región de Ñuble. Compra y consignación.",
+  title: TITULO,
+  description: DESCRIPCION,
+  keywords: [
+    "autos usados Chillán",
+    "camionetas usadas Chillán",
+    "venta de autos Ñuble",
+    "automotora Chillán",
+    "consignación de autos Chillán",
+    "autos en venta Chillán",
+  ],
   metadataBase: new URL("https://www.chillanvendeautos.cl"),
+  robots: { index: true, follow: true },
   // Vista previa al compartir el link por WhatsApp, Facebook, etc.
   openGraph: {
-    title: "Chillán Vende Autos",
-    description: "Autos y camionetas en Chillán, región de Ñuble. Compra y consignación.",
+    title: TITULO,
+    description: DESCRIPCION,
     url: "/",
     siteName: "Chillán Vende Autos",
     locale: "es_CL",
@@ -31,6 +47,7 @@ export default function RootLayout({
   return (
     <html lang="es" className={oswald.variable + " " + archivo.variable}>
       <body>
+        <JsonLd datos={automotora} />
         <Menu />
         {children}
         <InstagramFlotante />

@@ -98,7 +98,7 @@ export default function CatalogoCliente({ autosInicial }: { autosInicial: Auto[]
     <main className="det catalogo-fondo">
       {/* Fondo liso: sin foto detrás para que los autos resalten. */}
       <div className="catalogo-contenido">
-      <h1>Catálogo completo</h1>
+      <h1>Catálogo de autos en Chillán</h1>
       <p className="sub">
         {rango
           ? "Precios desde " + plata(rango.menor) + " hasta " + plata(rango.mayor)

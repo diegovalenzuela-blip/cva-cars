@@ -42,6 +42,7 @@ const SERVICIOS = [
 export const revalidate = 60;
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/servicios" },
   title: "Servicios | Chillán Vende Autos",
   description: "Transferencias, lavado, fotos, videos y contenido automotriz.",
 };
