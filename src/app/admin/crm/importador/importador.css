@@ -1,0 +1,60 @@
+/* ===== Importar desde WhatsApp ===== */
+.imp-pegar { display: grid; gap: 8px; margin-bottom: 22px; padding: 16px; background: var(--panel); border: 1px solid #3a2a18; }
+.imp-pegar label { font-weight: 700; }
+.imp-pegar p { margin: 0; }
+.imp-resultados { scroll-margin-top: 12px; }
+.imp-bloque { display: grid; gap: 12px; min-width: 0; padding: 14px; background: var(--panel); border: 1px solid #3a2a18; border-left: 4px solid #ffb347; }
+.imp-bloque.listo { border-left-color: #4caf73; }
+.imp-bloque.omitido { opacity: .65; border-left-color: #6b6048; }
+.imp-bloque-cab { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+.imp-bloque-cab h3 { margin: 0; overflow-wrap: anywhere; }
+.imp-bloque p { margin: 0; }
+.imp-asociar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.imp-asociar label { display: block; font-size: .9rem; font-weight: 600; }
+.imp-asociar select { margin-top: 4px; }
+.imp-check { display: flex !important; align-items: flex-start; gap: 9px; font-size: .92rem; cursor: pointer; }
+.imp-check input { flex: none; width: 20px; height: 20px; margin: 1px 0 0; accent-color: var(--rojo); }
+.imp-respaldo { padding: 8px 10px; font-size: .88rem; background: #13261a; border: 1px solid #2f7a48; color: #d9f5e2; overflow-wrap: anywhere; }
+.imp-cambios { display: grid; gap: 8px; padding: 10px; background: #1b0f0b; border: 1px solid var(--bronce); }
+.imp-cambios h4 { margin: 0; }
+.imp-seccion { min-width: 0; margin: 0; padding: 10px 0 0; border: 0; border-top: 1px solid #3a2a18; }
+.imp-seccion legend { padding: 0 8px 0 0; font: 700 .95rem var(--f-titulo), sans-serif; text-transform: uppercase; color: #c9bb88; }
+.imp-campos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.imp-campo { display: grid; align-content: start; gap: 4px; min-width: 0; padding: 8px; background: #0d0a07; border: 1px solid #2a1d10; }
+.imp-campo.duda { border-color: #ffb347; }
+.imp-campo.descartado { opacity: .55; }
+.imp-campo-cab { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+.imp-campo-cab label { font-size: .86rem; font-weight: 600; }
+.imp-campo input, .imp-campo select, .imp-campo textarea { padding: 9px 10px; }
+.imp-campo input[aria-invalid="true"] { border-color: #ff6b5e; }
+.imp-estado { flex: none; padding: 1px 6px; font-size: .7rem; border: 1px solid #5a4a2a; color: #c9bb88; }
+.imp-estado.detectado, .imp-estado.aceptado { border-color: #2f7a48; color: #9fe0b6; }
+.imp-estado.por_confirmar { border-color: #ffb347; color: #ffd28a; }
+.imp-estado.editado { border-color: #6d9eff; color: #b8d0ff; }
+.imp-estado.rechazado { border-color: #6b6048; color: #8c7f5d; }
+.imp-campo small { font-size: .77rem; overflow-wrap: anywhere; }
+.imp-ayuda { color: #c9bb88; }
+.imp-error { color: #ff8a80; }
+.imp-origen { color: #8c7f5d; font-style: italic; }
+.imp-campo-acc { display: flex; flex-wrap: wrap; gap: 6px; }
+.imp-campo .ap-b { min-height: 32px; padding: 4px 9px; font-size: .78rem; }
+.imp-alternativa { justify-self: start; }
+.imp-detalle summary { cursor: pointer; font-size: .9rem; }
+.imp-original { margin-top: 6px !important; padding: 10px; white-space: pre-wrap; overflow-wrap: anywhere; font-size: .9rem; background: #0d0a07; border: 1px solid #2a1d10; }
+.imp-original mark { background: #4a3514; color: var(--crema); }
+.imp-problemas { margin: 0; padding-left: 18px; font-size: .88rem; color: #ffd28a; }
+.imp-confirmar {
+  position: sticky; bottom: 0; z-index: 15; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+  margin-top: 16px; padding: 12px; background: rgba(12, 9, 6, .97); border-top: 2px solid var(--rojo);
+}
+.imp-confirmar p { margin: 0; }
+.imp-confirmar .btn { padding: 11px 16px; font-size: .92rem; }
+.imp-confirmar .btn:disabled { opacity: .45; cursor: not-allowed; }
+
+@media (max-width: 640px) {
+  .imp-asociar, .imp-campos { grid-template-columns: minmax(0, 1fr); }
+  .imp-confirmar { display: grid; grid-template-columns: minmax(0, 1fr) auto; padding: 8px 10px; }
+  .imp-confirmar p { font-size: .84rem; line-height: 1.25; }
+  .imp-confirmar .ap-ref { display: none; }
+  .imp-confirmar .btn { padding: 9px 10px; font-size: .78rem; }
+}

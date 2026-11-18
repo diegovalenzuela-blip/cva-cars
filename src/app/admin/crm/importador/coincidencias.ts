@@ -72,6 +72,45 @@ function decidir(candidatos: Candidato[]): Propuesta {
   return { candidatos, sugerido: null, ambiguo: candidatos.length > 1 };
 }
 
+/** Compara lo revisado con los registros elegidos, sin modificar nada. */
+export function calcularCambios(
+  b: { campos: { entidad: EntidadCampo; campo: string; valor: string | null }[] },
+  base: BaseCRM,
+  clienteId: string | null,
+  vehiculoId: string | null
+) {
+  const dato = (entidad: EntidadCampo, campo: string) =>
+    b.campos.find((c) => c.entidad === entidad && c.campo === campo)?.valor ?? null;
+  const cambios: CambioPropuesto[] = [];
+  const comparar = (entidad: EntidadCampo, id: string, campo: string, actual: unknown) => {
+    const nuevo = dato(entidad, campo);
+    if (nuevo === null) return;
+    const de = actual === null || actual === undefined ? null : String(actual);
+    if (de !== nuevo) cambios.push({ entidad, id, campo, de, a: nuevo });
+  };
+  const cliente = base.clientes.find((c) => c.id === clienteId);
+  if (cliente) {
+    comparar("cliente", cliente.id, "rut", cliente.rut);
+    comparar("cliente", cliente.id, "telefono", cliente.telefono);
+    comparar("cliente", cliente.id, "email", cliente.email);
+    const nombre = dato("cliente", "nombre");
+    if (nombre && nombre.split(" ").length > cliente.nombre.split(" ").length) {
+      comparar("cliente", cliente.id, "nombre", cliente.nombre);
+    }
+  }
+  const vehiculo = base.vehiculos.find((v) => v.id === vehiculoId);
+  if (vehiculo) {
+    for (const campo of ["marca", "modelo", "version", "anio", "km"] as const) comparar("vehiculo", vehiculo.id, campo, vehiculo[campo]);
+    const vigente = base.consignaciones.find((c) => c.vehiculo_id === vehiculo.id && ["por_confirmar", "activa"].includes(c.estado));
+    if (vigente) {
+      for (const campo of ["precio_solicitado", "precio_minimo", "comision_tipo", "comision_valor"] as const) {
+        comparar("consignacion", vigente.id, campo, vigente[campo]);
+      }
+    }
+  }
+  return cambios;
+}
+
 export function buscarCoincidencias(b: BloqueExtraido, base: BaseCRM): ResultadoCoincidencia {
   const dato = (entidad: EntidadCampo, campo: string) =>
     b.campos.find((c) => c.entidad === entidad && c.campo === campo)?.valor ?? null;
@@ -157,31 +196,8 @@ export function buscarCoincidencias(b: BloqueExtraido, base: BaseCRM): Resultado
     ? base.consignaciones.find((c) => c.vehiculo_id === fila.id && ["por_confirmar", "activa"].includes(c.estado)) ?? null
     : null;
 
-  const cambios: CambioPropuesto[] = [];
-  const comparar = (entidad: EntidadCampo, id: string, campo: string, actual: unknown) => {
-    const nuevo = dato(entidad, campo);
-    if (nuevo === null) return;
-    const de = actual === null || actual === undefined ? null : String(actual);
-    if (de !== nuevo) cambios.push({ entidad, id, campo, de, a: nuevo });
-  };
-  const clienteFila = base.clientes.find((c) => c.id === (cliente.sugerido ?? (clientes.length === 1 ? clientes[0].id : "")));
-  if (clienteFila && !propietarioDistinto) {
-    comparar("cliente", clienteFila.id, "rut", clienteFila.rut);
-    comparar("cliente", clienteFila.id, "telefono", clienteFila.telefono);
-    comparar("cliente", clienteFila.id, "email", clienteFila.email);
-    const nuevoNombre = dato("cliente", "nombre");
-    if (nuevoNombre && nuevoNombre.split(" ").length > clienteFila.nombre.split(" ").length) {
-      comparar("cliente", clienteFila.id, "nombre", clienteFila.nombre);
-    }
-  }
-  if (fila) {
-    for (const campo of ["marca", "modelo", "version", "anio", "km"] as const) comparar("vehiculo", fila.id, campo, fila[campo]);
-  }
-  if (vigente) {
-    for (const campo of ["precio_solicitado", "precio_minimo", "comision_tipo", "comision_valor"] as const) {
-      comparar("consignacion", vigente.id, campo, vigente[campo]);
-    }
-  }
+  const clienteId = propietarioDistinto ? null : cliente.sugerido ?? (clientes.length === 1 ? clientes[0].id : null);
+  const cambios = calcularCambios(b, base, clienteId, fila?.id ?? null);
 
   return { cliente, vehiculo, consignacion: vigente?.id ?? null, propietario_distinto: propietarioDistinto, cambios, avisos };
 }

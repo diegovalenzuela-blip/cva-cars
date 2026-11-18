@@ -3,6 +3,7 @@ import { test } from "node:test";
 import { buscarCoincidencias } from "./coincidencias.ts";
 import { extraerMensajes, separarMensajes } from "./extractor.ts";
 import { interpretarDinero, normalizarRut, rutValido } from "./reconocer.ts";
+import { cambiosDe, crearRevision, problemasBloque, validarValor, valorDe } from "./revision.ts";
 
 const HOY = new Date(2026, 10, 18);
 const extraer = (t) => extraerMensajes(t, HOY).bloques;
@@ -296,4 +297,64 @@ test("avisa si el vehículo existe con otro propietario", () => {
   assert.equal(r.vehiculo.sugerido, "v1");
   assert.equal(r.propietario_distinto, true);
   assert.equal(r.cliente.sugerido, null);
+});
+
+const revisar = (texto, base = BASE) => crearRevision(extraerMensajes(texto, HOY), base);
+const decidirTodo = (b) => ({ ...b, campos: b.campos.map((c) => ({ ...c, decision: c.valor && c.estado === "por_confirmar" ? "aceptado" : c.decision })) });
+
+test("revisión: un contacto nuevo completo queda listo solo tras revisar dudas", () => {
+  const vacia = { clientes: [], vehiculos: [], consignaciones: [] };
+  const { bloques: [b] } = revisar("Toyota Hilux 2021 LPKD45 de Juan Pérez, teléfono 912345678, precio 18 millones, Chillán", vacia);
+  assert.equal(b.cliente.modo, "crear");
+  assert.equal(b.vehiculo.modo, "crear");
+  assert.deepEqual(problemasBloque(b, vacia), ["Revisa 1 dato por confirmar."]);
+  assert.deepEqual(problemasBloque(decidirTodo(b), vacia), []);
+});
+
+test("revisión: sin patente ni dueño confirmado no se puede guardar", () => {
+  const vacia = { clientes: [], vehiculos: [], consignaciones: [] };
+  const { bloques: [b] } = revisar("Corolla 2018 Juan Pérez teléfono 912345678", vacia);
+  const p = problemasBloque(decidirTodo(b), vacia);
+  assert.ok(p.includes("Falta la patente."));
+  assert.ok(p.includes("Confirma quién es el propietario."));
+});
+
+test("revisión: dos mensajes del mismo auto se fusionan sin duplicar", () => {
+  const vacia = { clientes: [], vehiculos: [], consignaciones: [] };
+  const r = revisar("Hilux LPKD45 de Juan Pérez teléfono 912345678 precio 18 millones\n\nLa Hilux de Juan quedó en 17.500.000", vacia);
+  assert.equal(r.bloques.length, 1);
+  assert.equal(r.fusionados, 1);
+  const c = r.bloques[0].campos.find((x) => x.campo === "precio_solicitado");
+  assert.equal(c.valor, "17500000");
+  assert.equal(c.estado, "por_confirmar");
+  assert.equal(c.alternativas[0].valor, "18000000");
+});
+
+test("revisión: muestra cambios y exige confirmar otro propietario", () => {
+  const { bloques: [b] } = revisar("Hilux LPKD45 de Ana Díaz teléfono 922222222 precio 17 millones");
+  assert.equal(b.vehiculo.id, "v1");
+  assert.equal(b.cliente.modo, null);
+  const elegido = decidirTodo({ ...b, cliente: { modo: "usar", id: "c3", bloque: null } });
+  assert.ok(problemasBloque(elegido, BASE).some((p) => p.includes("cambio de propietario")));
+  const conConfirmacion = { ...elegido, cambiar_propietario: true, propietario_confirmado: true };
+  assert.deepEqual(problemasBloque(conConfirmacion, BASE), []);
+  assert.equal(cambiosDe(conConfirmacion, BASE).find((c) => c.campo === "precio_solicitado").a, "17000000");
+  assert.equal(valorDe(b, "vehiculo", "patente"), "LPKD45");
+});
+
+test("revisión: valida y normaliza lo editado", () => {
+  assert.deepEqual(validarValor({ entidad: "vehiculo", campo: "patente" }, "lp kd 45"), { valor: "LPKD45" });
+  assert.equal(validarValor({ entidad: "cliente", campo: "rut" }, "12.345.678-9").error, "RUT no válido.");
+  assert.deepEqual(validarValor({ entidad: "cliente", campo: "telefono" }, "9 1234 5678"), { valor: "+56912345678" });
+  assert.deepEqual(validarValor({ entidad: "consignacion", campo: "precio_solicitado" }, "$17.500.000"), { valor: "17500000" });
+});
+
+test("revisión: una actualización simple solo pide confirmar el cambio", () => {
+  const base = { ...BASE, clientes: [BASE.clientes[0]], vehiculos: [BASE.vehiculos[0]] };
+  const { bloques: [b] } = revisar("La Hilux de Juan finalmente quedó en 17.500.000", base);
+  assert.equal(b.cliente.id, "c1");
+  assert.equal(b.vehiculo.id, "v1");
+  assert.deepEqual(problemasBloque(b, base), []);
+  assert.deepEqual(b.cambios_aceptados, []);
+  assert.equal(cambiosDe(b, base)[0].campo, "precio_solicitado");
 });

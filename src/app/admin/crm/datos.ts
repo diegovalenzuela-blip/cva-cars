@@ -14,6 +14,8 @@ import type {
   TipoActividad,
 } from "./tipos";
 
+import type { BaseCRM, ClienteBase, ConsignacionBase, VehiculoBase } from "./importador/coincidencias";
+
 const POR_PAGINA = 1000;
 
 export class ErrorCRM extends Error {
@@ -87,6 +89,15 @@ export async function cargarCRM(automotoraId: string) {
     todas<Oportunidad>("crm_oportunidades", automotoraId),
   ]);
   return { clientes, oportunidades };
+}
+
+export async function cargarBaseImportacion(automotoraId: string): Promise<BaseCRM> {
+  const [clientes, vehiculos, consignaciones] = await Promise.all([
+    todas<ClienteBase>("crm_clientes", automotoraId),
+    todas<VehiculoBase>("crm_vehiculos", automotoraId),
+    todas<ConsignacionBase>("crm_consignaciones", automotoraId),
+  ]);
+  return { clientes, vehiculos, consignaciones };
 }
 
 export async function crearCliente(automotoraId: string, datos: DatosCliente) {
