@@ -2,11 +2,12 @@
 
 import "./admin.css";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import AccesoAdmin from "./AccesoAdmin";
 import AutocompletarTexto from "./AutocompletarTexto";
+import { esHeic, esImagenAdmitida, puedeAbrirse } from "./fotos";
 
 type FotoAdmin = {
   id: string;
@@ -108,6 +109,9 @@ const enVitrina = (a: Auto) =>
   a.catalogo !== "trabajo" && a.publicado && a.en_exhibicion && ["disponible", "reservado"].includes(a.estado);
 const visiblePublico = (a: Auto) => a.publicado && ["disponible", "reservado"].includes(a.estado);
 
+const rutaFoto = (automotoraId: string) =>
+  automotoraId + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + ".webp";
+
 async function reducir(file: File): Promise<Blob> {
   const bmp = await createImageBitmap(file, { imageOrientation: "from-image" });
   try {
@@ -159,6 +163,10 @@ export default function Admin() {
   const [progreso, setProgreso] = useState("");
   const [aviso, setAviso] = useState<{ texto: string; error: boolean } | null>(null);
   const [inputKey, setInputKey] = useState(0);
+  const [claveAutocompletar, setClaveAutocompletar] = useState(0);
+  const [preparandoFotos, setPreparandoFotos] = useState("");
+  const [avisoFotos, setAvisoFotos] = useState("");
+  const tandaFotos = useRef(0);
   const [suscriptores, setSuscriptores] = useState<Suscriptor[]>([]);
   const [busquedaSus, setBusquedaSus] = useState("");
   const [errorSus, setErrorSus] = useState("");
@@ -228,7 +236,15 @@ export default function Admin() {
     ) => setForm({ ...form, [k]: e.target.value });
   }
 
+  function reiniciarAyudas() {
+    tandaFotos.current += 1;
+    setPreparandoFotos("");
+    setAvisoFotos("");
+    setClaveAutocompletar((k) => k + 1);
+  }
+
   function limpiar() {
+    reiniciarAyudas();
     setForm(VACIO);
     setPublicadoForm(true);
     setEditId(null);
@@ -264,6 +280,7 @@ export default function Admin() {
   }
 
   function editar(a: Auto) {
+    reiniciarAyudas();
     setEditId(a.id);
     setPublicadoForm(a.publicado);
     setForm(aFormulario(a));
@@ -300,18 +317,34 @@ export default function Admin() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function agregarArchivos(lista: FileList | File[] | null) {
-    const archivos = Array.from(lista ?? []).filter((f) => f.type.startsWith("image/"));
-    if (!archivos.length) return;
-    setFotos((actual) => [
-      ...actual,
-      ...archivos.map((file) => ({
-        id: `${Date.now()}-${Math.random()}`,
-        file,
-        preview: URL.createObjectURL(file),
-      })),
-    ]);
+  async function agregarArchivos(lista: FileList | File[] | null) {
+    const elegidos = Array.from(lista ?? []);
+    const archivos = elegidos.filter(esImagenAdmitida);
+    const tanda = ++tandaFotos.current;
+    let heic = 0;
+    let otras = elegidos.length - archivos.length;
     setInputKey((k) => k + 1);
+    setAvisoFotos("");
+    // Se revisan de a una: así una foto incompatible no queda en blanco ni falla al guardar.
+    for (const [i, file] of archivos.entries()) {
+      setPreparandoFotos(`Revisando foto ${i + 1} de ${archivos.length}…`);
+      const sirve = await puedeAbrirse(file);
+      if (tanda !== tandaFotos.current) return;
+      if (sirve) {
+        setFotos((actual) => [...actual, {
+          id: `${Date.now()}-${Math.random()}`,
+          file,
+          preview: URL.createObjectURL(file),
+        }]);
+      } else if (esHeic(file)) heic += 1;
+      else otras += 1;
+    }
+    setPreparandoFotos("");
+    const avisos = [
+      heic ? `${heic === 1 ? "1 foto HEIC no se agregó" : `${heic} fotos HEIC no se agregaron`}: este navegador no puede abrir ese formato. Conviértelas a JPG e inténtalo de nuevo.` : "",
+      otras ? `${otras === 1 ? "1 archivo no se agregó" : `${otras} archivos no se agregaron`} porque no se pudo abrir como foto.` : "",
+    ].filter(Boolean).join(" ");
+    setAvisoFotos(avisos);
   }
 
   function moverFoto(indice: number, direccion: -1 | 1) {
@@ -371,6 +404,11 @@ export default function Admin() {
       submitter?.dataset.publicado === "false" ? false :
       publicadoForm;
 
+    if (preparandoFotos) {
+      avisar("Espera a que terminen de revisarse las fotos.", true);
+      return;
+    }
+
     if (publicar && faltan.length) {
       avisar("Para publicar falta: " + faltan.join(", ") + ".", true);
       return;
@@ -390,8 +428,7 @@ export default function Admin() {
         subidas += 1;
         setProgreso("Subiendo foto " + subidas + " de " + nuevas + "…");
         const blob = await reducir(foto.file);
-        const ruta =
-          automotoraId + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + ".webp";
+        const ruta = rutaFoto(automotoraId);
         const { error } = await supabase.storage
           .from("autos")
           .upload(ruta, blob, { contentType: "image/webp" });
@@ -841,7 +878,7 @@ export default function Admin() {
           </div>
 
           <AutocompletarTexto
-            key={inputKey}
+            key={claveAutocompletar}
             formulario={form}
             valoresIniciales={editId ? {} : { tipo: VACIO.tipo, ubicacion: VACIO.ubicacion }}
             aplicar={(cambios) => setForm((actual) => ({ ...actual, ...cambios }))}
@@ -885,13 +922,14 @@ export default function Admin() {
               <input
                 key={inputKey}
                 type="file"
-                accept="image/*"
+                accept="image/*,.heic,.heif"
                 multiple
                 onChange={(e) => agregarArchivos(e.target.files)}
               />
               <strong>Arrastra las fotos aquí o toca para elegirlas</strong>
-              <span>Puedes elegir varias a la vez. Se achican solas antes de subir.</span>
+              <span>{preparandoFotos || "Puedes elegir varias a la vez. Se achican solas antes de subir."}</span>
             </label>
+            {avisoFotos && <p className="adm-msg" role="alert">{avisoFotos}</p>}
 
             {fotos.length > 0 && (
               <>
