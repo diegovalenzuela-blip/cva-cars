@@ -33,8 +33,9 @@ export default async function Home() {
   return (
     <>
       <Portada fotos={fotosPortada} />
-      <VideosDestacados fotosFondo={fotosFondo} />
+      {/* Los autos primero: es lo que viene a ver el comprador. */}
       <Vitrina autos={autos} cargando={false} />
+      <VideosDestacados />
       <VendeTuAuto fotosFondo={fotosFondo} />
       <DondeEstamos banner={fotosFondo[2] ?? fotosFondo[0] ?? ""} />
 

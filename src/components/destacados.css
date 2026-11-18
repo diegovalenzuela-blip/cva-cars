@@ -14,7 +14,7 @@
 .por-halo { position: absolute; inset: 6%; border-radius: 50%; background: radial-gradient(circle, rgba(200, 55, 45, .6), transparent 65%); filter: blur(30px); }
 .por-logo-mov { position: relative; mix-blend-mode: screen; transform: translate(calc(var(--mx, 0) * 14px), calc(var(--my, 0) * 14px)); transition: transform .25s ease-out; }
 .por-img { width: 100%; height: auto; display: block; }
-@media (max-width: 760px) { .por-logo { order: -1; max-width: min(340px, 86vw); } }
+@media (max-width: 760px) { .por-logo { order: -1; max-width: min(220px, 60vw); } }
 
 /* ===== Videos ===== */
 .vid-sec { position: relative; overflow: hidden; padding: 72px 0 84px; background: #000; }
