@@ -1,0 +1,54 @@
+/* ===== Ventana de suscripción ===== */
+.sus-fondo {
+  position: fixed; inset: 0; z-index: 90;
+  display: grid; place-items: center; padding: 16px;
+  background: rgba(0, 0, 0, .72);
+  animation: susFondo .25s ease both;
+}
+.sus {
+  position: relative; width: min(440px, 100%); max-height: calc(100dvh - 32px); overflow: auto;
+  background: radial-gradient(ellipse at 30% 0%, rgba(200, 55, 45, .28), transparent 60%), var(--panel);
+  border: 1px solid var(--bronce); border-top: 4px solid var(--rojo);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .7), 0 0 40px rgba(200, 55, 45, .2);
+  padding: 30px 26px 22px;
+  animation: susEntra .35s cubic-bezier(.2, .8, .2, 1) both;
+}
+.sus h2 { font-size: clamp(1.6rem, 6vw, 2.1rem); margin: 6px 0 8px; }
+.sus-etiqueta {
+  display: inline-block; width: fit-content; max-width: calc(100% - 48px); padding: 3px 10px; background: var(--rojo); color: #fff;
+  font: 700 .78rem var(--f-titulo), sans-serif; text-transform: uppercase; letter-spacing: .06em;
+}
+.sus-texto { margin: 0 0 16px; color: #e8dba5; font-size: .98rem; }
+.sus label { display: block; margin-bottom: 12px; font-size: .9rem; color: #c9bb88; }
+.sus input[type="email"], .sus input[type="tel"] {
+  display: block; width: 100%; margin-top: 4px; padding: 12px 14px;
+  background: #0b0906; color: var(--crema); border: 1px solid var(--bronce); font: inherit; font-size: 1rem;
+}
+.sus input:focus-visible { outline: 2px solid var(--rojo); outline-offset: 1px; }
+.sus .sus-acepta { display: flex; gap: 10px; align-items: flex-start; font-size: .82rem; line-height: 1.4; }
+.sus .sus-acepta input { margin-top: 2px; accent-color: var(--rojo); width: 18px; height: 18px; flex: none; }
+.sus-enviar { width: 100%; margin-top: 4px; }
+.sus-ahora-no {
+  display: block; margin: 10px auto 0; background: none; border: 0; color: #c9bb88;
+  font: inherit; font-size: .9rem; text-decoration: underline; cursor: pointer;
+}
+.sus-x {
+  position: absolute; top: 8px; right: 10px; width: 40px; height: 40px;
+  background: none; border: 0; color: var(--crema); font-size: 1.8rem; line-height: 1; cursor: pointer;
+}
+.sus-error { margin: 0 0 10px; color: #ff8a80; font-size: .9rem; }
+.sus-trampa { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.sus-listo { text-align: center; padding: 10px 0 4px; }
+.sus-listo p { color: #e8dba5; }
+.sus-check {
+  display: inline-grid; place-items: center; width: 64px; height: 64px; border-radius: 50%;
+  background: var(--rojo); color: #fff; font-size: 2rem; margin-bottom: 8px;
+}
+@keyframes susFondo { from { opacity: 0; } }
+@keyframes susEntra { from { opacity: 0; transform: translateY(24px) scale(.97); } }
+@media (prefers-reduced-motion: reduce) { .sus-fondo, .sus { animation: none; } }
+/* Teléfono: sale desde abajo, como una hoja */
+@media (max-width: 560px) {
+  .sus-fondo { place-items: end center; padding: 0; }
+  .sus { width: 100%; border-left: 0; border-right: 0; border-bottom: 0; padding: 26px 18px 18px; max-height: 92dvh; }
+}
