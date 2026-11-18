@@ -2,6 +2,7 @@
 
 import type { FotoFondo } from "@/lib/useAutosFondo";
 import { useRotacion } from "@/lib/useRotacion";
+import { fondo } from "@/lib/foto";
 
 export default function FondoPortada({
   fotos,
@@ -11,10 +12,8 @@ export default function FondoPortada({
   intervalo?: number;
 }) {
   const n = fotos.length;
-  const { ref, indice: actual } = useRotacion<HTMLDivElement>(
-    fotos.map((f) => f.url),
-    intervalo
-  );
+  const urls = fotos.map((f) => fondo(f.url));
+  const { ref, indice: actual } = useRotacion<HTMLDivElement>(urls, intervalo);
 
   if (n === 0) return null;
 
@@ -28,7 +27,7 @@ export default function FondoPortada({
           // eslint-disable-next-line @next/next/no-img-element
           <img
             key={f.url + k}
-            src={f.url}
+            src={urls[k]}
             alt=""
             decoding="async"
             fetchPriority={k === 0 ? "high" : "auto"}

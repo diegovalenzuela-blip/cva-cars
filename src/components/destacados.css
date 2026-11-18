@@ -1,6 +1,6 @@
 /* ===== Aparecer al bajar ===== */
 @media (prefers-reduced-motion: no-preference) {
-  .apa { opacity: 0; transform: translateY(30px); transition: opacity .7s ease, transform .7s cubic-bezier(.2, .7, .2, 1); }
+  .apa { opacity: 0; transform: translateY(16px); transition: opacity .45s ease, transform .45s cubic-bezier(.2, .7, .2, 1); }
   .apa.in { opacity: 1; transform: none; }
 }
 
@@ -133,10 +133,12 @@
 
 /* ===== Movimiento (se apaga con "Reducir movimiento") ===== */
 @media (prefers-reduced-motion: no-preference) {
-  @keyframes porPalabra { from { opacity: 0; transform: translateY(.7em) rotate(2deg); } to { opacity: 1; transform: none; } }
-  @keyframes porSube { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+  /* La portada entra con movimiento pero visible desde el primer instante:
+     partir en opacity 0 dejaba la pantalla en negro casi un segundo. */
+  @keyframes porPalabra { from { opacity: .35; transform: translateY(.35em) rotate(1deg); } to { opacity: 1; transform: none; } }
+  @keyframes porSube { from { opacity: .35; transform: translateY(12px); } to { opacity: 1; transform: none; } }
   @keyframes porLinea { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-  @keyframes porLogo { from { opacity: 0; transform: scale(.9) translateY(24px); } to { opacity: 1; transform: none; } }
+  @keyframes porLogo { from { transform: scale(.96) translateY(10px); } to { transform: none; } }
   @keyframes porFlota { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-12px) rotate(.6deg); } }
   @keyframes porHalo { from { opacity: .45; transform: scale(.94); } to { opacity: .95; transform: scale(1.1); } }
   @keyframes porResp { from { transform: translateX(-4%); opacity: .6; } to { transform: translateX(4%); opacity: 1; } }
@@ -151,12 +153,12 @@
   @keyframes vitCinta { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(8px); } }
 
   .por::before { animation: porResp 9s ease-in-out infinite alternate; }
-  .por .pal { animation: porPalabra .75s both cubic-bezier(.2, .8, .2, 1); }
-  .por .pal.rojo { animation: porPalabra .75s both cubic-bezier(.2, .8, .2, 1), porBrilla 2.8s 1.6s ease-in-out infinite alternate; }
-  .por-linea { animation: porLinea .9s .95s both ease-out; }
-  .por .por-texto p { animation: porSube .8s .8s both ease-out; }
-  .por .acc { animation: porSube .8s 1s both ease-out; }
-  .por-logo { animation: porLogo 1s .25s both ease-out; }
+  .por .pal { animation: porPalabra .6s both cubic-bezier(.2, .8, .2, 1); }
+  .por .pal.rojo { animation: porPalabra .6s both cubic-bezier(.2, .8, .2, 1), porBrilla 2.8s 1.6s ease-in-out infinite alternate; }
+  .por-linea { animation: porLinea .7s .5s both ease-out; }
+  .por .por-texto p { animation: porSube .6s .3s both ease-out; }
+  .por .acc { animation: porSube .6s .4s both ease-out; }
+  .por-logo { animation: porLogo .8s both ease-out; }
   .por-img { animation: porFlota 6s 1.4s ease-in-out infinite; }
   .por-halo { animation: porHalo 4.5s ease-in-out infinite alternate; }
   .por .btn.fill, .vit-mas .btn.fill { position: relative; overflow: hidden; }
@@ -200,7 +202,7 @@
   .vit-estrella-foto img,
   .vit-precio,
   .vit-cinta { animation-iteration-count: 1; animation-name: none; }
-  .por .pal.rojo { animation: porPalabra .75s both cubic-bezier(.2, .8, .2, 1); }
+  .por .pal.rojo { animation: porPalabra .6s both cubic-bezier(.2, .8, .2, 1); }
   .por-halo { filter: none; }
   .por .btn.fill::after,
   .vit-mas .btn.fill::after,

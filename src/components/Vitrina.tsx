@@ -5,6 +5,7 @@ import Link from "next/link";
 import { wa } from "@/lib/datos";
 import { useRotacion } from "@/lib/useRotacion";
 import Aparece from "./Aparece";
+import { foto as fotoOpt, fondo } from "@/lib/foto";
 
 export type AutoVitrina = {
   id: string;
@@ -39,7 +40,7 @@ export default function Vitrina({
 }) {
   const fotosFondo = autos
     .filter((auto) => auto.fotos && auto.fotos.length > 0)
-    .map((auto) => auto.fotos[0])
+    .map((auto) => fondo(auto.fotos[0]))
     .slice(0, 5);
 
   const { ref: refFondo, indice: fotoIndex } = useRotacion<HTMLDivElement>(fotosFondo);
@@ -89,7 +90,11 @@ export default function Vitrina({
               >
                 {fotoEstrella ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={fotoEstrella} alt={estrella.marca + " " + estrella.modelo} decoding="async" />
+                  <img
+                    {...fotoOpt(fotoEstrella, "(max-width: 760px) 92vw, 560px")}
+                    alt={estrella.marca + " " + estrella.modelo}
+                    decoding="async"
+                  />
                 ) : (
                   <div className="foto">Foto próximamente</div>
                 )}
@@ -136,7 +141,12 @@ export default function Vitrina({
                   <Link href={"/autos/" + x.codigo} className="vit-foto" aria-label={"Ver " + x.marca + " " + x.modelo}>
                     {foto ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={foto} alt={x.marca + " " + x.modelo} loading="lazy" decoding="async" />
+                      <img
+                        {...fotoOpt(foto, "(max-width: 760px) 92vw, (max-width: 1100px) 46vw, 360px")}
+                        alt={x.marca + " " + x.modelo}
+                        loading="lazy"
+                        decoding="async"
+                      />
                     ) : (
                       <div className="foto">Foto próximamente</div>
                     )}

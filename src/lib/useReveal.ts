@@ -23,7 +23,9 @@ export function useReveal<T extends HTMLElement>() {
           io.disconnect();
         }
       },
-      { threshold: 0.15 }
+      // Aparece apenas asoma (y un poco antes): con un % del elemento, las secciones
+      // altas quedaban en blanco media pantalla al bajar rápido.
+      { threshold: 0, rootMargin: "0px 0px 10% 0px" }
     );
     io.observe(el);
     return () => io.disconnect();
