@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import Aparece from "@/components/Aparece";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { wa } from "@/lib/datos";
+import { useRotacion } from "@/lib/useRotacion";
 
 type Auto = {
   id: string;
@@ -39,24 +40,11 @@ export default function CatalogoCliente({ autosInicial }: { autosInicial: Auto[]
   const fotosFondo = useMemo(
     () => autos
       .filter((auto) => auto.fotos && auto.fotos.length > 0)
-      .map((auto) => auto.fotos[0]),
+      .map((auto) => auto.fotos[0])
+      .slice(0, 5),
     [autos]
   );
-  const [fotoFondoIndex, setFotoFondoIndex] = useState(0);
-
-  useEffect(() => {
-    if (fotoFondoIndex >= fotosFondo.length) {
-      setFotoFondoIndex(0);
-    }
-  }, [fotoFondoIndex, fotosFondo.length]);
-
-  useEffect(() => {
-    if (fotosFondo.length < 2) return;
-    const intervalo = window.setInterval(() => {
-      setFotoFondoIndex((actual) => (actual + 1) % fotosFondo.length);
-    }, 5000);
-    return () => window.clearInterval(intervalo);
-  }, [fotosFondo.length]);
+  const { ref: refFondo, indice: fotoFondoIndex } = useRotacion<HTMLDivElement>(fotosFondo);
 
   const marcas = useMemo(
     () => Array.from(new Set(autos.map((a) => a.marca))).sort(),
@@ -114,7 +102,7 @@ export default function CatalogoCliente({ autosInicial }: { autosInicial: Auto[]
   return (
     <main className="det catalogo-fondo">
       {autos.some((auto) => auto.fotos && auto.fotos.length > 0) && (
-        <div className="catalogo-fondo-capa" aria-hidden="true">
+        <div className="catalogo-fondo-capa" aria-hidden="true" ref={refFondo}>
           <div
             key={fotoFondoIndex}
             className="catalogo-fondo-foto"

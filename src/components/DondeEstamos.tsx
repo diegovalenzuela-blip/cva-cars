@@ -3,7 +3,6 @@
 import "./secciones.css";
 import type { CSSProperties, ReactNode } from "react";
 import { DIRECCION, HORARIO, INSTAGRAM, FACEBOOK, TIKTOK, wa } from "@/lib/datos";
-import { useFotos } from "@/lib/useFotos";
 import { useReveal } from "@/lib/useReveal";
 
 const retraso = (ms: number): CSSProperties => ({ transitionDelay: ms + "ms" });
@@ -16,9 +15,7 @@ function Icono({ children }: { children: ReactNode }) {
   );
 }
 
-export default function DondeEstamos() {
-  const fotos = useFotos();
-  const banner = fotos[2] ?? fotos[0] ?? "";
+export default function DondeEstamos({ banner = "" }: { banner?: string }) {
   const { ref, visto } = useReveal<HTMLElement>();
 
   const mapa = "https://www.google.com/maps?q=" + encodeURIComponent(DIRECCION) + "&output=embed";

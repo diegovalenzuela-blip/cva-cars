@@ -2,8 +2,8 @@
 
 import "./destacados.css";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { wa } from "@/lib/datos";
+import { useRotacion } from "@/lib/useRotacion";
 import Aparece from "./Aparece";
 
 export type AutoVitrina = {
@@ -39,19 +39,10 @@ export default function Vitrina({
 }) {
   const fotosFondo = autos
     .filter((auto) => auto.fotos && auto.fotos.length > 0)
-    .map((auto) => auto.fotos[0]);
+    .map((auto) => auto.fotos[0])
+    .slice(0, 5);
 
-  const [fotoIndex, setFotoIndex] = useState(0);
-
-  useEffect(() => {
-    if (fotosFondo.length < 2) return;
-
-    const intervalo = window.setInterval(() => {
-      setFotoIndex((actual) => (actual + 1) % fotosFondo.length);
-    }, 5000);
-
-    return () => window.clearInterval(intervalo);
-  }, [fotosFondo.length]);
+  const { ref: refFondo, indice: fotoIndex } = useRotacion<HTMLDivElement>(fotosFondo);
 
   const ordenados = [...autos].sort(
     (a, b) => Number(!!b.destacado) - Number(!!a.destacado)
@@ -72,7 +63,7 @@ export default function Vitrina({
   return (
     <section id="autos" className="vit">
       {fotosFondo.length > 0 && (
-        <div className="vit-fondo" aria-hidden="true">
+        <div className="vit-fondo" aria-hidden="true" ref={refFondo}>
           <div
             key={fotoIndex}
             className="vit-fondo-foto"
@@ -98,7 +89,7 @@ export default function Vitrina({
               >
                 {fotoEstrella ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={fotoEstrella} alt={estrella.marca + " " + estrella.modelo} />
+                  <img src={fotoEstrella} alt={estrella.marca + " " + estrella.modelo} decoding="async" />
                 ) : (
                   <div className="foto">Foto próximamente</div>
                 )}
@@ -145,7 +136,7 @@ export default function Vitrina({
                   <Link href={"/autos/" + x.codigo} className="vit-foto" aria-label={"Ver " + x.marca + " " + x.modelo}>
                     {foto ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={foto} alt={x.marca + " " + x.modelo} loading="lazy" />
+                      <img src={foto} alt={x.marca + " " + x.modelo} loading="lazy" decoding="async" />
                     ) : (
                       <div className="foto">Foto próximamente</div>
                     )}

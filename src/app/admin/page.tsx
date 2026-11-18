@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
@@ -145,6 +146,7 @@ const [filtroEstado, setFiltroEstado] = useState("todos");
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- carga inicial del panel al iniciar sesión
     if (sesion) cargar();
   }, [sesion, cargar]);
 
@@ -446,7 +448,7 @@ async function cambiarExhibicion(a: Auto) {
       <div className="adm-top">
         <h1>Panel de autos</h1>
         <div className="acc">
-          <a className="btn" href="/">Ver la página</a>
+          <Link className="btn" href="/">Ver la página</Link>
           <button className="btn" onClick={() => supabase.auth.signOut()}>Salir</button>
         </div>
       </div>
