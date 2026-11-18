@@ -4,8 +4,7 @@ import Link from "next/link";
 import Aparece from "@/components/Aparece";
 import { useMemo, useState } from "react";
 import { wa } from "@/lib/datos";
-import { useRotacion } from "@/lib/useRotacion";
-import { fondoCss, imgSrc, imgSrcSet } from "@/lib/img";
+import { imgSrc, imgSrcSet } from "@/lib/img";
 
 type Auto = {
   id: string;
@@ -40,14 +39,6 @@ export default function CatalogoCliente({ autosInicial }: { autosInicial: Auto[]
   const [orden, setOrden] = useState("recientes");
   // En el teléfono los filtros van plegados para que los autos se vean de inmediato.
   const [verFiltros, setVerFiltros] = useState(false);
-  const fotosFondo = useMemo(
-    () => autos
-      .filter((auto) => auto.fotos && auto.fotos.length > 0)
-      .map((auto) => auto.fotos[0])
-      .slice(0, 5),
-    [autos]
-  );
-  const { ref: refFondo, indice: fotoFondoIndex, visto } = useRotacion<HTMLDivElement>(fotosFondo);
 
   const marcas = useMemo(
     () => Array.from(new Set(autos.map((a) => a.marca))).sort(),
@@ -105,17 +96,7 @@ export default function CatalogoCliente({ autosInicial }: { autosInicial: Auto[]
 
   return (
     <main className="det catalogo-fondo">
-      {autos.some((auto) => auto.fotos && auto.fotos.length > 0) && (
-        <div className="catalogo-fondo-capa" aria-hidden="true" ref={refFondo}>
-          {visto && (
-          <div
-            key={fotoFondoIndex}
-            className="catalogo-fondo-foto"
-            style={{ backgroundImage: fondoCss(fotosFondo[fotoFondoIndex]) }}
-          />
-          )}
-        </div>
-      )}
+      {/* Fondo liso: sin foto detrás para que los autos resalten. */}
       <div className="catalogo-contenido">
       <h1>Catálogo completo</h1>
       <p className="sub">

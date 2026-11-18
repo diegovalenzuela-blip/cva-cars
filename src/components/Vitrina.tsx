@@ -3,8 +3,7 @@
 import "./destacados.css";
 import Link from "next/link";
 import { wa } from "@/lib/datos";
-import { useRotacion } from "@/lib/useRotacion";
-import { fondoCss, imgSrc, imgSrcSet } from "@/lib/img";
+import { imgSrc, imgSrcSet } from "@/lib/img";
 import Aparece from "./Aparece";
 
 export type AutoVitrina = {
@@ -38,13 +37,6 @@ export default function Vitrina({
   autos: AutoVitrina[];
   cargando: boolean;
 }) {
-  const fotosFondo = autos
-    .filter((auto) => auto.fotos && auto.fotos.length > 0)
-    .map((auto) => auto.fotos[0])
-    .slice(0, 5);
-
-  const { ref: refFondo, indice: fotoIndex, visto } = useRotacion<HTMLDivElement>(fotosFondo);
-
   const ordenados = [...autos].sort(
     (a, b) => Number(!!b.destacado) - Number(!!a.destacado)
   );
@@ -63,17 +55,7 @@ export default function Vitrina({
 
   return (
     <section id="autos" className="vit">
-      {fotosFondo.length > 0 && (
-        <div className="vit-fondo" aria-hidden="true" ref={refFondo}>
-          {visto && (
-          <div
-            key={fotoIndex}
-            className="vit-fondo-foto"
-            style={{ backgroundImage: fondoCss(fotosFondo[fotoIndex]) }}
-          />
-          )}
-        </div>
-      )}
+      {/* Fondo liso: sin foto detrás para que los autos resalten. */}
       <div className="wrap">
         <Aparece>
           <h2 className="vit-titulo">Autos en exhibición</h2>

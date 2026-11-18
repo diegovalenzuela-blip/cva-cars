@@ -3,9 +3,7 @@
 import "./destacados.css";
 import { useRef, useState } from "react";
 import { VIDEOS } from "@/lib/datos";
-import { useRotacion } from "@/lib/useRotacion";
 import { useReveal } from "@/lib/useReveal";
-import { fondoCss } from "@/lib/img";
 import Aparece from "./Aparece";
 
 function Tarjeta({
@@ -63,9 +61,8 @@ function Tarjeta({
   );
 }
 
-export default function VideosDestacados({ fotosFondo }: { fotosFondo: string[] }) {
+export default function VideosDestacados() {
   const seccion = useRef<HTMLElement>(null);
-  const { ref: refFondo, indice: fotoIndex, visto } = useRotacion<HTMLDivElement>(fotosFondo);
 
   function alReproducir(actual: HTMLVideoElement) {
     seccion.current?.querySelectorAll<HTMLVideoElement>("video").forEach((v) => {
@@ -75,17 +72,6 @@ export default function VideosDestacados({ fotosFondo }: { fotosFondo: string[] 
 
   return (
     <section id="videos" className="vid-sec" ref={seccion}>
-      {fotosFondo.length > 0 && (
-        <div className="vid-fondo" aria-hidden="true" ref={refFondo}>
-          {visto && (
-          <div
-            key={fotoIndex}
-            className="vid-fondo-foto"
-            style={{ backgroundImage: fondoCss(fotosFondo[fotoIndex]) }}
-          />
-          )}
-        </div>
-      )}
       <div className="wrap">
         <Aparece>
           <h2 className="vid-titulo">Míralos en video</h2>
