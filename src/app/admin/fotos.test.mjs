@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { esHeic, esImagenAdmitida, puedeAbrirse } from "./fotos.ts";
+import { esHeic, esImagenAdmitida, extensionFoto, puedeAbrirse } from "./fotos.ts";
 
 test("reconoce fotos HEIC aunque el navegador no informe el tipo", () => {
   assert.equal(esHeic({ name: "IMG_1.HEIC", type: "" }), true);
@@ -24,4 +24,10 @@ test("informa si una foto se puede abrir", async () => {
   };
   assert.equal(await puedeAbrirse(new Blob(["x"])), false);
   delete globalThis.createImageBitmap;
+});
+
+test("sube WebP o JPG, y no otro formato generado por el navegador", () => {
+  assert.equal(extensionFoto("image/webp"), "webp");
+  assert.equal(extensionFoto("image/jpeg"), "jpg");
+  assert.equal(extensionFoto("image/png"), null);
 });

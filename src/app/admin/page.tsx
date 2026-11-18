@@ -7,7 +7,7 @@ import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import AccesoAdmin from "./AccesoAdmin";
 import AutocompletarTexto from "./AutocompletarTexto";
-import { esHeic, esImagenAdmitida, puedeAbrirse } from "./fotos";
+import { esHeic, esImagenAdmitida, extensionFoto, puedeAbrirse } from "./fotos";
 
 type FotoAdmin = {
   id: string;
@@ -109,8 +109,8 @@ const enVitrina = (a: Auto) =>
   a.catalogo !== "trabajo" && a.publicado && a.en_exhibicion && ["disponible", "reservado"].includes(a.estado);
 const visiblePublico = (a: Auto) => a.publicado && ["disponible", "reservado"].includes(a.estado);
 
-const rutaFoto = (automotoraId: string) =>
-  automotoraId + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + ".webp";
+const rutaFoto = (automotoraId: string, extension: string) =>
+  automotoraId + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "." + extension;
 
 async function reducir(file: File): Promise<Blob> {
   const bmp = await createImageBitmap(file, { imageOrientation: "from-image" });
@@ -126,17 +126,19 @@ async function reducir(file: File): Promise<Blob> {
 
     ctx.drawImage(bmp, 0, 0, c.width, c.height);
 
-    const blob = await new Promise<Blob>((ok, fallo) =>
-      c.toBlob(
-        (b) => (b ? ok(b) : fallo(new Error("No se pudo procesar la foto"))),
-        "image/webp",
-        0.80
-      )
-    );
+    const generar = (tipo: string, calidad: number) =>
+      new Promise<Blob>((ok, fallo) =>
+        c.toBlob(
+          (b) => (b ? ok(b) : fallo(new Error("No se pudo procesar la foto"))),
+          tipo,
+          calidad
+        )
+      );
 
-    if (blob.type !== "image/webp") {
-      throw new Error("Este navegador no pudo generar imágenes WebP");
-    }
+    // Safari no genera WebP: en ese caso la foto se sube como JPG.
+    let blob = await generar("image/webp", 0.8);
+    if (!extensionFoto(blob.type)) blob = await generar("image/jpeg", 0.85);
+    if (!extensionFoto(blob.type)) throw new Error("Este navegador no pudo preparar la foto");
 
     return blob;
   } finally {
@@ -428,10 +430,10 @@ export default function Admin() {
         subidas += 1;
         setProgreso("Subiendo foto " + subidas + " de " + nuevas + "…");
         const blob = await reducir(foto.file);
-        const ruta = rutaFoto(automotoraId);
+        const ruta = rutaFoto(automotoraId, extensionFoto(blob.type)!);
         const { error } = await supabase.storage
           .from("autos")
-          .upload(ruta, blob, { contentType: "image/webp" });
+          .upload(ruta, blob, { contentType: blob.type });
         if (error) throw error;
         urls.push(supabase.storage.from("autos").getPublicUrl(ruta).data.publicUrl);
       }
