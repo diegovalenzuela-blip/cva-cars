@@ -44,6 +44,7 @@ export default function PanelImportar({
 }) {
   const [base, setBase] = useState<BaseCRM>(VACIA);
   const [cargando, setCargando] = useState(true);
+  const [baseLista, setBaseLista] = useState(false);
   const [sinActivar, setSinActivar] = useState(false);
   const [texto, setTexto] = useState("");
   const [revision, setRevision] = useState<Revision | null>(null);
@@ -66,6 +67,7 @@ export default function PanelImportar({
         if (!vigente) return;
         setBase(datos);
         setHistorial(lista);
+        setBaseLista(true);
       })
       .catch((e) => {
         if (!vigente) return;
@@ -81,6 +83,8 @@ export default function PanelImportar({
   }, [automotoraId, avisar]);
 
   function analizar(contenido = texto, id: string = crypto.randomUUID()) {
+    // Sin los datos del CRM no se pueden detectar duplicados.
+    if (!baseLista) return;
     const r = crearRevision(extraerMensajes(contenido), base);
     importacionId.current = id;
     setResumen("");
@@ -152,13 +156,13 @@ export default function PanelImportar({
           onChange={(e) => setTexto(e.target.value)}
           onPaste={(e) => {
             const campo = e.currentTarget;
-            window.setTimeout(() => analizar(campo.value), 0);
+            if (baseLista) window.setTimeout(() => analizar(campo.value), 0);
           }}
         />
         <p className="ap-ref">El análisis ocurre en este dispositivo. Nada se guarda hasta que confirmes.</p>
         <div className="ap-botones">
-          <button type="submit" className="ap-b principal" disabled={cargando || !texto.trim()}>
-            {cargando ? "Cargando CRM…" : "Analizar"}
+          <button type="submit" className="ap-b principal" disabled={!baseLista || !texto.trim()}>
+            {cargando ? "Cargando CRM…" : baseLista ? "Analizar" : "CRM no disponible"}
           </button>
           {(texto || revision) && (
             <button

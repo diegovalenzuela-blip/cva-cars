@@ -233,6 +233,23 @@ test("actualiza precio conservando historial y detecta datos desactualizados", o
   });
 });
 
+test("compara decimales por valor al revisar cambios", opciones, async () => {
+  await limpiar();
+  await socio(async () => {
+    const r = await importar([{
+      cliente: clienteNuevo(), vehiculo: vehiculoNuevo(),
+      consignacion: { accion: "crear", datos: { estado: "activa", comision_tipo: "porcentaje", comision_valor: "5" } },
+    }]);
+    const { cliente, vehiculo, consignacion } = r.registros["0"];
+    await importar([{
+      cliente: { accion: "usar", id: cliente },
+      vehiculo: { accion: "usar", id: vehiculo, propietario_origen: "usuario" },
+      consignacion: { accion: "actualizar", id: consignacion, cambios: { comision_valor: { de: "5", a: "6" } } },
+    }]);
+    assert.equal((await fila("select comision_valor::text v from crm_consignaciones")).v, "6.00");
+  });
+});
+
 test("solo modifica campos permitidos y oculta el RUT en el historial", opciones, async () => {
   await limpiar();
   await socio(async () => {

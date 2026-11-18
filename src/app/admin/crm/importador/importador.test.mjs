@@ -358,3 +358,9 @@ test("revisión: una actualización simple solo pide confirmar el cambio", () =>
   assert.deepEqual(b.cambios_aceptados, []);
   assert.equal(cambiosDe(b, base)[0].campo, "precio_solicitado");
 });
+
+test("hablar de bajo kilometraje no convierte un aviso en actualización", () => {
+  const [b] = extraer("Hilux LPKD45 de Juan Pérez, bajo kilometraje 50.000 km, cambio de aceite al día");
+  assert.equal(b.tipo, "nuevo");
+  assert.equal(valor(b, "vehiculo", "km"), "50000");
+});

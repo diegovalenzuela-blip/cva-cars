@@ -67,7 +67,7 @@ const CABECERA =
 const HIPOTESIS =
   /\b(podria|podrian|quizas?|tal vez|a lo mejor|capaz que|posiblemente|si es que|estaria dispuest[oa]|esta pensando|pensando en|evaluando|evalua|quiere saber|ver si|me interesaria|seria|quiere dejar|quiere consignar|quisiera|si)\b/;
 const ACTUALIZACION =
-  /\b(finalmente|al final|ahora|bajo|subio|rebajo|cambio|nuevo precio|actualiza|actualizacion|quedo en|queda en|lo dejo en|la dejo en)\b/;
+  /\b(finalmente|al final|ahora|bajo a|bajo el precio|subio a|subio el precio|rebajo|cambio a|cambio el precio|nuevo precio|actualiza|actualizacion|quedo en|queda en|lo dejo en|la dejo en)\b/;
 const CONSIGNACION_FIRME = /\b(dejo|deja|quedo|entrego|trajo|firmo)\b.{0,24}\bconsign|\bconsignad[oa]\b/;
 const TERCERO = /\b(comprador|compradora|interesad[oa]|quiere comprar|ofrece|ofrecen|oferta)\b/;
 const SALUDO = /^(?:(?:hola|buenas|buenos dias|saludos|gracias)\b.{0,24}|ok|okay|dale|listo|si|no|ya|bien)[\s!.]*$/;
@@ -339,7 +339,7 @@ function tipoPrecio(antes: string) {
     ["comision", /comision/g],
     ["minimo", /minimo|piso|no menos de|menos de|baja hasta|acepta hasta|hasta/g],
     ["oferta", /oferta|ofrece|ofrecen|ofrecio|deuda|debe/g],
-    ["solicitado", /precio|pide|pidiendo|vende|valor|quedo en|queda en|lo deja en|la deja en|dejo en|venta|sale|bajo a|subio a|rebajo a|bajo|subio|rebajo/g],
+    ["solicitado", /precio|pide|pidiendo|vende|valor|quedo en|queda en|lo deja en|la deja en|dejo en|venta|sale|bajo a|subio a|rebajo a|rebajo/g],
   ];
   let mejor: string | null = null;
   let posicion = -1;

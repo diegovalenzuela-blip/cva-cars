@@ -375,6 +375,7 @@ declare
   campo text;
   cambio jsonb;
   tipo text;
+  distinto boolean;
 begin
   if tabla not in ('crm_clientes', 'crm_vehiculos', 'crm_consignaciones', 'crm_vehiculo_documentos') then
     raise exception 'CRM: tabla no permitida.';
@@ -390,12 +391,15 @@ begin
     if not campo = any (permitidos) then
       raise exception 'CRM: bloque %: el campo % no se puede modificar.', bloque, campo;
     end if;
-    if (fila->>campo) is distinct from (cambio->>'de') then
-      raise exception 'CRM: bloque %: % cambió mientras revisabas. Vuelve a analizar.', bloque, campo;
-    end if;
     select format_type(a.atttypid, a.atttypmod) into tipo
     from pg_attribute a
     where a.attrelid = format('public.%I', tabla)::regclass and a.attname = campo and not a.attisdropped;
+    -- Se compara por tipo: 5 y 5.00 son el mismo valor.
+    execute format('select ($1)::%s is distinct from ($2)::%s', tipo, tipo)
+      into distinto using fila->>campo, cambio->>'de';
+    if distinto then
+      raise exception 'CRM: bloque %: % cambió mientras revisabas. Vuelve a analizar.', bloque, campo;
+    end if;
     execute format('update public.%I set %I = $1::%s where id = $2', tabla, campo, tipo)
       using cambio->>'a', registro;
   end loop;
@@ -443,6 +447,10 @@ begin
   end if;
   if jsonb_typeof(bloques) <> 'array' or jsonb_array_length(bloques) > 50 then
     raise exception 'CRM: la importación tiene demasiados bloques.';
+  end if;
+
+  if jsonb_typeof(coalesce(p->'campos', '[]'::jsonb)) <> 'array' or jsonb_array_length(coalesce(p->'campos', '[]'::jsonb)) > 2000 then
+    raise exception 'CRM: la importación tiene demasiados campos.';
   end if;
 
   importacion := (p->>'importacion_id')::uuid;

@@ -78,6 +78,7 @@
 .crm-vehiculos { margin-bottom: 24px; }
 .crm-vehiculos > .crm-grupo { margin-bottom: 14px; }
 .crm-consignacion { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin: 8px 0; padding-top: 8px; border-top: 1px solid #2a1d10; }
+.crm-respaldo { margin-bottom: 10px; }
 .crm-filtro { display: block; max-width: 280px; margin-bottom: 12px; }
 
 @media (max-width: 860px) {

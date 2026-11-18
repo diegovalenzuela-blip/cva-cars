@@ -146,25 +146,46 @@ export default function PanelCRM({
     setOcupada(null);
   }
 
+  function descargar(filas: string[][], nombre: string) {
+    const enlace = document.createElement("a");
+    enlace.href = URL.createObjectURL(new Blob([aCSV(filas)], { type: "text/csv;charset=utf-8" }));
+    enlace.download = nombre;
+    enlace.click();
+    URL.revokeObjectURL(enlace.href);
+  }
+
+  function exportarConsignaciones() {
+    if (!base) return;
+    descargar([[
+      "Patente", "Marca", "Modelo", "Año", "Kilometraje", "Propietario", "RUT", "Teléfono", "Estado",
+      "Precio solicitado", "Precio mínimo", "Tipo comisión", "Comisión", "Condiciones", "Observaciones", "Creada",
+    ]].concat(base.consignaciones.map((c) => {
+      const v = base.vehiculos.find((x) => x.id === c.vehiculo_id);
+      const d = clientePorId.get(c.propietario_id);
+      const texto = (x: unknown) => (x === null || x === undefined ? "" : String(x));
+      return [
+        texto(v?.patente), texto(v?.marca), texto(v?.modelo), texto(v?.anio), texto(v?.km), texto(d?.nombre), texto(d?.rut),
+        texto(d?.telefono), c.estado, texto(c.precio_solicitado), texto(c.precio_minimo), texto(c.comision_tipo),
+        texto(c.comision_valor), texto(c.condiciones), texto(c.observaciones), c.creado_en ? fechaLocal(c.creado_en) : "",
+      ];
+    })), "consignaciones-chillan-vende-autos.csv");
+  }
+
   function exportar() {
     const filas = [[
-      "Cliente", "Teléfono", "Correo", "Red social", "Comuna", "Vehículo", "Qué busca", "Canal",
+      "Cliente", "RUT", "Teléfono", "Correo", "Red social", "Comuna", "Vehículo", "Qué busca", "Canal",
       "Presupuesto", "Etapa", "Motivo de pérdida", "Próxima acción", "Fecha próxima acción", "Creada",
     ]].concat(
       oportunidades.map((o) => {
         const c = clientePorId.get(o.cliente_id);
         return [
-          c?.nombre ?? "", c?.telefono ?? "", c?.email ?? "", c?.red_social ?? "", c?.comuna ?? "",
+          c?.nombre ?? "", c?.rut ?? "", c?.telefono ?? "", c?.email ?? "", c?.red_social ?? "", c?.comuna ?? "",
           o.auto_resumen ?? "", o.interes ?? "", nombreCanal(o.canal), o.presupuesto ? String(o.presupuesto) : "",
           nombreEtapa(o.etapa), o.motivo_perdida ?? "", o.proxima_accion ?? "", o.proxima_fecha ?? "", fechaLocal(o.creado_en),
         ];
       })
     );
-    const enlace = document.createElement("a");
-    enlace.href = URL.createObjectURL(new Blob([aCSV(filas)], { type: "text/csv;charset=utf-8" }));
-    enlace.download = "crm-chillan-vende-autos.csv";
-    enlace.click();
-    URL.revokeObjectURL(enlace.href);
+    descargar(filas, "crm-chillan-vende-autos.csv");
   }
 
   function tarjeta(o: Oportunidad) {
@@ -314,6 +335,9 @@ export default function PanelCRM({
               <div className="ap-vacio"><p>Las consignaciones estarán disponibles cuando se active el importador.</p></div>
             ) : (
               <>
+                <button type="button" className="ap-b crm-respaldo" onClick={exportarConsignaciones} disabled={!base.consignaciones.length}>
+                  Descargar consignaciones (CSV)
+                </button>
                 <label className="crm-filtro">
                   <span className="ap-oculto">Filtrar consignaciones</span>
                   <select value={estadoConsignacion} onChange={(e) => setEstadoConsignacion(e.target.value)}>
