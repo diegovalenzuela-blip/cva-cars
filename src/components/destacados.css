@@ -214,3 +214,30 @@
   .catalogo-fondo-foto { filter: none; animation: none; transform: none; inset: 0; }
   .fp-img, .fp-img.on { transform: none; transition: opacity .8s ease; }
 }
+
+/* ===== Vitrina más llamativa ===== */
+/* Separador: franja roja y bronce con brillo donde empieza la exhibición */
+section.vit { border-top: 0; }
+.vit::after {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; z-index: 3; pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--bronce) 14%, var(--rojo) 50%, var(--bronce) 86%, transparent);
+  box-shadow: 0 0 22px rgba(200, 55, 45, .55), 0 0 60px rgba(200, 55, 45, .25);
+}
+/* Foco detrás del auto destacado, como la luz de una vitrina de concesionario */
+.vit-foco { position: relative; }
+.vit-foco::before {
+  content: ""; position: absolute; inset: -14% -8% -18%; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 55% at 38% 45%, rgba(200, 55, 45, .42), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 70% 55%, rgba(139, 90, 43, .28), transparent 70%);
+}
+/* "Piso" bajo la tarjeta */
+.vit-foco::after {
+  content: ""; position: absolute; left: 8%; right: 8%; bottom: 6px; height: 34px; z-index: -1; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, .8), transparent 70%);
+  filter: blur(6px);
+}
+@media (max-width: 760px) {
+  .vit-foco::before { inset: -8% -4% -10%; }
+  .vit-foco::after { display: none; }
+}

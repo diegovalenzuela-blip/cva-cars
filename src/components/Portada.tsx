@@ -88,9 +88,11 @@ export default function Portada({ fotos }: { fotos: FotoFondo[] }) {
                 alt="Logo de Chillán Vende Autos: camioneta roja clásica frente a las montañas"
                 width={520}
                 height={520}
-                sizes="(max-width: 760px) 86vw, 520px"
+                sizes="(max-width: 760px) 60vw, 520px"
                 priority
               />
+              {/* Reflejo que se mueve con el mouse: da sensación de placa en 3D */}
+              <span className="por-brillo3d" aria-hidden="true" />
             </div>
           </div>
         </header>
