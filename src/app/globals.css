@@ -1169,3 +1169,10 @@ input, select, textarea { font-size: 16px; }
 @media (max-width: 760px), (hover: none) {
   .wsp-boton::before { animation: none; display: none; }
 }
+
+/* Catálogo en teléfono: solo la búsqueda a la vista; el resto tras "Más filtros" */
+.f-toggle { display: none; }
+@media (max-width: 760px) {
+  .f-toggle { display: flex; justify-content: center; align-items: center; min-height: 46px; }
+  .filtros2:not(.abiertos) > :not(.f-buscar):not(.f-toggle) { display: none; }
+}

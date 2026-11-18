@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Copias de respaldo hechas a mano (el historial de git ya las guarda)
+*.respaldo*

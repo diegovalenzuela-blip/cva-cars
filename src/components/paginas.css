@@ -1,6 +1,6 @@
 /* ===== Aparecer al bajar ===== */
 @media (prefers-reduced-motion: no-preference) {
-  .apa { opacity: 0; transform: translateY(30px); transition: opacity .7s ease, transform .7s cubic-bezier(.2, .7, .2, 1); }
+  .apa { opacity: 0; transform: translateY(16px); transition: opacity .45s ease, transform .45s cubic-bezier(.2, .7, .2, 1); }
   .apa.in { opacity: 1; transform: none; }
 }
 

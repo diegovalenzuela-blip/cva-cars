@@ -38,6 +38,8 @@ export default function CatalogoCliente({ autosInicial }: { autosInicial: Auto[]
   const [min, setMin] = useState("");
   const [max, setMax] = useState("");
   const [orden, setOrden] = useState("recientes");
+  // En el teléfono los filtros van plegados para que los autos se vean de inmediato.
+  const [verFiltros, setVerFiltros] = useState(false);
   const fotosFondo = useMemo(
     () => autos
       .filter((auto) => auto.fotos && auto.fotos.length > 0)
@@ -89,6 +91,7 @@ export default function CatalogoCliente({ autosInicial }: { autosInicial: Auto[]
   }, [autos, q, marca, ubic, tipo, desde, hasta, orden]);
 
   const hayFiltros = Boolean(q || marca || ubic || tipo || min || max);
+  const plegados = [ubic, marca, min, max, orden !== "recientes" ? orden : ""].filter(Boolean).length;
 
   function limpiar() {
     setQ("");
@@ -136,7 +139,7 @@ export default function CatalogoCliente({ autosInicial }: { autosInicial: Auto[]
         </div>
       )}
 
-      <div className="filtros2">
+      <div className={"filtros2" + (verFiltros ? " abiertos" : "")}>
         <input
           className="f-buscar"
           type="search"
@@ -145,6 +148,14 @@ export default function CatalogoCliente({ autosInicial }: { autosInicial: Auto[]
           onChange={(e) => setQ(e.target.value)}
           aria-label="Buscar"
         />
+        <button
+          type="button"
+          className="btn f-toggle"
+          aria-expanded={verFiltros}
+          onClick={() => setVerFiltros((v) => !v)}
+        >
+          {verFiltros ? "Ocultar filtros" : "Más filtros" + (plegados ? " (" + plegados + ")" : "")}
+        </button>
         <select value={ubic} onChange={(e) => setUbic(e.target.value)} aria-label="Ubicación">
           <option value="">Todas las ubicaciones</option>
           {ubicaciones.map((u) => (
