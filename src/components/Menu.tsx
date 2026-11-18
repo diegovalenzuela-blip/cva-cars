@@ -33,7 +33,7 @@ export default function Menu() {
       <nav className="topbar" aria-label="Principal">
         <Link href="/" className="topbar-logo">Chillán Vende Autos</Link>
         <Link href="/" className="topbar-emblema" aria-label="Chillán Vende Autos, ir al inicio">
-          <span style={{ backgroundImage: "url(/logo-chico.webp)" }} />
+          <span style={{ backgroundImage: "url(/emblema.webp)" }} />
         </Link>
         <button
           className="topbar-btn"
@@ -42,7 +42,8 @@ export default function Menu() {
           aria-controls="menu-panel"
           aria-label="Abrir menú"
         >
-          <span /><span /><span />
+          <span className="topbar-btn-texto" aria-hidden="true">Menú</span>
+          <span className="topbar-barras" aria-hidden="true"><span /><span /><span /></span>
         </button>
       </nav>
       {abierto && (
