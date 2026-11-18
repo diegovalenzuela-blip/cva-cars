@@ -99,7 +99,11 @@ export default function Vitrina({
                 {estrella.estado === "reservado" && <p className="det-reservado">RESERVADO</p>}
                 <div className="vit-precio">{plata(estrella.precio)}</div>
                 <div className="acc">
-                  <Link className="btn fill" href={"/autos/" + estrella.codigo}>
+                  <Link
+                    className="btn fill"
+                    href={"/autos/" + estrella.codigo}
+                    aria-label={"Ver fotos y detalles de " + estrella.marca + " " + estrella.modelo}
+                  >
                     Ver fotos y detalles
                   </Link>
                   <a
@@ -156,7 +160,9 @@ export default function Vitrina({
                       </p>
                     )}
                     <div className="vit-acc">
-                      <Link className="btn" href={"/autos/" + x.codigo}>Ver fotos y detalles</Link>
+                      <Link className="btn" href={"/autos/" + x.codigo} aria-label={"Ver fotos y detalles de " + x.marca + " " + x.modelo}>
+                        Ver fotos y detalles
+                      </Link>
                       <a
                         className="btn"
                         href={wa(
