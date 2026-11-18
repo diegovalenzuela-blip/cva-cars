@@ -5,6 +5,7 @@ import { getAutosExhibicion } from "@/lib/autos";
 export const revalidate = 60;
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/nosotros" },
   title: "Quiénes somos | Chillán Vende Autos",
   description: "Automotora de la región de Ñuble: venta y consignación de autos y camionetas.",
 };

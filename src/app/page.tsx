@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Portada from "@/components/Portada";
 import VideosDestacados from "@/components/VideosDestacados";
 import Vitrina from "@/components/Vitrina";
@@ -7,6 +8,8 @@ import { getAutosExhibicion } from "@/lib/autos";
 import type { FotoFondo } from "@/lib/autos";
 
 export const revalidate = 60;
+
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 export default async function Home() {
   const autos = await getAutosExhibicion();

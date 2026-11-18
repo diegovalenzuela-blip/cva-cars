@@ -5,6 +5,7 @@ import { getFotosFondo } from "@/lib/autos";
 export const revalidate = 60;
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/contacto" },
   title: "Contacto | Chillán Vende Autos",
   description: "Escríbenos por WhatsApp, llámanos o visítanos en Chillán.",
 };

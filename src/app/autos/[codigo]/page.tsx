@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getAutoPorCodigo } from "@/lib/autos";
 import { wa } from "@/lib/datos";
+import { JsonLd, autoJson } from "@/lib/seo";
 import Galeria from "./Galeria";
 
 export const revalidate = 60;
@@ -23,10 +24,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const auto = await getAutoPorCodigo(decodificar(codigo));
   if (!auto) return { title: "Auto no disponible | Chillán Vende Autos", robots: { index: false } };
   const titulo = auto.marca + " " + auto.modelo + (auto.version ? " " + auto.version : "");
+  const km = auto.km ? ", " + auto.km.toLocaleString("es-CL") + " km" : "";
+  const descripcion =
+    titulo + " " + auto.anio + km + " en venta en Chillán, Ñuble. Precio $" +
+    auto.precio.toLocaleString("es-CL") + ". Mira fotos y detalles, y consulta por WhatsApp.";
+  const ruta = "/autos/" + encodeURIComponent(auto.codigo);
   return {
-    title: titulo + " " + auto.anio + " | Chillán Vende Autos",
-    description:
-      titulo + " " + auto.anio + " en Chillán, $" + auto.precio.toLocaleString("es-CL") + ". Mira fotos y detalles.",
+    title: titulo + " " + auto.anio + " usado en Chillán | Chillán Vende Autos",
+    description: descripcion,
+    alternates: { canonical: ruta },
+    // Al compartir el link de un auto se ve la foto del auto, no el logo.
+    openGraph: {
+      title: titulo + " " + auto.anio + " · $" + auto.precio.toLocaleString("es-CL"),
+      description: descripcion,
+      url: ruta,
+      type: "website",
+      images: auto.fotos[0] ? [{ url: auto.fotos[0], alt: titulo + " " + auto.anio }] : undefined,
+    },
   };
 }
 
@@ -49,6 +63,7 @@ export default async function Detalle({ params }: Props) {
 
   return (
     <main className="det">
+      <JsonLd datos={autoJson(auto)} />
       <Link href="/catalogo" className="det-volver">← Volver a catálogo</Link>
       <div className="det-grid">
         <Galeria fotos={auto.fotos} titulo={titulo} />
