@@ -1,0 +1,85 @@
+/* ===== CRM dentro del panel de gestión ===== */
+.crm { padding: 0; border-top: 0; }
+.crm h2 { margin: 0; font-size: 1.7rem; }
+.crm h3 { margin: 0 0 10px; font-size: 1.2rem; }
+.crm h4 { margin: 0 0 2px; font-size: 1.08rem; }
+.crm p { margin-top: 0; }
+.crm .ap-b { text-transform: none; }
+
+.crm-cab, .crm-ficha-cab, .crm-sub, .crm-op-cab { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.crm-cab { margin-bottom: 14px; }
+.crm-sub { align-items: center; margin-bottom: 10px; }
+.crm-sub h3 { margin: 0; }
+.crm-resumen div.alerta { border-left-color: #ffb347; }
+.crm-vistas { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.crm-barra { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+.crm-barra.solo { grid-template-columns: 1fr; }
+
+.crm-grupo { margin-bottom: 22px; }
+.crm-grupo h3 em { font-style: normal; font-size: .8rem; padding: 1px 7px; background: #2a1d10; border-radius: 10px; }
+.crm-lista { display: grid; gap: 10px; }
+
+.crm-tarjeta {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 330px); gap: 14px; align-items: start;
+  padding: 12px 14px; background: var(--panel); border: 1px solid #3a2a18;
+}
+.crm-tarjeta.atrasada { border-left: 3px solid #ffb347; }
+.crm-tarjeta p { margin-bottom: 2px; }
+.crm-tarjeta-acc { display: grid; gap: 8px; }
+.crm-nombre {
+  padding: 0; background: none; border: 0; color: var(--crema); cursor: pointer; text-align: left;
+  font: 700 1.15rem var(--f-titulo), sans-serif; text-decoration: underline; text-decoration-color: var(--bronce); text-underline-offset: 3px;
+}
+.crm-vehiculo { font-weight: 600; }
+.crm-proxima { margin-top: 4px; font-size: .9rem; color: #ffd28a; }
+.crm-proxima.falta { color: #c9bb88; font-style: italic; }
+.crm-etapa select, .crm-motivo select { padding: 9px 10px; }
+.crm-etapa { min-width: 170px; }
+.crm-motivo { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 6px; margin-top: 8px; }
+.crm-motivo label { flex: 1 1 100%; font-size: .85rem; }
+
+.crm-cliente {
+  display: grid; gap: 2px; width: 100%; padding: 12px 14px; text-align: left; cursor: pointer;
+  background: var(--panel); border: 1px solid #3a2a18; color: var(--crema); font: inherit;
+}
+.crm-cliente:hover { border-color: var(--bronce); }
+.crm-cliente b { font-size: 1.05rem; }
+.crm-cliente span, .crm-cliente em { font-size: .86rem; font-style: normal; color: #c9bb88; overflow-wrap: anywhere; }
+
+.crm-campos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.crm-campos label, .crm-gestion label, .crm-nota { display: block; font-size: .9rem; }
+.crm-ancho { grid-column: 1 / -1; }
+.crm-nota { margin-top: 12px; }
+.crm-campos input, .crm-campos select, .crm-campos textarea, .crm-gestion select, .crm-gestion textarea, .crm-nota textarea { margin-top: 4px; }
+.crm-existe { margin: 12px 0 0; padding: 10px; font-size: .9rem; background: #1b0f0b; border: 1px solid var(--bronce); }
+.crm-form-acc { display: flex; gap: 8px; flex-wrap: wrap; }
+.crm-form-acc .btn { padding: 11px 18px; font-size: .92rem; }
+.crm-form-acc .btn:disabled { opacity: .5; cursor: wait; }
+.crm-separado { margin-top: 12px; }
+
+.crm-volver { margin-bottom: 12px; }
+.crm-ficha-cab { margin-bottom: 18px; }
+.crm-ficha-cab .ap-auto-datos { overflow-wrap: anywhere; }
+.crm-notas { margin: 6px 0 0; white-space: pre-wrap; }
+.crm-ficha-cuerpo { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.crm-op { padding: 12px; background: var(--panel); border: 1px solid #3a2a18; }
+.crm-op.cerrada { opacity: .78; }
+.crm-op p { margin-bottom: 2px; }
+.crm-op .ap-botones { margin-top: 8px; }
+.crm-op form { margin-top: 10px; }
+.crm-gestion { display: grid; gap: 10px; }
+.crm-gestion-fila { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+.crm-gestion .ap-b { justify-self: start; }
+.crm-historial { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.crm-historial li { padding: 8px 0 8px 12px; border-left: 2px solid var(--bronce); }
+.crm-historial span { font-size: .8rem; color: #c9bb88; }
+.crm-historial p { margin: 2px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+@media (max-width: 860px) {
+  .crm-tarjeta, .crm-ficha-cuerpo { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 640px) {
+  .crm-campos, .crm-barra { grid-template-columns: minmax(0, 1fr); }
+  .crm-etapa { width: 100%; }
+  .crm-cab .ap-botones, .crm-cab .ap-b { width: 100%; }
+}

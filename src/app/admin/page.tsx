@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
+import PanelCRM from "./crm/PanelCRM";
 
 type FotoAdmin = {
   id: string;
@@ -49,7 +50,7 @@ type Suscriptor = {
 };
 
 type Catalogo = "general" | "trabajo";
-type Pestana = "inventario" | "trabajo" | "publicar" | "exhibicion" | "suscriptores";
+type Pestana = "inventario" | "trabajo" | "publicar" | "exhibicion" | "clientes" | "suscriptores";
 
 const ESTADOS = [
   { v: "en_preparacion", t: "En preparación" },
@@ -707,6 +708,7 @@ export default function Admin() {
           ["trabajo", "Vehículos de trabajo", totalTrabajo],
           ["publicar", editId ? "Editar auto" : "Publicar auto", null],
           ["exhibicion", "Exhibición", autosExhibicion.length + "/" + MAX_EXHIBICION],
+          ["clientes", "Clientes", null],
           ["suscriptores", "Suscriptores", suscriptores.length],
         ] as [Pestana, string, number | string | null][]).map(([v, t, n]) => (
           <button
@@ -1130,6 +1132,18 @@ export default function Admin() {
             </div>
           )}
         </section>
+      )}
+
+      {pestana === "clientes" && (
+        <PanelCRM
+          automotoraId={automotoraId}
+          autos={autos}
+          avisar={avisar}
+          marcarAutoVendido={async (id) => {
+            const auto = autos.find((a) => a.id === id);
+            if (auto) await cambiarEstado(auto, "vendido");
+          }}
+        />
       )}
 
       {pestana === "suscriptores" && (
