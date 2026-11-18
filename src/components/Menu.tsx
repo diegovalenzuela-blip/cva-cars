@@ -8,8 +8,10 @@ import { wa } from "@/lib/datos";
 const LINKS = [
   { href: "/", t: "Inicio" },
   { href: "/catalogo", t: "Catálogo completo" },
+  { href: "/vehiculos-de-trabajo", t: "Vehículos de trabajo" },
   { href: "/consignacion", t: "Consignación" },
   { href: "/servicios", t: "Servicios" },
+  { href: "/revision-tecnica", t: "Revisión técnica" },
   { href: "/nosotros", t: "Quiénes somos" },
   { href: "/contacto", t: "Contacto" },
 ];

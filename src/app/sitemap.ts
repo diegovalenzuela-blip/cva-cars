@@ -9,6 +9,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const paginas = [
     "",
     "/catalogo",
+    "/vehiculos-de-trabajo",
+    "/revision-tecnica",
     "/nosotros",
     "/contacto",
     "/consignacion",

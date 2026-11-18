@@ -27,11 +27,26 @@ function numero(t: string): number | null {
   return t.trim() && n > 0 ? n : null;
 }
 
-export default function CatalogoCliente({ autosInicial }: { autosInicial: Auto[] }) {
+export default function CatalogoCliente({
+  autosInicial,
+  titulo = "Catálogo de autos en Chillán",
+  bajada,
+  filtrosAvanzados = false,
+  textoVacio = "Pronto publicaremos nuevos autos.",
+}: {
+  autosInicial: Auto[];
+  titulo?: string;
+  bajada?: string;
+  filtrosAvanzados?: boolean;
+  textoVacio?: string;
+}) {
   const autos = autosInicial;
   const cargando = false;
   const [q, setQ] = useState("");
   const [marca, setMarca] = useState("");
+  const [modelo, setModelo] = useState("");
+  const [anioDesde, setAnioDesde] = useState("");
+  const [kmHasta, setKmHasta] = useState("");
   const [ubic, setUbic] = useState("");
   const [tipo, setTipo] = useState("");
   const [min, setMin] = useState("");
@@ -42,6 +57,14 @@ export default function CatalogoCliente({ autosInicial }: { autosInicial: Auto[]
 
   const marcas = useMemo(
     () => Array.from(new Set(autos.map((a) => a.marca))).sort(),
+    [autos]
+  );
+  const modelos = useMemo(
+    () => Array.from(new Set(autos.filter((a) => !marca || a.marca === marca).map((a) => a.modelo))).sort(),
+    [autos, marca]
+  );
+  const anios = useMemo(
+    () => Array.from(new Set(autos.map((a) => a.anio).filter((n) => n > 0))).sort((a, b) => b - a),
     [autos]
   );
   const ubicaciones = useMemo(
@@ -60,12 +83,16 @@ export default function CatalogoCliente({ autosInicial }: { autosInicial: Auto[]
 
   const desde = numero(min);
   const hasta = numero(max);
+  const kmMax = numero(kmHasta);
 
   const lista = useMemo(() => {
     const t = q.trim().toLowerCase();
     let r = autos.filter(
       (a) =>
         (!marca || a.marca === marca) &&
+        (!modelo || a.modelo === modelo) &&
+        (!anioDesde || a.anio >= Number(anioDesde)) &&
+        (kmMax === null || (a.km !== null && a.km <= kmMax)) &&
         (!ubic || (a.ubicacion ?? "") === ubic) &&
         (!tipo || (a.tipo ?? "") === tipo) &&
         (desde === null || a.precio >= desde) &&
@@ -79,14 +106,17 @@ export default function CatalogoCliente({ autosInicial }: { autosInicial: Auto[]
     if (orden === "precio_desc") r = [...r].sort((a, b) => b.precio - a.precio);
     if (orden === "anio_desc") r = [...r].sort((a, b) => b.anio - a.anio);
     return r;
-  }, [autos, q, marca, ubic, tipo, desde, hasta, orden]);
+  }, [autos, q, marca, modelo, anioDesde, kmMax, ubic, tipo, desde, hasta, orden]);
 
-  const hayFiltros = Boolean(q || marca || ubic || tipo || min || max);
-  const plegados = [ubic, marca, min, max, orden !== "recientes" ? orden : ""].filter(Boolean).length;
+  const hayFiltros = Boolean(q || marca || modelo || anioDesde || kmHasta || ubic || tipo || min || max);
+  const plegados = [ubic, marca, modelo, anioDesde, kmHasta, min, max, orden !== "recientes" ? orden : ""].filter(Boolean).length;
 
   function limpiar() {
     setQ("");
     setMarca("");
+    setModelo("");
+    setAnioDesde("");
+    setKmHasta("");
     setUbic("");
     setTipo("");
     setMin("");
@@ -98,7 +128,8 @@ export default function CatalogoCliente({ autosInicial }: { autosInicial: Auto[]
     <main className="det catalogo-fondo">
       {/* Fondo liso: sin foto detrás para que los autos resalten. */}
       <div className="catalogo-contenido">
-      <h1>Catálogo de autos en Chillán</h1>
+      <h1>{titulo}</h1>
+      {bajada && <p className="sub catalogo-bajada">{bajada}</p>}
       <p className="sub">
         {rango
           ? "Precios desde " + plata(rango.menor) + " hasta " + plata(rango.mayor)
@@ -107,7 +138,16 @@ export default function CatalogoCliente({ autosInicial }: { autosInicial: Auto[]
           : ""}
       </p>
 
-      {tipos.length > 0 && (
+      {autos.length === 0 && (
+        <div className="catalogo-vacio">
+          <p>{textoVacio}</p>
+          <a className="btn fill" href={wa("Hola, quiero consultar qué " + titulo.toLowerCase() + " tienen disponibles.")}>
+            Consultar por WhatsApp
+          </a>
+        </div>
+      )}
+
+      {autos.length > 0 && tipos.length > 0 && (
         <div className="chips" role="group" aria-label="Tipo de vehículo">
           <button type="button" className={"chip" + (tipo === "" ? " on" : "")} aria-pressed={tipo === ""} onClick={() => setTipo("")}>
             Todos
@@ -120,7 +160,7 @@ export default function CatalogoCliente({ autosInicial }: { autosInicial: Auto[]
         </div>
       )}
 
-      <div className={"filtros2" + (verFiltros ? " abiertos" : "")}>
+      {autos.length > 0 && <div className={"filtros2" + (verFiltros ? " abiertos" : "")}>
         <input
           className="f-buscar"
           type="search"
@@ -143,12 +183,43 @@ export default function CatalogoCliente({ autosInicial }: { autosInicial: Auto[]
             <option key={u} value={u}>{u}</option>
           ))}
         </select>
-        <select value={marca} onChange={(e) => setMarca(e.target.value)} aria-label="Marca">
+        <select
+          value={marca}
+          onChange={(e) => {
+            setMarca(e.target.value);
+            setModelo("");
+          }}
+          aria-label="Marca"
+        >
           <option value="">Todas las marcas</option>
           {marcas.map((m) => (
             <option key={m} value={m}>{m}</option>
           ))}
         </select>
+        {filtrosAvanzados && (
+          <>
+            <select value={modelo} onChange={(e) => setModelo(e.target.value)} aria-label="Modelo">
+              <option value="">Todos los modelos</option>
+              {modelos.map((m) => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
+            <select value={anioDesde} onChange={(e) => setAnioDesde(e.target.value)} aria-label="Año desde">
+              <option value="">Cualquier año</option>
+              {anios.map((a) => (
+                <option key={a} value={a}>Desde {a}</option>
+              ))}
+            </select>
+            <input
+              type="text"
+              inputMode="numeric"
+              placeholder="Kilometraje hasta"
+              value={kmHasta}
+              onChange={(e) => setKmHasta(e.target.value)}
+              aria-label="Kilometraje hasta"
+            />
+          </>
+        )}
         <input
           type="text"
           inputMode="numeric"
@@ -171,14 +242,13 @@ export default function CatalogoCliente({ autosInicial }: { autosInicial: Auto[]
           <option value="precio_desc">Precio: mayor a menor</option>
           <option value="anio_desc">Año: más nuevos</option>
         </select>
-      </div>
+      </div>}
 
-      <div className="filtros-pie">
-        <span>{cargando ? "Cargando..." : lista.length + " de " + autos.length + " autos"}</span>
-        {hayFiltros && (
+      {hayFiltros && (
+        <div className="filtros-pie">
           <button type="button" className="btn" onClick={limpiar}>Limpiar filtros</button>
-        )}
-      </div>
+        </div>
+      )}
 
       <div className="grid">
         {lista.map((x, i) => (
@@ -229,7 +299,7 @@ export default function CatalogoCliente({ autosInicial }: { autosInicial: Auto[]
           </Aparece>
         ))}
       </div>
-      {!cargando && lista.length === 0 && (
+      {!cargando && autos.length > 0 && lista.length === 0 && (
         <p className="sub">No encontramos autos con esos filtros. Prueba ampliando el rango de precio o la ubicación.</p>
       )}
       </div>

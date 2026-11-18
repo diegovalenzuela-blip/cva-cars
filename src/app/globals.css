@@ -1177,6 +1177,10 @@ input, select, textarea { font-size: 16px; }
   .filtros2:not(.abiertos) > :not(.f-buscar):not(.f-toggle) { display: none; }
 }
 
+.catalogo-bajada { margin-bottom: 0; }
+.catalogo-vacio { margin-top: 24px; padding: 28px; background: var(--panel); border: 1px dashed var(--bronce); }
+.catalogo-vacio p { margin: 0 0 16px; max-width: 54ch; }
+
 /* ===== Barra superior: emblema (solo camioneta y montañas) y botón "Menú" ===== */
 .topbar-emblema span { background-size: cover; background-position: center; }
 .topbar-emblema { box-shadow: 0 0 0 2px #000, 0 0 14px rgba(200, 55, 45, .35); }

@@ -64,7 +64,9 @@ export default async function Detalle({ params }: Props) {
   return (
     <main className="det">
       <JsonLd datos={autoJson(auto)} />
-      <Link href="/catalogo" className="det-volver">← Volver a catálogo</Link>
+      <Link href={auto.catalogo === "trabajo" ? "/vehiculos-de-trabajo" : "/catalogo"} className="det-volver">
+        ← Volver a {auto.catalogo === "trabajo" ? "vehículos de trabajo" : "catálogo"}
+      </Link>
       <div className="det-grid">
         <Galeria fotos={auto.fotos} titulo={titulo} />
 
