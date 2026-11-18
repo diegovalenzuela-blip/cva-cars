@@ -1176,3 +1176,19 @@ input, select, textarea { font-size: 16px; }
   .f-toggle { display: flex; justify-content: center; align-items: center; min-height: 46px; }
   .filtros2:not(.abiertos) > :not(.f-buscar):not(.f-toggle) { display: none; }
 }
+
+/* ===== Barra superior: emblema (solo camioneta y montañas) y botón "Menú" ===== */
+.topbar-emblema span { background-size: cover; background-position: center; }
+.topbar-emblema { box-shadow: 0 0 0 2px #000, 0 0 14px rgba(200, 55, 45, .35); }
+.topbar-btn { display: inline-flex; align-items: center; gap: 10px; padding: 9px 12px; }
+.topbar-btn-texto { font: 700 .95rem var(--f-titulo), sans-serif; text-transform: uppercase; letter-spacing: .08em; color: var(--crema); line-height: 1; }
+.topbar-barras { display: grid; gap: 5px; }
+.topbar-btn .topbar-barras span { display: block; width: 22px; height: 3px; border-radius: 3px; background: var(--crema); }
+.topbar-btn:hover .topbar-btn-texto { color: #fff; }
+@media (max-width: 380px) {
+  .topbar-btn-texto { font-size: .82rem; letter-spacing: .05em; }
+  .topbar-btn { gap: 7px; padding: 9px 9px; }
+}
+/* La regla antigua ".topbar-btn span" dibujaba cada span como una barra: aquí no aplica */
+.topbar-btn .topbar-btn-texto, .topbar-btn .topbar-barras { width: auto; height: auto; background: none; border-radius: 0; }
+.topbar-btn .topbar-barras { display: grid; gap: 5px; }

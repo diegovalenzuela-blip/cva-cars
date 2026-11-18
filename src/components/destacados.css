@@ -241,3 +241,66 @@ section.vit { border-top: 0; }
   .vit-foco::before { inset: -8% -4% -10%; }
   .vit-foco::after { display: none; }
 }
+
+/* ===== Videos en 3D =====
+   Las tres tarjetas se ven como pantallas en una vitrina: las de los lados giradas
+   hacia el centro y la del medio adelante. Al pasar el mouse (o al reproducir) la
+   tarjeta gira de frente y se acerca. Todo con transform: liviano para el teléfono. */
+.vid-fila { perspective: 1100px; perspective-origin: 50% 35%; justify-content: center; padding-top: 34px; padding-bottom: 64px; }
+.vid-item { transform-style: preserve-3d; }
+.vid-fila .vid {
+  --giro: 0deg; --prof: 0px; --alto: 0px;
+  transform-style: preserve-3d;
+  transform: translateY(var(--alto)) rotateY(var(--giro)) translateZ(var(--prof));
+  transition: transform .55s cubic-bezier(.2, .8, .2, 1), box-shadow .5s ease, border-color .3s ease;
+  border-radius: 6px;
+  box-shadow:
+    0 0 0 1px #000,
+    0 26px 44px rgba(0, 0, 0, .75),
+    0 0 34px rgba(200, 55, 45, .22);
+}
+.vid-fila .vid-item:first-child .vid { --giro: 22deg; --prof: -40px; }
+.vid-fila .vid-item:last-child .vid { --giro: -22deg; --prof: -40px; }
+.vid-fila .vid-item.centro .vid { --prof: 40px; border-color: var(--rojo); }
+.vid-fila .vid:hover, .vid-fila .vid:focus-within, .vid-fila .vid.jugando {
+  --giro: 0deg; --prof: 90px; --alto: -6px;
+  border-color: var(--rojo);
+  box-shadow: 0 0 0 1px #000, 0 34px 60px rgba(0, 0, 0, .8), 0 0 60px rgba(200, 55, 45, .5);
+  z-index: 3;
+}
+.vid-fila .vid-video { border-radius: 4px; }
+/* "Piso" brillante bajo cada tarjeta */
+.vid-fila .vid::after {
+  content: ""; position: absolute; left: 6%; right: 6%; top: calc(100% + 10px); height: 34px; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 0%, rgba(200, 55, 45, .45), transparent 70%);
+  filter: blur(6px); opacity: .8;
+}
+/* Reflejo que cruza la tarjeta */
+.vid-brillo {
+  position: absolute; inset: 0; pointer-events: none; overflow: hidden; border-radius: 4px;
+  background: linear-gradient(110deg, transparent 35%, rgba(255, 240, 210, .18) 48%, transparent 60%);
+  background-size: 260% 100%; background-position: 120% 0;
+  transition: background-position .9s ease;
+}
+.vid:hover .vid-brillo { background-position: -60% 0; }
+.vid.jugando .vid-brillo { display: none; }
+/* Botón de reproducir más llamativo, con anillo y texto */
+.vid-fila .vid-play { width: 86px; height: 86px; margin: -43px 0 0 -43px; box-shadow: 0 0 0 6px rgba(200, 55, 45, .28), 0 0 0 12px rgba(200, 55, 45, .12), 0 10px 30px rgba(0, 0, 0, .7); }
+.vid-fila .vid:hover .vid-play { transform: scale(1.1); }
+.vid-play-txt {
+  position: absolute; top: calc(100% + 18px); left: 50%; transform: translateX(-50%); white-space: nowrap;
+  padding: 4px 12px; background: rgba(0, 0, 0, .7); border: 1px solid var(--rojo);
+  font: 700 .85rem var(--f-titulo), sans-serif; text-transform: uppercase; letter-spacing: .08em; color: var(--crema);
+}
+@media (prefers-reduced-motion: reduce) {
+  .vid-fila .vid { transition: none; }
+  .vid-brillo { display: none; }
+}
+/* Teléfono: los videos se deslizan de lado; inclinación más suave para que se vean bien */
+@media (max-width: 760px) {
+  .vid-fila { justify-content: flex-start; perspective: 900px; padding-bottom: 54px; }
+  .vid-fila .vid-item:first-child .vid { --giro: 12deg; --prof: -16px; }
+  .vid-fila .vid-item:last-child .vid { --giro: -12deg; --prof: -16px; }
+  .vid-fila .vid-item.centro .vid { --prof: 16px; }
+  .vid-fila .vid.jugando { --prof: 30px; }
+}
