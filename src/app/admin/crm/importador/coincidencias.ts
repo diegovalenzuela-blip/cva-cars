@@ -23,8 +23,24 @@ export type ConsignacionBase = {
   precio_minimo: number | null;
   comision_tipo: string | null;
   comision_valor: number | null;
+  condiciones?: string | null;
+  observaciones?: string | null;
+  creado_en?: string;
 };
-export type BaseCRM = { clientes: ClienteBase[]; vehiculos: VehiculoBase[]; consignaciones: ConsignacionBase[] };
+export type DocumentoBase = {
+  id: string;
+  vehiculo_id: string;
+  tipo: string;
+  nombre: string | null;
+  estado: string;
+  vence_en: string | null;
+};
+export type BaseCRM = {
+  clientes: ClienteBase[];
+  vehiculos: VehiculoBase[];
+  consignaciones: ConsignacionBase[];
+  documentos?: DocumentoBase[];
+};
 
 export type Candidato = { id: string; motivo: string; confianza: "exacta" | "probable" };
 export type Propuesta = {
@@ -38,6 +54,7 @@ export type CambioPropuesto = {
   campo: string;
   de: string | null;
   a: string;
+  etiqueta?: string;
 };
 export type ResultadoCoincidencia = {
   cliente: Propuesta;
@@ -72,6 +89,10 @@ function decidir(candidatos: Candidato[]): Propuesta {
   return { candidatos, sugerido: null, ambiguo: candidatos.length > 1 };
 }
 
+export function tipoDocumento(campo: string) {
+  return campo.startsWith("otro:") ? { tipo: "otro", nombre: campo.slice(5) } : { tipo: campo, nombre: null };
+}
+
 /** Compara lo revisado con los registros elegidos, sin modificar nada. */
 export function calcularCambios(
   b: { campos: { entidad: EntidadCampo; campo: string; valor: string | null }[] },
@@ -103,8 +124,20 @@ export function calcularCambios(
     for (const campo of ["marca", "modelo", "version", "anio", "km"] as const) comparar("vehiculo", vehiculo.id, campo, vehiculo[campo]);
     const vigente = base.consignaciones.find((c) => c.vehiculo_id === vehiculo.id && ["por_confirmar", "activa"].includes(c.estado));
     if (vigente) {
-      for (const campo of ["precio_solicitado", "precio_minimo", "comision_tipo", "comision_valor"] as const) {
+      for (const campo of ["estado", "precio_solicitado", "precio_minimo", "comision_tipo", "comision_valor", "condiciones", "observaciones"] as const) {
         comparar("consignacion", vigente.id, campo, vigente[campo]);
+      }
+    }
+    for (const c of b.campos) {
+      if (c.entidad !== "documento" || c.valor === null || c.campo.endsWith("_vence")) continue;
+      const { tipo, nombre } = tipoDocumento(c.campo);
+      const doc = (base.documentos ?? []).find((d) => d.vehiculo_id === vehiculo.id && d.tipo === tipo && (tipo !== "otro" || d.nombre === nombre));
+      if (!doc) continue;
+      const titulo = nombre ?? tipo.replace("_", " ");
+      if (doc.estado !== c.valor) cambios.push({ entidad: "documento", id: doc.id, campo: "estado", de: doc.estado, a: c.valor, etiqueta: titulo });
+      const vence = dato("documento", `${c.campo}_vence`);
+      if (vence && doc.vence_en !== vence) {
+        cambios.push({ entidad: "documento", id: doc.id, campo: "vence_en", de: doc.vence_en, a: vence, etiqueta: `${titulo}: vencimiento` });
       }
     }
   }

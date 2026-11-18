@@ -215,7 +215,7 @@ export function necesitaConfirmarPropietario(b: BloqueRevision, base: BaseCRM) {
 }
 
 /** Motivos que impiden guardar. Vacío significa que el bloque está listo. */
-export function problemasBloque(b: BloqueRevision, base: BaseCRM) {
+export function problemasBloque(b: BloqueRevision, base: BaseCRM, bloques: BloqueRevision[] = []) {
   if (b.omitido) return [];
   const p: string[] = [];
   const activos = camposActivos(b);
@@ -224,6 +224,7 @@ export function problemasBloque(b: BloqueRevision, base: BaseCRM) {
   if (b.cliente.modo === null) p.push("Elige un cliente o crea uno nuevo.");
   if (b.cliente.modo === "usar" && !b.cliente.id) p.push("Selecciona el cliente.");
   if (b.cliente.modo === "bloque" && b.cliente.bloque === null) p.push("Selecciona el propietario.");
+  if (b.cliente.modo === "bloque" && bloques[b.cliente.bloque ?? -1]?.omitido) p.push("El propietario elegido quedó fuera de la importación.");
   if (b.cliente.modo === "crear") {
     if (!valorDe(b, "cliente", "nombre")) p.push("Falta el nombre del cliente.");
     if (!["telefono", "rut", "email"].some((c) => valorDe(b, "cliente", c))) p.push("Agrega teléfono, RUT o correo.");

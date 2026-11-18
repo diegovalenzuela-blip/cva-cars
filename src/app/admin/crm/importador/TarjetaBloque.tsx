@@ -114,7 +114,7 @@ export default function TarjetaBloque({
   cambiar: (fn: (b: BloqueRevision) => BloqueRevision) => void;
   original: ReactNode;
 }) {
-  const problemas = problemasBloque(b, base);
+  const problemas = problemasBloque(b, base, bloques);
   const titulo = [valorDe(b, "vehiculo", "marca"), valorDe(b, "vehiculo", "modelo"), valorDe(b, "vehiculo", "patente")].filter(Boolean).join(" ")
     || valorDe(b, "cliente", "nombre") || `Registro ${b.indice + 1}`;
   const cambios = cambiosDe(b, base);
@@ -228,7 +228,7 @@ export default function TarjetaBloque({
               <h4>Cambios sobre datos existentes</h4>
               {cambios.map((c) => {
                 const clave = claveCambio(c);
-                const etiqueta = etiquetaCampo(c);
+                const etiqueta = c.etiqueta ?? etiquetaCampo(c);
                 const formato = (v: string | null) => v === null ? "sin dato" : c.campo.startsWith("precio") ? plata(Number(v)) : v;
                 return (
                   <label key={clave} className="imp-check">

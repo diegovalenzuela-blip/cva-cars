@@ -3,7 +3,9 @@
 import "./crm.css";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { SelectorEtapa } from "./Campos";
-import { actualizarOportunidad, cargarCRM, ErrorCRM } from "./datos";
+import { actualizarOportunidad, cargarBaseImportacion, cargarCRM, ErrorCRM } from "./datos";
+import type { BaseCRM } from "./importador/coincidencias";
+import { ESTADOS_CONSIGNACION, nombreVehiculo, SelectorConsignacion } from "./VehiculosCliente";
 import FichaCliente from "./FichaCliente";
 import FormContacto from "./FormContacto";
 import {
@@ -25,10 +27,10 @@ import {
   type Oportunidad,
 } from "./tipos";
 
-type Vista = "hoy" | "oportunidades" | "clientes";
+type Vista = "hoy" | "oportunidades" | "consignaciones" | "clientes";
 type Modo = { tipo: "lista" } | { tipo: "nuevo" } | { tipo: "ficha"; id: string };
 
-const VISTAS: [Vista, string][] = [["hoy", "Seguimiento"], ["oportunidades", "Oportunidades"], ["clientes", "Clientes"]];
+const VISTAS: [Vista, string][] = [["hoy", "Seguimiento"], ["oportunidades", "Oportunidades"], ["consignaciones", "Consignaciones"], ["clientes", "Clientes"]];
 
 export default function PanelCRM({
   automotoraId,
@@ -52,11 +54,15 @@ export default function PanelCRM({
   const [busqueda, setBusqueda] = useState("");
   const [etapa, setEtapa] = useState<"abiertas" | Etapa>("abiertas");
   const [ocupada, setOcupada] = useState<string | null>(null);
+  const [base, setBase] = useState<BaseCRM | null>(null);
+  const [estadoConsignacion, setEstadoConsignacion] = useState("vigentes");
 
   const recargar = useCallback(async () => {
     if (!automotoraId) return;
     try {
       const datos = await cargarCRM(automotoraId);
+      // Vehículos y consignaciones son opcionales hasta activar sus tablas.
+      setBase(await cargarBaseImportacion(automotoraId).catch(() => null));
       setClientes(datos.clientes);
       setOportunidades(datos.oportunidades);
       setHoy(hoyISO());
@@ -96,7 +102,7 @@ export default function PanelCRM({
     (c: Cliente | undefined) =>
       !termino ||
       (!!c &&
-        [c.nombre, c.telefono, c.email, c.red_social, c.comuna].some((v) => v?.toLowerCase().includes(termino))),
+        [c.nombre, c.rut, c.telefono, c.email, c.red_social, c.comuna].some((v) => v?.toLowerCase().includes(termino))),
     [termino]
   );
 
@@ -256,6 +262,7 @@ export default function PanelCRM({
           hoy={hoy}
           avisar={avisar}
           recargar={recargar}
+          base={base}
           cambiarEtapa={cambiarEtapa}
           cerrar={() => setModo({ tipo: "lista" })}
         />
@@ -302,6 +309,54 @@ export default function PanelCRM({
                 {grupo("Próximos", seguimiento.proximas)}
               </>
             )
+          ) : vista === "consignaciones" ? (
+            !base ? (
+              <div className="ap-vacio"><p>Las consignaciones estarán disponibles cuando se active el importador.</p></div>
+            ) : (
+              <>
+                <label className="crm-filtro">
+                  <span className="ap-oculto">Filtrar consignaciones</span>
+                  <select value={estadoConsignacion} onChange={(e) => setEstadoConsignacion(e.target.value)}>
+                    <option value="vigentes">Vigentes</option>
+                    <option value="todas">Todas</option>
+                    {ESTADOS_CONSIGNACION.map((x) => <option key={x.v} value={x.v}>{x.t}</option>)}
+                  </select>
+                </label>
+                {(() => {
+                  const lista = base.consignaciones.filter((c) =>
+                    estadoConsignacion === "todas" ? true
+                    : estadoConsignacion === "vigentes" ? ["por_confirmar", "activa"].includes(c.estado)
+                    : c.estado === estadoConsignacion
+                  ).filter((c) => {
+                    const v = base.vehiculos.find((x) => x.id === c.vehiculo_id);
+                    return coincide(clientePorId.get(c.propietario_id)) || (!!v && `${nombreVehiculo(v)} ${v.patente}`.toLowerCase().includes(termino));
+                  });
+                  if (!lista.length) return <div className="ap-vacio"><p>No hay consignaciones para mostrar.</p></div>;
+                  return (
+                    <div className="crm-lista">
+                      {lista.map((c) => {
+                        const v = base.vehiculos.find((x) => x.id === c.vehiculo_id);
+                        const dueno = clientePorId.get(c.propietario_id);
+                        return (
+                          <article key={c.id} className="crm-tarjeta">
+                            <div>
+                              <button type="button" className="crm-nombre" onClick={() => dueno && setModo({ tipo: "ficha", id: dueno.id })}>
+                                {v ? nombreVehiculo(v) : "Vehículo"}
+                              </button>
+                              <p className="crm-vehiculo">{v?.patente} · {dueno?.nombre}</p>
+                              <p className="ap-auto-datos">
+                                {[c.precio_solicitado ? plata(c.precio_solicitado) : null, c.precio_minimo ? `Mínimo ${plata(c.precio_minimo)}` : null].filter(Boolean).join(" · ") || "Sin precio informado"}
+                              </p>
+                            </div>
+                            <SelectorConsignacion consignacion={c} avisar={avisar} recargar={recargar} />
+                          </article>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+              </>
+            )
           ) : (
             <>
               <div className={"ap-barra crm-barra" + (vista === "clientes" ? " solo" : "")}>
@@ -344,7 +399,7 @@ export default function PanelCRM({
                     return (
                       <button key={c.id} type="button" className="crm-cliente" onClick={() => setModo({ tipo: "ficha", id: c.id })}>
                         <b>{c.nombre}</b>
-                        <span>{[c.telefono, c.email, c.red_social, c.comuna].filter(Boolean).join(" · ")}</span>
+                        <span>{[c.rut, c.telefono, c.email, c.red_social, c.comuna].filter(Boolean).join(" · ")}</span>
                         <em>{propias.filter(estaAbierta).length} abiertas · {propias.length} en total</em>
                       </button>
                     );

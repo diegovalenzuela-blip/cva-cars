@@ -2,11 +2,21 @@
 
 import "../crm.css";
 import "./importador.css";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { cargarBaseImportacion, ErrorCRM } from "../datos";
+import Link from "next/link";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  borrarImportacion,
+  cargarBaseImportacion,
+  confirmarImportacion,
+  ErrorCRM,
+  listarImportaciones,
+  type ImportacionGuardada,
+} from "../datos";
+import { fechaHora } from "../tipos";
 import type { AutoCRM } from "../tipos";
 import type { BaseCRM } from "./coincidencias";
 import { extraerMensajes } from "./extractor";
+import { construirImportacion } from "./guardado";
 import { crearRevision, problemasBloque, type BloqueRevision, type Revision } from "./revision";
 import TarjetaBloque from "./TarjetaBloque";
 
@@ -37,13 +47,25 @@ export default function PanelImportar({
   const [sinActivar, setSinActivar] = useState(false);
   const [texto, setTexto] = useState("");
   const [revision, setRevision] = useState<Revision | null>(null);
+  const [guardando, setGuardando] = useState(false);
+  const [resumen, setResumen] = useState("");
+  const [historial, setHistorial] = useState<ImportacionGuardada[]>([]);
   const resultados = useRef<HTMLDivElement>(null);
+  const importacionId = useRef("");
+
+  const refrescar = useCallback(async () => {
+    const [datos, lista] = await Promise.all([cargarBaseImportacion(automotoraId), listarImportaciones(automotoraId)]);
+    setBase(datos);
+    setHistorial(lista);
+  }, [automotoraId]);
 
   useEffect(() => {
     let vigente = true;
-    cargarBaseImportacion(automotoraId)
-      .then((datos) => {
-        if (vigente) setBase(datos);
+    Promise.all([cargarBaseImportacion(automotoraId), listarImportaciones(automotoraId)])
+      .then(([datos, lista]) => {
+        if (!vigente) return;
+        setBase(datos);
+        setHistorial(lista);
       })
       .catch((e) => {
         if (!vigente) return;
@@ -58,8 +80,10 @@ export default function PanelImportar({
     };
   }, [automotoraId, avisar]);
 
-  function analizar(contenido = texto) {
+  function analizar(contenido = texto, id: string = crypto.randomUUID()) {
     const r = crearRevision(extraerMensajes(contenido), base);
+    importacionId.current = id;
+    setResumen("");
     setRevision(r);
     if (!r.bloques.length) avisar("No encontré datos para revisar en ese texto.", true);
     window.setTimeout(() => resultados.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
@@ -69,10 +93,32 @@ export default function PanelImportar({
     setRevision((r) => r && { ...r, bloques: r.bloques.map((b) => (b.indice === indice ? cambio(b) : b)) });
   }
 
+  async function guardar(destino: "confirmada" | "pendiente") {
+    if (!revision) return;
+    setGuardando(true);
+    try {
+      const r = await confirmarImportacion(construirImportacion(revision, base, importacionId.current, destino));
+      if (destino === "pendiente") {
+        setResumen("Importación guardada como pendiente. No se creó ningún cliente ni vehículo.");
+      } else {
+        const suma = (o: Record<string, number>) => Object.values(o).reduce((a, b) => a + b, 0);
+        setResumen(`Importación guardada: ${suma(r.creados)} registros creados y ${suma(r.actualizados)} actualizados.`);
+      }
+      avisar(destino === "pendiente" ? "Quedó pendiente." : "Importación guardada.");
+      setTexto("");
+      setRevision(null);
+      await refrescar();
+    } catch (e) {
+      avisar(e instanceof ErrorCRM ? e.message : "No se pudo guardar la importación.", true);
+      refrescar().catch(() => undefined);
+    }
+    setGuardando(false);
+  }
+
   const estado = useMemo(() => {
     if (!revision) return null;
     const activos = revision.bloques.filter((b) => !b.omitido);
-    const faltan = activos.filter((b) => problemasBloque(b, base).length).length;
+    const faltan = activos.filter((b) => problemasBloque(b, base, revision.bloques).length).length;
     return { activos: activos.length, faltan };
   }, [revision, base]);
 
@@ -128,6 +174,12 @@ export default function PanelImportar({
           )}
         </div>
       </form>
+
+      {resumen && (
+        <p className="imp-respaldo imp-resumen">
+          {resumen} <Link href="/admin/crm">Ver CRM</Link>
+        </p>
+      )}
 
       {revision && revision.bloques.length > 0 && estado && (
         <div ref={resultados} className="imp-resultados">
@@ -185,8 +237,67 @@ export default function PanelImportar({
                 ? `${estado.faltan} ${estado.faltan === 1 ? "registro necesita" : "registros necesitan"} revisión.`
                 : "Todo está revisado."}
             </p>
-            <button type="button" className="btn fill" disabled>Confirmar y guardar</button>
-            <span className="ap-ref">El guardado se activa en la siguiente etapa.</span>
+            <div className="imp-confirmar-acc">
+              <button type="button" className="btn" disabled={guardando} onClick={() => guardar("pendiente")}>Dejar pendiente</button>
+              <button type="button" className="btn fill" disabled={guardando || !estado.activos || estado.faltan > 0} onClick={() => guardar("confirmada")}>
+                {guardando ? "Guardando…" : "Confirmar y guardar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {historial.length > 0 && (
+        <div className="imp-historial">
+          <h2>Importaciones recientes</h2>
+          <div className="crm-lista">
+            {historial.map((i) => {
+              const original = i.mensajes.map((m) => m.texto).join("\n\n");
+              return (
+                <article key={i.id} className="crm-op">
+                  <div className="crm-op-cab">
+                    <div>
+                      <h4>{i.estado === "pendiente" ? "Pendiente" : i.estado === "confirmada" ? "Confirmada" : "Descartada"}</h4>
+                      <p className="ap-auto-datos">{fechaHora(i.confirmado_en ?? i.creado_en)} · {i.mensajes.length} {i.mensajes.length === 1 ? "mensaje" : "mensajes"}</p>
+                    </div>
+                    <div className="ap-botones">
+                      {i.estado === "pendiente" && (
+                        <button
+                          type="button"
+                          className="ap-b principal"
+                          onClick={() => {
+                            setTexto(original);
+                            analizar(original, i.id);
+                          }}
+                        >
+                          Continuar
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        className="ap-b peligro"
+                        onClick={async () => {
+                          if (!confirm("¿Eliminar esta importación y sus mensajes originales? Los clientes y vehículos guardados no se borran.")) return;
+                          try {
+                            await borrarImportacion(i.id);
+                            avisar("Importación eliminada.");
+                            await refrescar();
+                          } catch (e) {
+                            avisar(e instanceof ErrorCRM ? e.message : "No se pudo eliminar.", true);
+                          }
+                        }}
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </div>
+                  <details className="imp-detalle">
+                    <summary>Ver mensaje original</summary>
+                    {i.mensajes.map((m) => <p key={m.id} className="imp-original">{m.texto}</p>)}
+                  </details>
+                </article>
+              );
+            })}
           </div>
         </div>
       )}

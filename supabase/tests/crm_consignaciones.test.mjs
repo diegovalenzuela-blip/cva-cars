@@ -3,6 +3,9 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { before, test } from "node:test";
+import { extraerMensajes } from "../../src/app/admin/crm/importador/extractor.ts";
+import { construirImportacion } from "../../src/app/admin/crm/importador/guardado.ts";
+import { claveCambio, cambiosDe, crearRevision } from "../../src/app/admin/crm/importador/revision.ts";
 
 const modulo = process.env.PGLITE_MODULE;
 const A = "00000000-0000-4000-8000-00000000000a";
@@ -310,4 +313,86 @@ test("el público no accede y nadie escribe el historial", opciones, async () =>
   });
   const columnas = await filas("select column_name from information_schema.columns where table_name = 'autos'");
   assert.ok(!columnas.some((c) => ["patente", "rut", "cliente_id"].includes(c.column_name)));
+});
+
+const HOY = new Date(2026, 10, 18);
+
+async function baseActual() {
+  const [clientes, vehiculos, consignaciones, documentos] = await Promise.all(
+    ["crm_clientes", "crm_vehiculos", "crm_consignaciones", "crm_vehiculo_documentos"].map((t) => filas(`select * from ${t} order by creado_en desc`))
+  );
+  const numero = (c) => ({
+    ...c,
+    precio_solicitado: c.precio_solicitado === null ? null : Number(c.precio_solicitado),
+    precio_minimo: c.precio_minimo === null ? null : Number(c.precio_minimo),
+    comision_valor: c.comision_valor === null ? null : Number(c.comision_valor),
+  });
+  return { clientes, vehiculos, consignaciones: consignaciones.map(numero), documentos };
+}
+
+const aprobar = (b) => ({
+  ...b,
+  propietario_confirmado: b.relacion.estado !== "respaldado",
+  campos: b.campos.map((c) => (c.valor && c.estado === "por_confirmar" && c.decision === "sin_decision" ? { ...c, decision: "aceptado" } : c)),
+});
+
+async function guardarTexto(texto, ajustar = (b) => b) {
+  const base = await baseActual();
+  const r = crearRevision(extraerMensajes(texto, HOY), base);
+  const bloques = r.bloques.map((b, i) => ajustar(aprobar(b), i, base));
+  const solicitud = construirImportacion({ ...r, bloques }, base, uuid());
+  return (await fila("select public.crm_confirmar_importacion($1::jsonb) r", [JSON.stringify(solicitud)])).r;
+}
+
+test("de punta a punta: crea, reutiliza al dueño y actualiza con historial", opciones, async () => {
+  await limpiar();
+  await socio(async () => {
+    await guardarTexto("Toyota Hilux 2021 patente LPKD45 de Juan Pérez, RUT 12.345.678-5, teléfono 912345678, dejó en consignación, precio 18 millones, SOAP vencido");
+    let datos = await baseActual();
+    assert.equal(datos.clientes.length, 1);
+    assert.equal(datos.consignaciones[0].estado, "activa");
+    assert.equal(datos.documentos[0].estado, "vencido");
+    assert.equal(datos.vehiculos[0].propietario_origen, "mensaje");
+
+    await guardarTexto("Kia Sportage GHJK12 teléfono 912345678 precio 12 millones");
+    datos = await baseActual();
+    assert.equal(datos.clientes.length, 1);
+    assert.equal(datos.vehiculos.length, 2);
+    assert.equal(datos.consignaciones.length, 2);
+    assert.ok(datos.vehiculos.every((v) => v.cliente_id === datos.clientes[0].id));
+
+    await guardarTexto("La patente LPKD45 finalmente quedó en 17.500.000", (b, _i, base) => ({
+      ...b,
+      cambios_aceptados: cambiosDe(b, base).filter((c) => c.campo === "precio_solicitado").map(claveCambio),
+    }));
+    datos = await baseActual();
+    assert.equal(datos.consignaciones.find((c) => c.precio_solicitado === 17500000)?.estado, "activa");
+    const h = await fila("select valor_anterior, valor_nuevo from crm_cambios where campo = 'precio_solicitado'");
+    assert.deepEqual(h, { valor_anterior: "18000000", valor_nuevo: "17500000" });
+    const origen = await fila("select count(*)::int n from crm_importacion_campos c join crm_importacion_mensajes m on m.id = c.mensaje_id where c.campo = 'patente' and c.registro_id is not null");
+    assert.equal(origen.n, 3);
+  });
+});
+
+test("de punta a punta: sin aceptar un cambio no se sobrescribe", opciones, async () => {
+  await limpiar();
+  await socio(async () => {
+    await guardarTexto("Hilux LPKD45 de Juan Pérez teléfono 912345678 precio 18 millones");
+    await guardarTexto("LPKD45 ahora precio 16 millones");
+    assert.equal((await baseActual()).consignaciones[0].precio_solicitado, 18000000);
+    assert.equal((await fila("select count(*)::int n from crm_cambios where campo = 'precio_solicitado'")).n, 0);
+  });
+});
+
+test("de punta a punta: un segundo auto puede usar al dueño del bloque anterior", opciones, async () => {
+  await limpiar();
+  await socio(async () => {
+    await guardarTexto("Juan Pérez teléfono 912345678 tiene una Hilux LPKD45 y una Corolla GHJK12", (b, i) =>
+      i === 1 ? { ...b, cliente: { modo: "bloque", id: null, bloque: 0 }, propietario_confirmado: true } : { ...b, propietario_confirmado: true }
+    );
+    const datos = await baseActual();
+    assert.equal(datos.clientes.length, 1);
+    assert.equal(datos.vehiculos.length, 2);
+    assert.ok(datos.vehiculos.every((v) => v.propietario_origen === "usuario"));
+  });
 });

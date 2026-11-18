@@ -50,11 +50,16 @@
 .imp-confirmar p { margin: 0; }
 .imp-confirmar .btn { padding: 11px 16px; font-size: .92rem; }
 .imp-confirmar .btn:disabled { opacity: .45; cursor: not-allowed; }
+.imp-confirmar-acc { display: flex; gap: 8px; flex-wrap: wrap; }
+.imp-resumen { margin: 0 0 18px; }
+.imp-resumen a { color: inherit; font-weight: 700; }
+.imp-historial { margin-top: 28px; }
+.imp-historial h2 { margin-bottom: 10px; }
 
 @media (max-width: 640px) {
   .imp-asociar, .imp-campos { grid-template-columns: minmax(0, 1fr); }
   .imp-confirmar { display: grid; grid-template-columns: minmax(0, 1fr) auto; padding: 8px 10px; }
   .imp-confirmar p { font-size: .84rem; line-height: 1.25; }
-  .imp-confirmar .ap-ref { display: none; }
+  .imp-confirmar-acc { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; }
   .imp-confirmar .btn { padding: 9px 10px; font-size: .78rem; }
 }

@@ -1,5 +1,7 @@
 // Tipos, listas y utilidades del CRM. No dependen de React ni de Supabase.
 
+import { normalizarRut, rutValido } from "./importador/reconocer.ts";
+
 export const ETAPAS = [
   { v: "nuevo", t: "Nuevo" },
   { v: "contactado", t: "Contactado" },
@@ -49,6 +51,7 @@ export type Cliente = {
   id: string;
   automotora_id: string;
   nombre: string;
+  rut: string | null;
   telefono: string | null;
   email: string | null;
   red_social: string | null;
@@ -94,7 +97,7 @@ export type AutoCRM = {
   estado: string;
 };
 
-export type DatosCliente = Pick<Cliente, "nombre" | "telefono" | "email" | "red_social" | "comuna" | "notas">;
+export type DatosCliente = Pick<Cliente, "nombre" | "rut" | "telefono" | "email" | "red_social" | "comuna" | "notas">;
 
 export type DatosOportunidad = Pick<
   Oportunidad,
@@ -103,6 +106,7 @@ export type DatosOportunidad = Pick<
 
 export type BorradorCliente = {
   nombre: string;
+  rut: string;
   telefono: string;
   email: string;
   red_social: string;
@@ -179,6 +183,7 @@ export function enlaceWhatsApp(c: Cliente, o?: Oportunidad) {
 
 export const borradorCliente = (c?: Cliente): BorradorCliente => ({
   nombre: c?.nombre ?? "",
+  rut: c?.rut ?? "",
   telefono: c?.telefono ?? "",
   email: c?.email ?? "",
   red_social: c?.red_social ?? "",
@@ -205,8 +210,10 @@ export function validarCliente(b: BorradorCliente): { datos: DatosCliente } | { 
   const email = opcional(b.email)?.toLowerCase() ?? null;
   if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { error: "Revisa el correo." };
   const red_social = opcional(b.red_social);
-  if (!telefono && !email && !red_social) return { error: "Agrega al menos un teléfono, correo o usuario de red social." };
-  return { datos: { nombre: b.nombre.trim(), telefono, email, red_social, comuna: opcional(b.comuna), notas: opcional(b.notas) } };
+  const rut = b.rut.trim() ? normalizarRut(b.rut) : null;
+  if (b.rut.trim() && (!rut || !rutValido(rut))) return { error: "Revisa el RUT." };
+  if (!telefono && !email && !red_social && !rut) return { error: "Agrega al menos un teléfono, RUT, correo o usuario de red social." };
+  return { datos: { nombre: b.nombre.trim(), rut, telefono, email, red_social, comuna: opcional(b.comuna), notas: opcional(b.notas) } };
 }
 
 export function aDatosOportunidad(b: BorradorOportunidad, autos: AutoCRM[], actual?: Oportunidad): DatosOportunidad {

@@ -513,6 +513,11 @@ begin
             array['nombre', 'rut', 'telefono', 'email', 'red_social', 'comuna', 'notas'], n);
           actualizados := jsonb_set(actualizados, '{clientes}', to_jsonb((actualizados->>'clientes')::int + 1));
         end if;
+      elsif c->>'accion' = 'bloque' then
+        if (c->>'bloque')::int is null or (c->>'bloque')::int >= n then
+          raise exception 'CRM: bloque %: el propietario indicado no está disponible.', n;
+        end if;
+        cliente := (registros->(c->>'bloque')->>'cliente')::uuid;
       else
         raise exception 'CRM: bloque %: acción de cliente no válida.', n;
       end if;

@@ -75,6 +75,11 @@
 .crm-historial span { font-size: .8rem; color: #c9bb88; }
 .crm-historial p { margin: 2px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 
+.crm-vehiculos { margin-bottom: 24px; }
+.crm-vehiculos > .crm-grupo { margin-bottom: 14px; }
+.crm-consignacion { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin: 8px 0; padding-top: 8px; border-top: 1px solid #2a1d10; }
+.crm-filtro { display: block; max-width: 280px; margin-bottom: 12px; }
+
 @media (max-width: 860px) {
   .crm-tarjeta, .crm-ficha-cuerpo { grid-template-columns: minmax(0, 1fr); }
 }

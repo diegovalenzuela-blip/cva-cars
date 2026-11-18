@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CamposCliente, CamposOportunidad } from "./Campos";
+import { normalizarRut } from "./importador/reconocer";
 import { crearActividad, crearCliente, crearOportunidad, ErrorCRM } from "./datos";
 import {
   aDatosOportunidad,
@@ -41,8 +42,9 @@ export default function FormContacto({
 
   const telefono = cliente.telefono.trim() ? normalizarTelefono(cliente.telefono) : null;
   const correo = cliente.email.trim().toLowerCase();
+  const rut = normalizarRut(cliente.rut);
   const existente = clientes.find(
-    (c) => (telefono && c.telefono === telefono) || (correo && c.email?.toLowerCase() === correo)
+    (c) => (rut && c.rut === rut) || (telefono && c.telefono === telefono) || (correo && c.email?.toLowerCase() === correo)
   );
 
   async function guardar(e: React.FormEvent) {
