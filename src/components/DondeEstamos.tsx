@@ -20,7 +20,6 @@ export default function DondeEstamos({ banner = "" }: { banner?: string }) {
   const { ref, visto } = useReveal<HTMLElement>();
 
   const mapa = "https://www.google.com/maps?q=" + encodeURIComponent(DIRECCION) + "&output=embed";
-  const comoLlegar = "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(DIRECCION);
 
   return (
     <section id="contacto" className={"don" + (visto ? " in" : "")} ref={ref}>
@@ -38,7 +37,7 @@ export default function DondeEstamos({ banner = "" }: { banner?: string }) {
         <div className="wrap">
           <h2 className="rvx" style={retraso(0)}>Dónde estamos</h2>
           <p className="rvx" style={retraso(100)}>
-            Visítanos en Chillán o escríbenos, te atendemos con gusto.
+            Atendemos en Chillán y la Región de Ñuble. Escríbenos y coordinamos.
           </p>
         </div>
       </div>
@@ -54,9 +53,9 @@ export default function DondeEstamos({ banner = "" }: { banner?: string }) {
                 </Icono>
               </span>
               <div>
-                <h3>Dirección</h3>
+                <h3>Ubicación</h3>
                 <p>{DIRECCION}</p>
-                <a className="btn" href={comoLlegar} target="_blank" rel="noopener noreferrer">Cómo llegar</a>
+                <a className="btn" href={wa("Hola, quiero coordinar una visita.")}>Coordinar visita</a>
               </div>
             </div>
 
@@ -68,7 +67,7 @@ export default function DondeEstamos({ banner = "" }: { banner?: string }) {
                 </Icono>
               </span>
               <div>
-                <h3>Horario</h3>
+                <h3>Atención</h3>
                 <p>{HORARIO}</p>
               </div>
             </div>
