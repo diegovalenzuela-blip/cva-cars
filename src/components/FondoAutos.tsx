@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { FotoFondo } from "@/lib/useAutosFondo";
+import { fondo } from "@/lib/foto";
 
 export default function FondoAutos({
   fotos,
@@ -33,8 +34,9 @@ export default function FondoAutos({
         // eslint-disable-next-line @next/next/no-img-element
         <img
           key={f.url + k}
-          src={f.url}
+          src={fondo(f.url)}
           alt=""
+          decoding="async"
           className={"fa-img" + (k === actual ? " on" : "")}
         />
       ))}

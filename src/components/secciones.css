@@ -46,7 +46,7 @@
 
 /* ===== Movimiento (se apaga con "Reducir movimiento") ===== */
 @media (prefers-reduced-motion: no-preference) {
-  .vta .rvx, .don .rvx { opacity: 0; transform: translateY(26px); transition: opacity .7s ease, transform .7s cubic-bezier(.2, .7, .2, 1); }
+  .vta .rvx, .don .rvx { opacity: 0; transform: translateY(16px); transition: opacity .45s ease, transform .45s cubic-bezier(.2, .7, .2, 1); }
   .vta.in .rvx, .don.in .rvx { opacity: 1; transform: none; }
 
   @keyframes vtaZoom { from { transform: scale(1); } to { transform: scale(1.1); } }

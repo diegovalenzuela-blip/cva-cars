@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { SLUG, wa } from "@/lib/datos";
+import { foto } from "@/lib/foto";
 
 type Auto = {
   id: string;
@@ -81,7 +82,7 @@ export default function Detalle() {
           <div className="gal-main">
             {actual ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={actual} alt={titulo} decoding="async" />
+              <img {...foto(actual, "(max-width: 900px) 100vw, 60vw")} alt={titulo} decoding="async" />
             ) : (
               <div className="foto" style={{ height: "100%" }}>Foto próximamente</div>
             )}
@@ -98,7 +99,7 @@ export default function Detalle() {
               {fotos.map((u, k) => (
                 <button key={u} className={k === i ? "on" : ""} onClick={() => setI(k)} aria-label={"Ver foto " + (k + 1)}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={u} alt="" loading="lazy" decoding="async" />
+                  <img {...foto(u, "120px")} alt="" loading="lazy" decoding="async" />
                 </button>
               ))}
             </div>

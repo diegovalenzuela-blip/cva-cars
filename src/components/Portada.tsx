@@ -59,7 +59,7 @@ export default function Portada({ fotos }: { fotos: FotoFondo[] }) {
                 <span
                   key={p + i}
                   className={"pal" + (p === "Chillán" ? " rojo" : "")}
-                  style={{ animationDelay: 0.15 + i * 0.1 + "s" }}
+                  style={{ animationDelay: i * 0.06 + "s" }}
                 >
                   {p}
                 </span>

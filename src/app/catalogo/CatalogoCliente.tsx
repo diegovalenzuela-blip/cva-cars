@@ -5,6 +5,7 @@ import Aparece from "@/components/Aparece";
 import { useMemo, useState } from "react";
 import { wa } from "@/lib/datos";
 import { useRotacion } from "@/lib/useRotacion";
+import { foto, fondo } from "@/lib/foto";
 
 type Auto = {
   id: string;
@@ -37,10 +38,12 @@ export default function CatalogoCliente({ autosInicial }: { autosInicial: Auto[]
   const [min, setMin] = useState("");
   const [max, setMax] = useState("");
   const [orden, setOrden] = useState("recientes");
+  // En el teléfono los filtros van plegados para que los autos se vean de inmediato.
+  const [verFiltros, setVerFiltros] = useState(false);
   const fotosFondo = useMemo(
     () => autos
       .filter((auto) => auto.fotos && auto.fotos.length > 0)
-      .map((auto) => auto.fotos[0])
+      .map((auto) => fondo(auto.fotos[0]))
       .slice(0, 5),
     [autos]
   );
@@ -88,6 +91,7 @@ export default function CatalogoCliente({ autosInicial }: { autosInicial: Auto[]
   }, [autos, q, marca, ubic, tipo, desde, hasta, orden]);
 
   const hayFiltros = Boolean(q || marca || ubic || tipo || min || max);
+  const plegados = [ubic, marca, min, max, orden !== "recientes" ? orden : ""].filter(Boolean).length;
 
   function limpiar() {
     setQ("");
@@ -135,7 +139,7 @@ export default function CatalogoCliente({ autosInicial }: { autosInicial: Auto[]
         </div>
       )}
 
-      <div className="filtros2">
+      <div className={"filtros2" + (verFiltros ? " abiertos" : "")}>
         <input
           className="f-buscar"
           type="search"
@@ -144,6 +148,14 @@ export default function CatalogoCliente({ autosInicial }: { autosInicial: Auto[]
           onChange={(e) => setQ(e.target.value)}
           aria-label="Buscar"
         />
+        <button
+          type="button"
+          className="btn f-toggle"
+          aria-expanded={verFiltros}
+          onClick={() => setVerFiltros((v) => !v)}
+        >
+          {verFiltros ? "Ocultar filtros" : "Más filtros" + (plegados ? " (" + plegados + ")" : "")}
+        </button>
         <select value={ubic} onChange={(e) => setUbic(e.target.value)} aria-label="Ubicación">
           <option value="">Todas las ubicaciones</option>
           {ubicaciones.map((u) => (
@@ -197,7 +209,7 @@ export default function CatalogoCliente({ autosInicial }: { autosInicial: Auto[]
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   className="foto"
-                  src={x.fotos[0]}
+                  {...foto(x.fotos[0], "(max-width: 760px) 92vw, (max-width: 1100px) 46vw, 340px")}
                   alt={x.marca + " " + x.modelo}
                   loading={i === 0 ? "eager" : "lazy"}
                   fetchPriority={i === 0 ? "high" : "auto"}
