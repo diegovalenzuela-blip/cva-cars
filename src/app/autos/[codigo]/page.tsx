@@ -81,7 +81,7 @@ export default function Detalle() {
           <div className="gal-main">
             {actual ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={actual} alt={titulo} />
+              <img src={actual} alt={titulo} decoding="async" />
             ) : (
               <div className="foto" style={{ height: "100%" }}>Foto próximamente</div>
             )}
@@ -98,7 +98,7 @@ export default function Detalle() {
               {fotos.map((u, k) => (
                 <button key={u} className={k === i ? "on" : ""} onClick={() => setI(k)} aria-label={"Ver foto " + (k + 1)}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={u} alt="" />
+                  <img src={u} alt="" loading="lazy" decoding="async" />
                 </button>
               ))}
             </div>

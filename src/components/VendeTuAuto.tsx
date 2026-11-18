@@ -2,10 +2,10 @@
 
 import "./secciones.css";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { CSSProperties } from "react";
 import { wa } from "@/lib/datos";
-import { useFotos } from "@/lib/useFotos";
+import { useRotacion } from "@/lib/useRotacion";
 import { useReveal } from "@/lib/useReveal";
 
 const PASOS = [
@@ -17,19 +17,8 @@ const PASOS = [
 const retraso = (ms: number): CSSProperties => ({ transitionDelay: ms + "ms" });
 
 export default function VendeTuAuto({ fotosFondo }: { fotosFondo: string[] }) {
-  const fotos = useFotos();
-  const [fotoIndex, setFotoIndex] = useState(0);
-
-  useEffect(() => {
-    if (fotosFondo.length < 2) return;
-
-    const intervalo = window.setInterval(() => {
-      setFotoIndex((actual) => (actual + 1) % fotosFondo.length);
-    }, 5000);
-
-    return () => window.clearInterval(intervalo);
-  }, [fotosFondo.length]);
-  const foto = fotos[1] ?? fotos[0] ?? "";
+  const { ref: refFondo, indice: fotoIndex } = useRotacion<HTMLDivElement>(fotosFondo);
+  const foto = fotosFondo[1] ?? fotosFondo[0] ?? "";
   const { ref, visto } = useReveal<HTMLElement>();
   const [enviado, setEnviado] = useState(false);
 
@@ -48,7 +37,7 @@ export default function VendeTuAuto({ fotosFondo }: { fotosFondo: string[] }) {
   return (
     <section id="vende" className={"vta" + (visto ? " in" : "")} ref={ref}>
       {fotosFondo.length > 0 && (
-        <div className="fondo-exhibicion" aria-hidden="true">
+        <div className="fondo-exhibicion" aria-hidden="true" ref={refFondo}>
           <div
             key={fotoIndex}
             className="fondo-exhibicion-foto"
@@ -68,7 +57,7 @@ export default function VendeTuAuto({ fotosFondo }: { fotosFondo: string[] }) {
           <div className="vta-visual rvx" style={retraso(140)}>
             {foto && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={foto} alt="" loading="lazy" />
+              <img src={foto} alt="" loading="lazy" decoding="async" />
             )}
             <span className="vta-badge">Consignación</span>
             <ol className="vta-pasos">

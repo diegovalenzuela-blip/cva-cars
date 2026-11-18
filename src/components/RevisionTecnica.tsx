@@ -1,30 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Image from "next/image";
 import { wa } from "@/lib/datos";
+import { useRotacion } from "@/lib/useRotacion";
 
 export default function RevisionTecnica({
   fotosFondo,
 }: {
   fotosFondo: string[];
 }) {
-  const [fotoIndex, setFotoIndex] = useState(0);
-
-  useEffect(() => {
-    if (fotosFondo.length < 2) return;
-
-    const intervalo = window.setInterval(() => {
-      setFotoIndex((actual) => (actual + 1) % fotosFondo.length);
-    }, 5000);
-
-    return () => window.clearInterval(intervalo);
-  }, [fotosFondo.length]);
+  const { ref: refFondo, indice: fotoIndex } = useRotacion<HTMLDivElement>(fotosFondo);
 
   return (
     <section id="revision-tecnica" className="rt-section">
       {fotosFondo.length > 0 && (
-        <div className="fondo-exhibicion" aria-hidden="true">
+        <div className="fondo-exhibicion" aria-hidden="true" ref={refFondo}>
           <div
             key={fotoIndex}
             className="fondo-exhibicion-foto rt-fondo-animado"

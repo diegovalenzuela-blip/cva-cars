@@ -3,9 +3,10 @@
 import "./destacados.css";
 import "./portada.css";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { wa } from "@/lib/datos";
-import { useAutosFondo } from "@/lib/useAutosFondo";
+import type { FotoFondo } from "@/lib/useAutosFondo";
 import FondoPortada from "./FondoPortada";
 
 // Tiempo entre fotos de fondo, en milisegundos (4500 = 4,5 segundos)
@@ -13,9 +14,8 @@ const INTERVALO = 4500;
 
 const PALABRAS = ["Tu", "próximo", "auto", "está", "en", "Chillán"];
 
-export default function Portada() {
+export default function Portada({ fotos }: { fotos: FotoFondo[] }) {
   const ref = useRef<HTMLDivElement>(null);
-  const fotos = useAutosFondo(4);
 
   useEffect(() => {
     const el = ref.current;
@@ -75,7 +75,7 @@ export default function Portada() {
               <a className="btn" href={wa("Hola, vi la página de Chillán Vende Autos y quiero consultar.")}>
                 Hablar por WhatsApp
               </a>
-              <a className="btn" href="/catalogo">Catálogo</a>
+              <Link className="btn" href="/catalogo">Catálogo</Link>
             </div>
           </div>
 

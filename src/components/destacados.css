@@ -57,7 +57,7 @@
 .vid:hover { transform: translateY(-8px) scale(1.02); border-color: var(--rojo); box-shadow: 0 18px 44px rgba(200, 55, 45, .4); }
 .vid.jugando { border-color: var(--rojo); box-shadow: 0 0 0 3px rgba(200, 55, 45, .35), 0 18px 50px rgba(200, 55, 45, .5); }
 .vid-video { display: block; width: 100%; height: 100%; object-fit: contain; background: #000; }
-.vid-tag { position: absolute; top: 10px; left: 10px; background: var(--rojo); color: #fff; padding: 2px 10px; font: 700 .8rem Oswald, sans-serif; text-transform: uppercase; letter-spacing: .08em; pointer-events: none; }
+.vid-tag { position: absolute; top: 10px; left: 10px; background: var(--rojo); color: #fff; padding: 2px 10px; font: 700 .8rem var(--f-titulo), sans-serif; text-transform: uppercase; letter-spacing: .08em; pointer-events: none; }
 .vid-play { position: absolute; top: 50%; left: 50%; width: 76px; height: 76px; margin: -38px 0 0 -38px; isolation: isolate; border-radius: 50%; border: 0; background: var(--rojo); color: #fff; display: grid; place-items: center; cursor: pointer; box-shadow: 0 8px 24px rgba(0, 0, 0, .6); transition: transform .2s ease, background .2s ease; }
 .vid-play svg { margin-left: 4px; }
 .vid-play::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--rojo); z-index: -1; opacity: 0; }
@@ -108,17 +108,17 @@
 .vit-estrella-foto, .vit-foto { position: relative; display: block; aspect-ratio: 4 / 3; overflow: hidden; background: #0d0a07; }
 .vit-estrella-foto img, .vit-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .vit-estrella-foto .foto, .vit-foto .foto { width: 100%; height: 100%; }
-.vit-cinta { position: absolute; top: 16px; left: 0; background: var(--rojo); color: #fff; padding: 6px 20px 6px 16px; font: 700 .95rem Oswald, sans-serif; text-transform: uppercase; letter-spacing: .08em; box-shadow: 0 6px 18px rgba(0, 0, 0, .5); }
+.vit-cinta { position: absolute; top: 16px; left: 0; background: var(--rojo); color: #fff; padding: 6px 20px 6px 16px; font: 700 .95rem var(--f-titulo), sans-serif; text-transform: uppercase; letter-spacing: .08em; box-shadow: 0 6px 18px rgba(0, 0, 0, .5); }
 .vit-brillo { position: absolute; top: 0; left: -60%; width: 40%; height: 100%; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .28), transparent); transform: skewX(-20deg); pointer-events: none; }
 .vit-estrella-info { padding: 28px; display: flex; flex-direction: column; justify-content: center; gap: 14px; }
 .vit-estrella-info h3 { font-size: clamp(1.9rem, 4vw, 2.8rem); }
 .vit-datos { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
 .vit-datos li { border: 1px solid var(--bronce); padding: 3px 12px; font-size: .95rem; color: #e8dba5; }
-.vit-precio { font: 700 clamp(2.4rem, 6vw, 3.4rem) Oswald, sans-serif; color: var(--rojo); line-height: 1; }
+.vit-precio { font: 700 clamp(2.4rem, 6vw, 3.4rem) var(--f-titulo), sans-serif; color: var(--rojo); line-height: 1; }
 .vit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 22px; }
 .vit-grid > .apa { display: flex; }
 .vit-card { flex: 1; background: var(--panel); border: 1px solid var(--bronce); display: flex; flex-direction: column; }
-.vit-precio-tag { position: absolute; left: 10px; bottom: 10px; background: rgba(0, 0, 0, .78); border-left: 4px solid var(--rojo); padding: 4px 12px; font: 700 1.3rem Oswald, sans-serif; }
+.vit-precio-tag { position: absolute; left: 10px; bottom: 10px; background: rgba(0, 0, 0, .78); border-left: 4px solid var(--rojo); padding: 4px 12px; font: 700 1.3rem var(--f-titulo), sans-serif; }
 .vit-estrellita { position: absolute; top: 10px; right: 10px; width: 34px; height: 34px; border-radius: 50%; background: var(--rojo); color: #fff; display: grid; place-items: center; font-size: 1.1rem; }
 .vit-info { padding: 14px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
 .vit-info h3 { font-size: 1.4rem; }
@@ -185,4 +185,30 @@
   .por::before, .vid-sec::before, .vit::before { animation: none; }
   .vit-estrella { animation: none; box-shadow: 0 0 28px rgba(200, 55, 45, .25); }
   .vit-estrella-foto img { animation: none; }
+}
+
+/* ===== Teléfonos y pantallas táctiles =====
+   Sin animaciones infinitas ni filtros pesados: eran lo que dejaba la página pegada. */
+@media (max-width: 760px), (hover: none) {
+  .por::before,
+  .por .pal.rojo,
+  .por-img,
+  .por-halo,
+  .vid-sec::before,
+  .vid.jugando,
+  .vit-estrella,
+  .vit-estrella-foto img,
+  .vit-precio,
+  .vit-cinta { animation-iteration-count: 1; animation-name: none; }
+  .por .pal.rojo { animation: porPalabra .75s both cubic-bezier(.2, .8, .2, 1); }
+  .por-halo { filter: none; }
+  .por .btn.fill::after,
+  .vit-mas .btn.fill::after,
+  .vit-estrella .vit-brillo,
+  .vid-play::before { display: none; animation: none; }
+  .vid-fondo-foto,
+  .vit-fondo-foto,
+  .fondo-exhibicion-foto,
+  .catalogo-fondo-foto { filter: none; animation: none; transform: none; inset: 0; }
+  .fp-img, .fp-img.on { transform: none; transition: opacity .8s ease; }
 }

@@ -1,8 +1,9 @@
 "use client";
 
 import "./destacados.css";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { VIDEOS } from "@/lib/datos";
+import { useRotacion } from "@/lib/useRotacion";
 import Aparece from "./Aparece";
 
 function Tarjeta({
@@ -61,17 +62,7 @@ function Tarjeta({
 
 export default function VideosDestacados({ fotosFondo }: { fotosFondo: string[] }) {
   const seccion = useRef<HTMLElement>(null);
-  const [fotoIndex, setFotoIndex] = useState(0);
-
-  useEffect(() => {
-    if (fotosFondo.length < 2) return;
-
-    const intervalo = window.setInterval(() => {
-      setFotoIndex((actual) => (actual + 1) % fotosFondo.length);
-    }, 5000);
-
-    return () => window.clearInterval(intervalo);
-  }, [fotosFondo.length]);
+  const { ref: refFondo, indice: fotoIndex } = useRotacion<HTMLDivElement>(fotosFondo);
 
   function alReproducir(actual: HTMLVideoElement) {
     seccion.current?.querySelectorAll<HTMLVideoElement>("video").forEach((v) => {
@@ -82,7 +73,7 @@ export default function VideosDestacados({ fotosFondo }: { fotosFondo: string[] 
   return (
     <section id="videos" className="vid-sec" ref={seccion}>
       {fotosFondo.length > 0 && (
-        <div className="vid-fondo" aria-hidden="true">
+        <div className="vid-fondo" aria-hidden="true" ref={refFondo}>
           <div
             key={fotoIndex}
             className="vid-fondo-foto"
