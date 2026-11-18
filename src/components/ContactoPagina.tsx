@@ -4,7 +4,7 @@ import "./paginas.css";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { TEL, DIRECCION, HORARIO, INSTAGRAM, FACEBOOK, TIKTOK, wa } from "@/lib/datos";
-import { useAutosFondo } from "@/lib/useAutosFondo";
+import type { FotoFondo } from "@/lib/autos";
 import Aparece from "./Aparece";
 import FondoAutos from "./FondoAutos";
 
@@ -52,8 +52,7 @@ const ICONO_REDES = (
   </Icono>
 );
 
-export default function ContactoPagina() {
-  const fotos = useAutosFondo(6);
+export default function ContactoPagina({ fotos }: { fotos: FotoFondo[] }) {
   const portada = fotos.slice(0, 1);
 
   const mapa = "https://www.google.com/maps?q=" + encodeURIComponent(DIRECCION) + "&output=embed";

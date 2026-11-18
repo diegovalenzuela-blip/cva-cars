@@ -1,8 +1,7 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
-import { SLUG, INSTAGRAM_PERSONAL, wa, TIKTOK_PERSONAL } from "@/lib/datos";
+import type { Metadata } from "next";
+import { INSTAGRAM_PERSONAL, wa, TIKTOK_PERSONAL } from "@/lib/datos";
+import { getFotosServicios } from "@/lib/autos";
+import { fondoCss, imgSrc, imgSrcSet } from "@/lib/img";
 
 // ================= EDITA AQUÍ =================
 // Auto cuyas fotos se usan. Deja AUTO_CODIGO vacío para buscar la Ford F-150.
@@ -40,38 +39,15 @@ const SERVICIOS = [
 ];
 // ===============================================
 
-type Fila = { fotos: string[] | null };
+export const revalidate = 60;
 
-export default function Servicios() {
-  const [fotos, setFotos] = useState<string[]>([]);
+export const metadata: Metadata = {
+  title: "Servicios | Chillán Vende Autos",
+  description: "Transferencias, lavado, fotos, videos y contenido automotriz.",
+};
 
-  useEffect(() => {
-    async function cargar() {
-      const base = () =>
-        supabase
-          .from("autos")
-          .select("fotos, automotoras!inner(slug)")
-          .eq("automotoras.slug", SLUG)
-          .in("estado", ["disponible", "reservado"]);
-
-      const { data: elegido } = AUTO_CODIGO
-        ? await base().eq("codigo", AUTO_CODIGO).limit(1)
-        : await base().ilike("marca", "%" + AUTO_MARCA + "%").ilike("modelo", "%" + AUTO_MODELO + "%").limit(1);
-
-      let lista: string[] = ((elegido as unknown as Fila[] | null) ?? [])
-        .flatMap((f) => f.fotos ?? []);
-
-      if (lista.length < 3) {
-        const { data: otros } = await base().order("creado_en", { ascending: false }).limit(6);
-        const extra = ((otros as unknown as Fila[] | null) ?? [])
-          .map((f) => (f.fotos ?? [])[0])
-          .filter(Boolean);
-        lista = [...lista, ...extra];
-      }
-      setFotos(lista);
-    }
-    cargar();
-  }, []);
+export default async function Servicios() {
+  const fotos = await getFotosServicios(AUTO_CODIGO, AUTO_MARCA, AUTO_MODELO);
 
   const foto = (i: number) => (fotos.length ? fotos[i % fotos.length] : "");
   const hero = foto(0);
@@ -84,7 +60,7 @@ export default function Servicios() {
           hero
             ? {
                 backgroundImage:
-                  "linear-gradient(180deg, rgba(0,0,0,.45), rgba(0,0,0,.88)), url(\"" + hero + "\")",
+                  "linear-gradient(180deg, rgba(0,0,0,.45), rgba(0,0,0,.88)), " + fondoCss(hero, 828, 45),
               }
             : undefined
         }
@@ -108,7 +84,15 @@ export default function Servicios() {
             </div>
             {foto(i + 1) ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img className="srv-foto" src={foto(i + 1)} alt="" loading="lazy" />
+              <img
+                className="srv-foto"
+                src={imgSrc(foto(i + 1), 640, 60)}
+                srcSet={imgSrcSet(foto(i + 1), 60)}
+                sizes="(max-width: 860px) 100vw, 520px"
+                alt=""
+                loading="lazy"
+                decoding="async"
+              />
             ) : (
               <div className="srv-foto vacio">Foto</div>
             )}

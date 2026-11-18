@@ -4,6 +4,8 @@ import "./destacados.css";
 import { useRef, useState } from "react";
 import { VIDEOS } from "@/lib/datos";
 import { useRotacion } from "@/lib/useRotacion";
+import { useReveal } from "@/lib/useReveal";
+import { fondoCss } from "@/lib/img";
 import Aparece from "./Aparece";
 
 function Tarjeta({
@@ -16,6 +18,7 @@ function Tarjeta({
   alReproducir: (v: HTMLVideoElement) => void;
 }) {
   const video = useRef<HTMLVideoElement>(null);
+  const { ref: refTarjeta, visto: tarjetaVista } = useReveal<HTMLDivElement>();
   const [jugando, setJugando] = useState(false);
   const [iniciado, setIniciado] = useState(false);
 
@@ -26,12 +29,12 @@ function Tarjeta({
   }
 
   return (
-    <div className={"vid" + (jugando ? " jugando" : "")}>
+    <div className={"vid" + (jugando ? " jugando" : "")} ref={refTarjeta}>
       <video
         ref={video}
         className="vid-video"
         src={src + "#t=0.5"}
-        poster={src.replace(".mp4", ".jpg")}
+        poster={tarjetaVista ? src.replace(".mp4", ".jpg") : undefined}
         playsInline
         preload="none"
         controls={iniciado}
@@ -62,7 +65,7 @@ function Tarjeta({
 
 export default function VideosDestacados({ fotosFondo }: { fotosFondo: string[] }) {
   const seccion = useRef<HTMLElement>(null);
-  const { ref: refFondo, indice: fotoIndex } = useRotacion<HTMLDivElement>(fotosFondo);
+  const { ref: refFondo, indice: fotoIndex, visto } = useRotacion<HTMLDivElement>(fotosFondo);
 
   function alReproducir(actual: HTMLVideoElement) {
     seccion.current?.querySelectorAll<HTMLVideoElement>("video").forEach((v) => {
@@ -74,13 +77,13 @@ export default function VideosDestacados({ fotosFondo }: { fotosFondo: string[] 
     <section id="videos" className="vid-sec" ref={seccion}>
       {fotosFondo.length > 0 && (
         <div className="vid-fondo" aria-hidden="true" ref={refFondo}>
+          {visto && (
           <div
             key={fotoIndex}
             className="vid-fondo-foto"
-            style={{
-              backgroundImage: `url("${fotosFondo[fotoIndex]}")`,
-            }}
+            style={{ backgroundImage: fondoCss(fotosFondo[fotoIndex]) }}
           />
+          )}
         </div>
       )}
       <div className="wrap">

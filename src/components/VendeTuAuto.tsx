@@ -6,6 +6,7 @@ import { useState } from "react";
 import type { CSSProperties } from "react";
 import { wa } from "@/lib/datos";
 import { useRotacion } from "@/lib/useRotacion";
+import { fondoCss, imgSrc, imgSrcSet } from "@/lib/img";
 import { useReveal } from "@/lib/useReveal";
 
 const PASOS = [
@@ -17,7 +18,7 @@ const PASOS = [
 const retraso = (ms: number): CSSProperties => ({ transitionDelay: ms + "ms" });
 
 export default function VendeTuAuto({ fotosFondo }: { fotosFondo: string[] }) {
-  const { ref: refFondo, indice: fotoIndex } = useRotacion<HTMLDivElement>(fotosFondo);
+  const { ref: refFondo, indice: fotoIndex, visto: fondoVisto } = useRotacion<HTMLDivElement>(fotosFondo);
   const foto = fotosFondo[1] ?? fotosFondo[0] ?? "";
   const { ref, visto } = useReveal<HTMLElement>();
   const [enviado, setEnviado] = useState(false);
@@ -29,7 +30,8 @@ export default function VendeTuAuto({ fotosFondo }: { fotosFondo: string[] }) {
     const precio = f.get("p") ? ". Precio que espero: $" + f.get("p") : "";
     window.open(
       wa("Hola, soy " + f.get("n") + ". Quiero vender mi " + f.get("a") + km + precio + "."),
-      "_blank"
+      "_blank",
+      "noopener,noreferrer"
     );
     setEnviado(true);
   }
@@ -38,13 +40,13 @@ export default function VendeTuAuto({ fotosFondo }: { fotosFondo: string[] }) {
     <section id="vende" className={"vta" + (visto ? " in" : "")} ref={ref}>
       {fotosFondo.length > 0 && (
         <div className="fondo-exhibicion" aria-hidden="true" ref={refFondo}>
+          {fondoVisto && (
           <div
             key={fotoIndex}
             className="fondo-exhibicion-foto"
-            style={{
-              backgroundImage: `url("${fotosFondo[fotoIndex % fotosFondo.length]}")`,
-            }}
+            style={{ backgroundImage: fondoCss(fotosFondo[fotoIndex % fotosFondo.length]) }}
           />
+          )}
         </div>
       )}
       <div className="wrap">
@@ -57,7 +59,14 @@ export default function VendeTuAuto({ fotosFondo }: { fotosFondo: string[] }) {
           <div className="vta-visual rvx" style={retraso(140)}>
             {foto && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={foto} alt="" loading="lazy" decoding="async" />
+              <img
+                src={imgSrc(foto, 640, 60)}
+                srcSet={imgSrcSet(foto, 60)}
+                sizes="(max-width: 860px) 100vw, 520px"
+                alt=""
+                loading="lazy"
+                decoding="async"
+              />
             )}
             <span className="vta-badge">Consignación</span>
             <ol className="vta-pasos">

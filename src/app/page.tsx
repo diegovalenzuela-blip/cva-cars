@@ -4,8 +4,7 @@ import Vitrina from "@/components/Vitrina";
 import VendeTuAuto from "@/components/VendeTuAuto";
 import DondeEstamos from "@/components/DondeEstamos";
 import { getAutosExhibicion } from "@/lib/autos";
-import type { FotoFondo } from "@/lib/useAutosFondo";
-import { fondo } from "@/lib/foto";
+import type { FotoFondo } from "@/lib/autos";
 
 export const revalidate = 60;
 
@@ -14,7 +13,7 @@ export default async function Home() {
 
   // Máximo 5 fotos de fondo: más que eso solo gasta datos y memoria en el teléfono.
   const fotosFondo = autos
-    .flatMap((auto) => (auto.fotos && auto.fotos.length > 0 ? [fondo(auto.fotos[0])] : []))
+    .flatMap((auto) => (auto.fotos && auto.fotos.length > 0 ? [auto.fotos[0]] : []))
     .slice(0, 5);
 
   // Fotos de la portada: primero los destacados.

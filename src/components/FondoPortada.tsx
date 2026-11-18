@@ -1,8 +1,9 @@
 "use client";
 
-import type { FotoFondo } from "@/lib/useAutosFondo";
+import { useEffect, useState } from "react";
+import type { FotoFondo } from "@/lib/autos";
 import { useRotacion } from "@/lib/useRotacion";
-import { fondo } from "@/lib/foto";
+import { imgSrc, imgSrcSet } from "@/lib/img";
 
 export default function FondoPortada({
   fotos,
@@ -12,8 +13,29 @@ export default function FondoPortada({
   intervalo?: number;
 }) {
   const n = fotos.length;
-  const urls = fotos.map((f) => fondo(f.url));
-  const { ref, indice: actual } = useRotacion<HTMLDivElement>(urls, intervalo);
+  const { ref, indice: actual } = useRotacion<HTMLDivElement>(
+    fotos.map((f) => f.url),
+    intervalo
+  );
+
+  // Al inicio solo se descarga la foto principal (es la que define cuánto tarda la
+  // portada). Las vecinas se piden recién cuando la página terminó de cargar.
+  const [listo, setListo] = useState(false);
+  useEffect(() => {
+    let id = 0;
+    const marcar = () => {
+      id = window.setTimeout(() => setListo(true), 1200);
+    };
+    if (document.readyState === "complete") {
+      marcar();
+    } else {
+      window.addEventListener("load", marcar, { once: true });
+    }
+    return () => {
+      window.removeEventListener("load", marcar);
+      window.clearTimeout(id);
+    };
+  }, []);
 
   if (n === 0) return null;
 
@@ -23,14 +45,16 @@ export default function FondoPortada({
   return (
     <div className="fp" aria-hidden="true" ref={ref}>
       {fotos.map((f, k) =>
-        cerca(k) ? (
+        k === actual || (listo && cerca(k)) ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             key={f.url + k}
-            src={urls[k]}
+            src={imgSrc(f.url, 640, 45)}
+            srcSet={imgSrcSet(f.url, 45)}
+            sizes="(max-width: 760px) 100vw, 1080px"
             alt=""
             decoding="async"
-            fetchPriority={k === 0 ? "high" : "auto"}
+            fetchPriority={k === 0 ? "high" : "low"}
             className={"fp-img" + (k === actual ? " on" : "")}
           />
         ) : null

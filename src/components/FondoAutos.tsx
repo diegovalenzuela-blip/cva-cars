@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import type { FotoFondo } from "@/lib/useAutosFondo";
-import { fondo } from "@/lib/foto";
+import type { FotoFondo } from "@/lib/autos";
+import { useRotacion } from "@/lib/useRotacion";
+import { imgSrc, imgSrcSet } from "@/lib/img";
 
 export default function FondoAutos({
   fotos,
@@ -14,32 +15,44 @@ export default function FondoAutos({
   intervalo?: number;
   pie?: boolean;
 }) {
-  const [i, setI] = useState(0);
   const n = fotos.length;
-  const actual = n ? i % n : 0;
+  const { ref, indice: actual, visto, ir } = useRotacion<HTMLDivElement>(
+    fotos.map((f) => f.url),
+    intervalo
+  );
 
+  // Solo la foto visible se descarga al inicio; las demás, cuando la página ya cargó.
+  const [listo, setListo] = useState(false);
   useEffect(() => {
-    if (n < 2) return;
-    const id = window.setInterval(() => {
-      if (document.hidden) return;
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-      setI((x) => (x + 1) % n);
-    }, intervalo);
-    return () => window.clearInterval(id);
-  }, [n, intervalo]);
+    let id = 0;
+    const marcar = () => {
+      id = window.setTimeout(() => setListo(true), 1200);
+    };
+    if (document.readyState === "complete") marcar();
+    else window.addEventListener("load", marcar, { once: true });
+    return () => {
+      window.removeEventListener("load", marcar);
+      window.clearTimeout(id);
+    };
+  }, []);
 
   return (
-    <div className="fa">
-      {fotos.map((f, k) => (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          key={f.url + k}
-          src={fondo(f.url)}
-          alt=""
-          decoding="async"
-          className={"fa-img" + (k === actual ? " on" : "")}
-        />
-      ))}
+    <div className="fa" ref={ref}>
+      {fotos.map((f, k) =>
+        k === actual || (listo && visto) ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            key={f.url + k}
+            src={imgSrc(f.url, 640, 45)}
+            srcSet={imgSrcSet(f.url, 45)}
+            sizes="(max-width: 760px) 100vw, 1080px"
+            alt=""
+            decoding="async"
+            fetchPriority={k === 0 ? "high" : "low"}
+            className={"fa-img" + (k === actual ? " on" : "")}
+          />
+        ) : null
+      )}
       <div className="fa-sombra" />
 
       {pie && n > 0 && (
@@ -56,7 +69,7 @@ export default function FondoAutos({
                   className={"fa-punto" + (k === actual ? " on" : "")}
                   aria-label={"Ver " + f.titulo}
                   aria-pressed={k === actual}
-                  onClick={() => setI(k)}
+                  onClick={() => ir(k)}
                 />
               ))}
             </div>

@@ -4,8 +4,8 @@ import "./destacados.css";
 import Link from "next/link";
 import { wa } from "@/lib/datos";
 import { useRotacion } from "@/lib/useRotacion";
+import { fondoCss, imgSrc, imgSrcSet } from "@/lib/img";
 import Aparece from "./Aparece";
-import { foto as fotoOpt, fondo } from "@/lib/foto";
 
 export type AutoVitrina = {
   id: string;
@@ -40,10 +40,10 @@ export default function Vitrina({
 }) {
   const fotosFondo = autos
     .filter((auto) => auto.fotos && auto.fotos.length > 0)
-    .map((auto) => fondo(auto.fotos[0]))
+    .map((auto) => auto.fotos[0])
     .slice(0, 5);
 
-  const { ref: refFondo, indice: fotoIndex } = useRotacion<HTMLDivElement>(fotosFondo);
+  const { ref: refFondo, indice: fotoIndex, visto } = useRotacion<HTMLDivElement>(fotosFondo);
 
   const ordenados = [...autos].sort(
     (a, b) => Number(!!b.destacado) - Number(!!a.destacado)
@@ -65,13 +65,13 @@ export default function Vitrina({
     <section id="autos" className="vit">
       {fotosFondo.length > 0 && (
         <div className="vit-fondo" aria-hidden="true" ref={refFondo}>
+          {visto && (
           <div
             key={fotoIndex}
             className="vit-fondo-foto"
-            style={{
-              backgroundImage: `url("${fotosFondo[fotoIndex]}")`,
-            }}
+            style={{ backgroundImage: fondoCss(fotosFondo[fotoIndex]) }}
           />
+          )}
         </div>
       )}
       <div className="wrap">
@@ -91,9 +91,12 @@ export default function Vitrina({
                 {fotoEstrella ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    {...fotoOpt(fotoEstrella, "(max-width: 760px) 92vw, 560px")}
+                    src={imgSrc(fotoEstrella, 828, 60)}
+                    srcSet={imgSrcSet(fotoEstrella, 60)}
+                    sizes="(max-width: 860px) 100vw, 640px"
                     alt={estrella.marca + " " + estrella.modelo}
                     decoding="async"
+                    fetchPriority="low"
                   />
                 ) : (
                   <div className="foto">Foto próximamente</div>
@@ -142,7 +145,9 @@ export default function Vitrina({
                     {foto ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        {...fotoOpt(foto, "(max-width: 760px) 92vw, (max-width: 1100px) 46vw, 360px")}
+                        src={imgSrc(foto, 640, 60)}
+                        srcSet={imgSrcSet(foto, 60)}
+                        sizes="(max-width: 760px) 92vw, 360px"
                         alt={x.marca + " " + x.modelo}
                         loading="lazy"
                         decoding="async"

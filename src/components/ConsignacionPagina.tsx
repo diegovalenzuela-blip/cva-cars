@@ -4,7 +4,7 @@ import "./paginas.css";
 import Link from "next/link";
 import { useState } from "react";
 import { wa } from "@/lib/datos";
-import { useAutosFondo } from "@/lib/useAutosFondo";
+import type { FotoFondo } from "@/lib/autos";
 import Aparece from "./Aparece";
 import FondoAutos from "./FondoAutos";
 
@@ -32,8 +32,7 @@ function Check() {
   );
 }
 
-export default function ConsignacionPagina() {
-  const fotos = useAutosFondo(6);
+export default function ConsignacionPagina({ fotos }: { fotos: FotoFondo[] }) {
   const [enviado, setEnviado] = useState(false);
 
   function enviar(e: React.FormEvent<HTMLFormElement>) {
@@ -43,7 +42,8 @@ export default function ConsignacionPagina() {
     const precio = f.get("p") ? ". Precio que espero: $" + f.get("p") : "";
     window.open(
       wa("Hola, soy " + f.get("n") + ". Quiero dejar mi " + f.get("a") + km + precio + " en consignación."),
-      "_blank"
+      "_blank",
+      "noopener,noreferrer"
     );
     setEnviado(true);
   }
