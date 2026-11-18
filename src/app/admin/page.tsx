@@ -343,7 +343,7 @@ export default function Admin() {
     }
     setPreparandoFotos("");
     const avisos = [
-      heic ? `${heic === 1 ? "1 foto HEIC no se agregó" : `${heic} fotos HEIC no se agregaron`}: este navegador no puede abrir ese formato. Conviértelas a JPG e inténtalo de nuevo.` : "",
+      heic ? `${heic === 1 ? "1 foto HEIC no se agregó" : `${heic} fotos HEIC no se agregaron`}: este navegador no puede abrir ese formato. Súbelas desde Safari o conviértelas a JPG.` : "",
       otras ? `${otras === 1 ? "1 archivo no se agregó" : `${otras} archivos no se agregaron`} porque no se pudo abrir como foto.` : "",
     ].filter(Boolean).join(" ");
     setAvisoFotos(avisos);
