@@ -34,6 +34,9 @@ type Auto = {
   estado: string;
   fotos: string[];
   catalogo: Catalogo;
+  estado_papeles: string | null;
+  mantenciones: string | null;
+  revision_tecnica: string | null;
   creado_en?: string;
 };
 
@@ -93,6 +96,9 @@ const VACIO = {
   descripcion: "",
   estado: "disponible",
   catalogo: "general" as Catalogo,
+  estado_papeles: "",
+  mantenciones: "",
+  revision_tecnica: "",
 };
 
 const plata = (n: number) => "$" + n.toLocaleString("es-CL");
@@ -262,6 +268,9 @@ export default function Admin() {
       descripcion: a.descripcion ?? "",
       estado: a.estado,
       catalogo: a.catalogo ?? "general",
+      estado_papeles: a.estado_papeles ?? "",
+      mantenciones: a.mantenciones ?? "",
+      revision_tecnica: a.revision_tecnica ?? "",
     };
   }
 
@@ -286,7 +295,8 @@ export default function Admin() {
   // Copia un auto como borrador nuevo: útil para publicar uno parecido en segundos.
   function duplicar(a: Auto) {
     limpiar();
-    setForm({ ...aFormulario(a), estado: "disponible" });
+    // El respaldo es propio de cada vehículo: no se copia.
+    setForm({ ...aFormulario(a), estado: "disponible", estado_papeles: "", mantenciones: "", revision_tecnica: "" });
     setPublicadoForm(false);
     setFotos((a.fotos ?? []).map((url, i) => ({ id: `copia-${i}-${url}`, url, preview: url })));
     setPestana("publicar");
@@ -418,6 +428,9 @@ export default function Admin() {
         publicado: publicar,
         fotos: urls,
         catalogo: form.catalogo,
+        estado_papeles: form.estado_papeles.trim() || null,
+        mantenciones: form.mantenciones.trim() || null,
+        revision_tecnica: form.revision_tecnica.trim() || null,
         // La exhibición de la portada es solo del catálogo general.
         ...(form.catalogo === "trabajo" ? { en_exhibicion: false } : {}),
       };
@@ -999,6 +1012,23 @@ export default function Admin() {
               Descripción
               <textarea rows={4} value={form.descripcion} onChange={campo("descripcion")} placeholder="Estado, mantenciones, equipamiento, papeles al día…" />
               <small>{form.descripcion.length} caracteres</small>
+            </label>
+          </fieldset>
+
+          <fieldset className="ap-bloque">
+            <legend>5. Respaldo del vehículo <small>(opcional)</small></legend>
+            <p className="ap-ayuda">Se muestra en la ficha solo lo que completes. Escribe únicamente lo que puedas respaldar.</p>
+            <div className="adm-fila">
+              <label>Papeles<input list="ap-papeles" maxLength={200} value={form.estado_papeles} onChange={campo("estado_papeles")} placeholder="Ej. Al día" /></label>
+              <label>Revisión técnica<input maxLength={200} value={form.revision_tecnica} onChange={campo("revision_tecnica")} placeholder="Ej. Vigente hasta 03/2027" /></label>
+            </div>
+            <datalist id="ap-papeles">
+              <option value="Al día" />
+              <option value="Con observaciones, consultar" />
+            </datalist>
+            <label className="ap-descripcion">
+              Mantenciones
+              <textarea rows={2} maxLength={500} value={form.mantenciones} onChange={campo("mantenciones")} placeholder="Ej. Última mantención a los 80.000 km, con comprobante" />
             </label>
           </fieldset>
 

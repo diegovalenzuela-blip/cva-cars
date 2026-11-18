@@ -107,6 +107,10 @@ export type AutoDetalle = AutoPublico & {
   transmision: string | null;
   color: string | null;
   descripcion: string | null;
+  duenos: number | null;
+  estado_papeles: string | null;
+  mantenciones: string | null;
+  revision_tecnica: string | null;
 };
 
 // Los códigos son cortos y simples. Se valida antes de consultar la base de datos.
@@ -146,6 +150,10 @@ export async function getAutoPorCodigo(codigo: string): Promise<AutoDetalle | nu
       transmision: txt("transmision"),
       color: txt("color"),
       descripcion: txt("descripcion"),
+      duenos: typeof a.duenos === "number" ? a.duenos : null,
+      estado_papeles: txt("estado_papeles"),
+      mantenciones: txt("mantenciones"),
+      revision_tecnica: txt("revision_tecnica"),
     };
   } catch {
     return null;

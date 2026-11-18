@@ -56,7 +56,6 @@ export default function ContactoPagina({ fotos }: { fotos: FotoFondo[] }) {
   const portada = fotos.slice(0, 1);
 
   const mapa = "https://www.google.com/maps?q=" + encodeURIComponent(DIRECCION) + "&output=embed";
-  const comoLlegar = "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(DIRECCION);
 
   return (
     <main className="cto">
@@ -67,7 +66,7 @@ export default function ContactoPagina({ fotos }: { fotos: FotoFondo[] }) {
             <span className="pal2">Contáctanos</span>
           </h1>
           <span className="csg-linea" aria-hidden="true" />
-          <p>Escríbenos, llámanos o visítanos en Chillán. Te atendemos con gusto.</p>
+          <p>Escríbenos o llámanos y coordinamos tu atención en Chillán.</p>
         </div>
       </section>
 
@@ -92,11 +91,11 @@ export default function ContactoPagina({ fotos }: { fotos: FotoFondo[] }) {
             </a>
           </Aparece>
           <Aparece retraso={220}>
-            <a className="cto-accion" href={comoLlegar} target="_blank" rel="noopener noreferrer">
+            <a className="cto-accion" href={wa("Hola, quiero coordinar una visita.")}>
               <span className="cto-ic">{ICONO_PIN}</span>
               <span>
-                <small>Visítanos</small>
-                <strong>Cómo llegar</strong>
+                <small>En Chillán</small>
+                <strong>Coordinar visita</strong>
               </span>
             </a>
           </Aparece>
@@ -108,9 +107,9 @@ export default function ContactoPagina({ fotos }: { fotos: FotoFondo[] }) {
               <div className="cto-card">
                 <span className="cto-ic">{ICONO_PIN}</span>
                 <div>
-                  <h3>Dirección</h3>
+                  <h3>Ubicación</h3>
                   <p>{DIRECCION}</p>
-                  <a className="btn" href={comoLlegar} target="_blank" rel="noopener noreferrer">Ver ruta</a>
+                  <a className="btn" href={wa("Hola, quiero coordinar una visita.")}>Coordinar visita</a>
                 </div>
               </div>
             </Aparece>
@@ -118,7 +117,7 @@ export default function ContactoPagina({ fotos }: { fotos: FotoFondo[] }) {
               <div className="cto-card">
                 <span className="cto-ic">{ICONO_RELOJ}</span>
                 <div>
-                  <h3>Horario</h3>
+                  <h3>Atención</h3>
                   <p>{HORARIO}</p>
                 </div>
               </div>

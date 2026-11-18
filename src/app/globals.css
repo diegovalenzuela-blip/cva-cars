@@ -1177,6 +1177,12 @@ input, select, textarea { font-size: 16px; }
   .filtros2:not(.abiertos) > :not(.f-buscar):not(.f-toggle) { display: none; }
 }
 
+.det-respaldo { margin: 18px 0; padding: 16px; background: var(--panel); border: 1px solid var(--bronce); border-left: 4px solid var(--rojo); }
+.det-respaldo h2 { margin-bottom: 8px; font-size: 1.35rem; }
+.det-respaldo dl { margin: 0; }
+.det-respaldo div { padding: 8px 0; border-top: 1px solid #3a2a18; }
+.det-respaldo dt { color: #c9bb88; font-size: .85rem; }
+.det-respaldo dd { margin: 2px 0 0; font-weight: 600; white-space: pre-line; }
 .catalogo-bajada { margin-bottom: 0; }
 .catalogo-vacio { margin-top: 24px; padding: 28px; background: var(--panel); border: 1px dashed var(--bronce); }
 .catalogo-vacio p { margin: 0 0 16px; max-width: 54ch; }

@@ -57,9 +57,18 @@ export default async function Detalle({ params }: Props) {
     ["Transmisión", auto.transmision],
     ["Color", auto.color],
     ["Tipo", auto.tipo],
+    ["Dueños", auto.duenos != null ? String(auto.duenos) : null],
     ["Ubicación", auto.ubicacion],
     ["Código", auto.codigo],
   ];
+  // Solo se muestra lo que la automotora completó en el panel.
+  const respaldo: [string, string][] = (
+    [
+      ["Papeles", auto.estado_papeles],
+      ["Mantenciones", auto.mantenciones],
+      ["Revisión técnica", auto.revision_tecnica],
+    ] as [string, string | null][]
+  ).filter((d): d is [string, string] => Boolean(d[1]));
 
   return (
     <main className="det">
@@ -79,6 +88,16 @@ export default async function Detalle({ params }: Props) {
               <div key={k}><dt>{k}</dt><dd>{v}</dd></div>
             ))}
           </dl>
+          {respaldo.length > 0 && (
+            <section className="det-respaldo" aria-labelledby="respaldo-titulo">
+              <h2 id="respaldo-titulo">Respaldo del vehículo</h2>
+              <dl>
+                {respaldo.map(([k, v]) => (
+                  <div key={k}><dt>{k}</dt><dd>{v}</dd></div>
+                ))}
+              </dl>
+            </section>
+          )}
           {auto.descripcion && (
             <>
               <h2 style={{ fontSize: "1.5rem", marginTop: 20 }}>Descripción</h2>
