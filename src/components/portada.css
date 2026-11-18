@@ -61,3 +61,78 @@
     font-size: 0.95rem;
   }
 }
+
+/* ===== Portada en 3D =====
+   El logo es una placa con grosor que se inclina hacia el mouse, el título tiene
+   relieve y las fotos de fondo se mueven al revés (profundidad). Todo con
+   transform, que el teléfono dibuja sin esfuerzo. */
+.por-sec .por-logo { perspective: 1100px; }
+.por-sec .por-logo-mov {
+  transform-style: preserve-3d;
+  mix-blend-mode: normal; /* con "screen" se perdían el grosor y la sombra */
+  transform:
+    rotateY(calc(var(--mx, 0) * 16deg - 8deg))
+    rotateX(calc(var(--my, 0) * -12deg + 4deg));
+  transition: transform .35s cubic-bezier(.2, .7, .2, 1);
+}
+/* Grosor de la placa: capas color bronce hacia atrás y sombra en el "piso" */
+.por-sec .por-img {
+  box-shadow:
+    1px 1px 0 #6b4520, 2px 2px 0 #5e3c1b, 3px 3px 0 #523417, 4px 4px 0 #452c13,
+    5px 5px 0 #39240f, 6px 6px 0 #2d1c0c,
+    22px 34px 44px rgba(0, 0, 0, .75),
+    0 0 60px rgba(200, 55, 45, .32);
+}
+.por-brillo3d {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 240, 210, .22) 46%, transparent 60%);
+  background-size: 250% 100%;
+  background-position: calc(50% - var(--mx, 0) * 40%) 0;
+  transition: background-position .35s ease-out;
+  mix-blend-mode: screen;
+}
+/* Título con relieve */
+.por-sec .por-titulo {
+  text-shadow:
+    1px 1px 0 #7a1f18, 2px 2px 0 #6a1a14, 3px 3px 0 #5a1611, 4px 4px 0 #4a120e,
+    6px 8px 18px rgba(0, 0, 0, .85);
+}
+.por-sec .por-titulo .pal.rojo {
+  text-shadow:
+    1px 1px 0 #6b4520, 2px 2px 0 #5e3c1b, 3px 3px 0 #523417, 4px 4px 0 #452c13,
+    6px 8px 18px rgba(0, 0, 0, .85);
+}
+/* Fondo con profundidad: se mueve al revés que el mouse */
+.por-sec .fp {
+  inset: -24px;
+  transform: translate(calc(var(--mx, 0) * -14px), calc(var(--my, 0) * -10px));
+  transition: transform .5s ease-out;
+}
+
+/* Entrada en 3D: la placa gira hasta su lugar al cargar */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes porGiro3d {
+    from { transform: rotateY(-38deg) rotateX(10deg) translateZ(-60px); }
+    to { transform: rotateY(-8deg) rotateX(4deg); }
+  }
+  .por-sec .por-logo-mov { animation: porGiro3d 1.1s cubic-bezier(.2, .8, .2, 1) both; }
+  /* Con mouse, al terminar la entrada manda el mouse */
+  @media (pointer: fine) {
+    .por-sec .por-logo-mov { animation-fill-mode: backwards; }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .por-sec .por-logo-mov { transform: none; }
+  .por-sec .fp { transform: none; }
+}
+/* Teléfono: placa algo menos inclinada y sombra más corta */
+@media (max-width: 760px) {
+  .por-sec .por-logo-mov { transform: rotateY(-10deg) rotateX(5deg); }
+  .por-sec .por-img {
+    box-shadow:
+      1px 1px 0 #6b4520, 2px 2px 0 #5e3c1b, 3px 3px 0 #523417, 4px 4px 0 #452c13,
+      12px 20px 28px rgba(0, 0, 0, .75),
+      0 0 34px rgba(200, 55, 45, .3);
+  }
+  .por-sec .fp { inset: 0; transform: none; }
+}

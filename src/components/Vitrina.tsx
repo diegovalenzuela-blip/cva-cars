@@ -63,7 +63,7 @@ export default function Vitrina({
         </Aparece>
 
         {estrella && (
-          <Aparece retraso={80}>
+          <Aparece retraso={80} className="vit-foco">
             <article className="vit-estrella">
               <Link
                 href={"/autos/" + estrella.codigo}
