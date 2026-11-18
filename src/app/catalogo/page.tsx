@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 export default async function CatalogoPage() {
-  const autos = await getAutosPublicos();
+  const autos = await getAutosPublicos("general");
 
   return (
     <>

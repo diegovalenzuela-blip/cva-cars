@@ -1,6 +1,8 @@
 import { supabase } from "@/lib/supabase";
 import { SLUG } from "@/lib/datos";
 
+export type Catalogo = "general" | "trabajo";
+
 export type AutoPublico = {
   id: string;
   codigo: string;
@@ -14,6 +16,7 @@ export type AutoPublico = {
   ubicacion: string | null;
   tipo: string | null;
   destacado: boolean | null;
+  catalogo: Catalogo;
 };
 
 type Fila = {
@@ -29,6 +32,7 @@ type Fila = {
   ubicacion?: string | null;
   tipo?: string | null;
   destacado?: boolean | null;
+  catalogo?: string | null;
 };
 
 // Solo se aceptan fotos con enlace http(s). Nada que venga de la base de datos
@@ -38,36 +42,44 @@ function soloHttp(fotos: unknown): string[] {
   return fotos.filter((u): u is string => typeof u === "string" && /^https?:\/\//i.test(u));
 }
 
-export async function getAutosPublicos(): Promise<AutoPublico[]> {
+const aCatalogo = (c: unknown): Catalogo => (c === "trabajo" ? "trabajo" : "general");
+
+function aPublico(a: Fila): AutoPublico {
+  return {
+    id: a.id,
+    codigo: a.codigo,
+    marca: a.marca,
+    modelo: a.modelo,
+    anio: a.anio,
+    km: a.km ?? null,
+    precio: a.precio,
+    estado: a.estado,
+    fotos: soloHttp(a.fotos),
+    ubicacion: a.ubicacion ?? null,
+    tipo: a.tipo ?? null,
+    destacado: a.destacado ?? false,
+    catalogo: aCatalogo(a.catalogo),
+  };
+}
+
+// Sin catálogo devuelve todos (lo usa el sitemap); con catálogo, solo ese.
+export async function getAutosPublicos(catalogo?: Catalogo): Promise<AutoPublico[]> {
   try {
-    const { data, error } = await supabase
+    let consulta = supabase
       .from("autos")
       .select("*, automotoras!inner(slug)")
       .eq("automotoras.slug", SLUG)
-      .in("estado", ["disponible", "reservado"])
-      .order("creado_en", { ascending: false });
+      .in("estado", ["disponible", "reservado"]);
+    if (catalogo) consulta = consulta.eq("catalogo", catalogo);
+    const { data, error } = await consulta.order("creado_en", { ascending: false });
 
     if (error || !data) return [];
 
-    return (data as unknown as Fila[]).map((a) => ({
-      id: a.id,
-      codigo: a.codigo,
-      marca: a.marca,
-      modelo: a.modelo,
-      anio: a.anio,
-      km: a.km ?? null,
-      precio: a.precio,
-      estado: a.estado,
-      fotos: soloHttp(a.fotos),
-      ubicacion: a.ubicacion ?? null,
-      tipo: a.tipo ?? null,
-      destacado: a.destacado ?? false,
-    }));
+    return (data as unknown as Fila[]).map(aPublico);
   } catch {
     return [];
   }
 }
-
 
 export async function getAutosExhibicion(): Promise<AutoPublico[]> {
   try {
@@ -77,25 +89,13 @@ export async function getAutosExhibicion(): Promise<AutoPublico[]> {
       .eq("automotoras.slug", SLUG)
       .eq("publicado", true)
       .eq("en_exhibicion", true)
+      .eq("catalogo", "general")
       .in("estado", ["disponible", "reservado"])
       .order("creado_en", { ascending: false });
 
     if (error || !data) return [];
 
-    return (data as unknown as Fila[]).map((a) => ({
-      id: a.id,
-      codigo: a.codigo,
-      marca: a.marca,
-      modelo: a.modelo,
-      anio: a.anio,
-      km: a.km ?? null,
-      precio: a.precio,
-      estado: a.estado,
-      fotos: soloHttp(a.fotos),
-      ubicacion: a.ubicacion ?? null,
-      tipo: a.tipo ?? null,
-      destacado: a.destacado ?? false,
-    }));
+    return (data as unknown as Fila[]).map(aPublico);
   } catch {
     return [];
   }
@@ -140,6 +140,7 @@ export async function getAutoPorCodigo(codigo: string): Promise<AutoDetalle | nu
       ubicacion: txt("ubicacion"),
       tipo: txt("tipo"),
       destacado: a.destacado === true,
+      catalogo: aCatalogo(a.catalogo),
       version: txt("version"),
       combustible: txt("combustible"),
       transmision: txt("transmision"),
@@ -157,7 +158,7 @@ const nombreAuto = (a: AutoPublico) => a.marca + " " + a.modelo + " " + a.anio;
 
 // Fotos para los fondos de las páginas: primero los destacados.
 export async function getFotosFondo(max = 6): Promise<FotoFondo[]> {
-  const autos = await getAutosPublicos();
+  const autos = await getAutosPublicos("general");
   const conFoto = [...autos]
     .sort((a, b) => Number(!!b.destacado) - Number(!!a.destacado))
     .filter((a) => a.fotos.length > 0);
@@ -175,7 +176,7 @@ export async function getFotosFondo(max = 6): Promise<FotoFondo[]> {
 // Fotos para /servicios: las de un auto elegido (por código, o la Ford F-150) y,
 // si faltan, la primera foto de los autos más nuevos.
 export async function getFotosServicios(codigo = "", marca = "ford", modelo = "150"): Promise<string[]> {
-  const autos = await getAutosPublicos();
+  const autos = await getAutosPublicos("general");
   const elegido = codigo
     ? autos.find((a) => a.codigo === codigo)
     : autos.find(

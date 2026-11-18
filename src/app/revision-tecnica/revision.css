@@ -1,0 +1,41 @@
+/* ===== Revisión técnica ===== */
+.rv section { border-top: 0; }
+.rv h2 { font-size: clamp(2rem, 5vw, 3.2rem); }
+
+.rv-hero { position: relative; isolation: isolate; display: flex; align-items: flex-end; min-height: min(82vh, 700px); padding: 70px 0; overflow: hidden; }
+.rv-hero img { z-index: -2; object-fit: cover; }
+.rv-hero::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(0deg, rgba(0, 0, 0, .94), rgba(0, 0, 0, .25) 72%); }
+.rv-hero .wrap { width: 100%; }
+.rv-kicker { font: 700 .95rem var(--f-titulo), sans-serif; letter-spacing: .1em; text-transform: uppercase; color: #ffd28a; }
+.rv-hero h1 { max-width: 13ch; margin: 8px 0 12px; font-size: clamp(2.8rem, 8vw, 5.6rem); }
+.rv-hero p { max-width: 52ch; margin: 0 0 24px; font-size: 1.15rem; }
+
+.rv-intro { padding: 76px 0; }
+.rv-intro .wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 52px; align-items: center; }
+.rv-intro p { max-width: 48ch; font-size: 1.08rem; }
+.rv-intro .rv-nota { margin-bottom: 0; color: #c9bb88; font-size: .92rem; }
+.rv-foto { position: relative; aspect-ratio: 3 / 2; overflow: hidden; border-bottom: 5px solid var(--rojo); }
+.rv-foto img { object-fit: cover; }
+
+.rv-pasos { padding: 70px 0; background: var(--panel); }
+.rv-pasos ol { display: grid; grid-template-columns: repeat(3, 1fr); margin: 32px 0 0; padding: 0; list-style: none; }
+.rv-pasos li { padding: 0 28px; border-left: 1px solid var(--bronce); }
+.rv-pasos li:first-child { padding-left: 0; border-left: 0; }
+.rv-pasos b { display: block; font: 700 4.4rem / 1 var(--f-titulo), sans-serif; color: var(--rojo); }
+.rv-pasos strong { display: block; margin: 6px 0; font: 700 1.4rem var(--f-titulo), sans-serif; text-transform: uppercase; }
+.rv-pasos p { margin: 0; color: #e8dba5; }
+
+.rv-cta { padding: 62px 0; background: var(--rojo); color: #fff; }
+.rv-cta .wrap { display: flex; justify-content: space-between; align-items: center; gap: 22px; flex-wrap: wrap; }
+.rv-cta h2 { max-width: 15ch; }
+.rv-cta .btn { background: #000; border-color: #000; }
+.rv-credito { padding-top: 18px; padding-bottom: 110px; color: #a99d79; font-size: .78rem; }
+
+@media (max-width: 860px) {
+  .rv-intro .wrap { grid-template-columns: 1fr; gap: 26px; }
+  .rv-intro { padding: 54px 0; }
+  .rv-pasos ol { grid-template-columns: 1fr; gap: 22px; }
+  .rv-pasos li, .rv-pasos li:first-child { display: grid; grid-template-columns: 54px 1fr; padding: 0; border: 0; }
+  .rv-pasos b { grid-row: 1 / span 2; font-size: 3.2rem; }
+  .rv-pasos strong { margin-top: 0; }
+}

@@ -1,0 +1,61 @@
+/* ===== Servicios: cada bloque tiene su propia composición ===== */
+.sv section { border-top: 0; scroll-margin-top: 76px; }
+.sv h2 { font-size: clamp(2rem, 5vw, 3.2rem); margin-bottom: 12px; }
+.sv-desc { max-width: 46ch; margin: 0 0 12px; font-size: 1.08rem; }
+.sv-beneficio { display: flex; gap: 9px; align-items: baseline; margin: 0 0 22px; font-weight: 600; color: #ffd28a; }
+.sv-beneficio::before { content: "✓"; color: var(--rojo); font-weight: 700; }
+.sv-dos { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+.sv-foto { display: block; width: 100%; height: 100%; object-fit: cover; }
+.sv-foto.vacia { min-height: 240px; background: var(--panel); }
+
+.sv-hero { min-height: min(72vh, 620px); display: flex; align-items: center; padding: 72px 0; background: #0d0a07 center / cover; border-bottom: 3px solid var(--bronce); }
+.sv-hero .wrap { width: 100%; }
+.sv-kicker { font: 700 .95rem var(--f-titulo), sans-serif; letter-spacing: .1em; text-transform: uppercase; color: var(--rojo); }
+.sv-hero h1 { max-width: 13ch; margin: 8px 0 14px; font-size: clamp(2.8rem, 8vw, 5.4rem); }
+.sv-hero p { max-width: 48ch; margin: 0 0 26px; font-size: 1.15rem; }
+.sv-indice { display: flex; flex-wrap: wrap; gap: 8px; }
+.sv-indice a { padding: 8px 13px; border: 1px solid var(--bronce); background: rgba(0, 0, 0, .6); text-decoration: none; font-size: .9rem; }
+.sv-indice a:hover { border-color: var(--crema); }
+
+.sv-transfer { padding: 110px 0 64px; background: #0d0a07 center / cover; }
+.sv-transfer-in { display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; align-items: end; }
+.sv-247 { font: 700 clamp(5.5rem, 19vw, 13rem) / .85 var(--f-titulo), sans-serif; color: var(--crema); }
+
+.sv-lavado { padding: 80px 0; background: var(--crema); color: #17110b; }
+.sv-lavado .sv-beneficio { color: #7a1f18; }
+.sv-lavado .btn { color: #fff; }
+.sv-redonda { aspect-ratio: 1; max-width: 440px; margin-left: auto; border-radius: 50%; border: 8px solid #17110b; }
+
+.sv-galeria { padding: 84px 0; }
+.sv-galeria .wrap { display: grid; grid-template-columns: 1.35fr 1fr; gap: 48px; align-items: center; }
+.sv-collage { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 250px 160px; gap: 8px; }
+.sv-collage .a { grid-column: 1 / -1; }
+
+.sv-videos { padding: 76px 0; background: linear-gradient(120deg, #210d0a, #000 62%); }
+.sv-tel { position: relative; aspect-ratio: 9 / 16; overflow: hidden; border: 5px solid #2c2118; border-radius: 22px; background: #000; box-shadow: 0 22px 44px rgba(0, 0, 0, .6); }
+.sv-tel img { object-fit: cover; }
+.sv-tel.solo { width: min(270px, 70vw); justify-self: center; }
+.sv-play { position: absolute; top: 50%; left: 50%; display: grid; place-items: center; width: 54px; height: 54px; margin: -27px 0 0 -27px; border-radius: 50%; background: var(--rojo); color: #fff; }
+
+.sv-contenido { padding: 76px 0; background: var(--rojo); color: #fff; }
+.sv-contenido .sv-beneficio { color: #fff; }
+.sv-contenido .sv-beneficio::before { color: var(--crema); }
+.sv-contenido .btn.fill { background: #000; border-color: #000; }
+.sv-formatos { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 0; padding: 0; list-style: none; }
+.sv-formatos li { padding: 4px 11px; border: 1px solid rgba(255, 255, 255, .65); font-size: .88rem; }
+.sv-tels { display: grid; grid-template-columns: repeat(2, minmax(0, 210px)); gap: 16px; justify-content: center; }
+.sv-tels .baja { margin-top: 40px; }
+
+.sv-revision { padding: 34px 0; background: var(--panel); border-block: 1px solid var(--bronce) !important; }
+.sv-revision .wrap { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
+.sv-revision h2 { font-size: clamp(1.6rem, 4vw, 2.2rem); margin: 0; }
+.sv-revision p { margin: 4px 0 0; }
+
+@media (max-width: 860px) {
+  .sv-dos, .sv-transfer-in, .sv-galeria .wrap { grid-template-columns: 1fr; gap: 28px; }
+  .sv-transfer { padding-top: 70px; }
+  .sv-lavado .sv-redonda { max-width: 300px; margin: 0 auto; }
+  .sv-videos .sv-dos > :first-child { order: 2; }
+  .sv-collage { grid-template-rows: 210px 120px; }
+  .sv-lavado, .sv-galeria, .sv-videos, .sv-contenido { padding: 56px 0; }
+}

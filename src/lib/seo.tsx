@@ -74,12 +74,11 @@ export function autoJson(a: AutoDetalle) {
   };
 }
 
-export function catalogoJson(autos: AutoPublico[]) {
+export function catalogoJson(autos: AutoPublico[], nombre = "Autos y camionetas en venta en Chillán") {
   return {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: "Autos y camionetas en venta en Chillán",
-    numberOfItems: autos.length,
+    name: nombre,
     itemListElement: autos.map((a, i) => ({
       "@type": "ListItem",
       position: i + 1,

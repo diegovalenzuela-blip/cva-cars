@@ -1,0 +1,36 @@
+/* ===== Consignación ===== */
+.cs section { border-top: 0; }
+.cs h2 { font-size: clamp(2rem, 5vw, 3.2rem); }
+.cs-hero h1 { max-width: 12ch; font-size: clamp(2.7rem, 8vw, 5.4rem); }
+.cs-hero p { max-width: 560px; }
+
+/* Secuencia: una línea une los cuatro pasos */
+.cs-proceso { padding: 72px 0; }
+.cs-ruta { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin: 38px 0 0; padding: 0; list-style: none; }
+.cs-ruta::before { content: ""; position: absolute; top: 31px; left: 8%; right: 8%; height: 2px; background: linear-gradient(90deg, var(--rojo), var(--bronce)); }
+.cs-ruta li { position: relative; }
+.cs-ic { display: grid; place-items: center; width: 64px; height: 64px; margin-bottom: 14px; border-radius: 50%; background: var(--rojo); color: #fff; box-shadow: 0 0 0 8px #000; }
+.cs-ruta small { display: block; color: #c9bb88; text-transform: uppercase; letter-spacing: .08em; font-size: .78rem; }
+.cs-ruta strong { display: block; margin: 3px 0 6px; font: 700 1.3rem / 1.15 var(--f-titulo), sans-serif; text-transform: uppercase; }
+.cs-ruta p { margin: 0; color: #e8dba5; }
+
+/* Razones: un beneficio protagonista y una lista corta */
+.cs-razones { padding: 70px 0; background: var(--crema); color: #17110b; }
+.cs-razones-in { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; align-items: center; }
+.cs-destacado > span { display: inline-block; width: fit-content; margin-bottom: 12px; padding: 4px 12px; background: var(--rojo); color: #fff; font: 700 .9rem var(--f-titulo), sans-serif; letter-spacing: .06em; text-transform: uppercase; }
+.cs-destacado p { max-width: 42ch; margin: 12px 0 0; font-size: 1.08rem; }
+.cs-lista { margin: 0; padding: 0; list-style: none; }
+.cs-lista li { display: flex; gap: 12px; padding: 14px 0; border-bottom: 1px solid rgba(23, 17, 11, .22); font-weight: 600; }
+.cs-lista li::before { content: "✓"; color: var(--rojo); font-weight: 700; }
+
+.cs-cierre { padding: 76px 0 16px; scroll-margin-top: 70px; }
+.cs-cierre h2 { font-size: clamp(1.9rem, 4.4vw, 2.9rem); }
+
+@media (max-width: 860px) {
+  .cs-ruta { grid-template-columns: 1fr; gap: 22px; }
+  .cs-ruta::before { top: 12px; bottom: 70px; left: 31px; right: auto; width: 2px; height: auto; background: linear-gradient(180deg, var(--rojo), var(--bronce)); }
+  .cs-ruta li .apa { display: grid; grid-template-columns: 64px 1fr; column-gap: 16px; }
+  .cs-ic { grid-row: 1 / span 3; margin: 0; }
+  .cs-razones-in { grid-template-columns: 1fr; gap: 22px; }
+  .cs-proceso, .cs-razones { padding: 54px 0; }
+}

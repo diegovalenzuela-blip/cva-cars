@@ -12,7 +12,7 @@
 .ap-top-acc .btn { padding: 10px 16px; font-size: .92rem; }
 
 /* Resumen */
-.ap-resumen { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px; }
+.ap-resumen { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 10px; margin-bottom: 18px; }
 .ap-resumen div { background: var(--panel); border: 1px solid #3a2a18; border-left: 3px solid var(--rojo); padding: 12px 14px; }
 .ap-resumen b { display: block; font: 700 1.7rem var(--f-titulo), sans-serif; line-height: 1.1; }
 .ap-resumen span { font-size: .85rem; color: #c9bb88; }
@@ -77,6 +77,13 @@
 .ap-descripcion { margin-top: 12px; }
 .ap-descripcion small { display: block; text-align: right; color: #8c7f5d; font-size: .78rem; }
 .ap-ayuda { margin: 10px 0 4px; font-size: .88rem; color: #c9bb88; }
+
+.ap-catalogos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ap-bloque .ap-catalogos label { display: flex; gap: 10px; align-items: flex-start; padding: 12px; border: 1px solid #3a2a18; background: #0d0a07; cursor: pointer; }
+.ap-catalogos label.on { border-color: var(--rojo); background: #1b0f0b; }
+.ap-catalogos input { width: 18px; height: 18px; flex: none; margin-top: 2px; accent-color: var(--rojo); }
+.ap-catalogos span { font-size: .85rem; color: #c9bb88; }
+.ap-catalogos b { display: block; color: var(--crema); font-size: .98rem; }
 
 .ap-soltar {
   position: relative; display: grid !important; place-items: center; gap: 4px; padding: 28px 16px; text-align: center; cursor: pointer;
@@ -147,4 +154,5 @@
   .ap-acciones { flex-direction: column; align-items: stretch; }
   .ap-acciones .acc .btn { flex: 1; }
   .ap-bloque { padding: 14px; }
+  .ap-catalogos { grid-template-columns: 1fr; }
 }

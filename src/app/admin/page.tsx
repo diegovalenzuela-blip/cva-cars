@@ -33,6 +33,7 @@ type Auto = {
   descripcion: string | null;
   estado: string;
   fotos: string[];
+  catalogo: Catalogo;
   creado_en?: string;
 };
 
@@ -44,7 +45,8 @@ type Suscriptor = {
   creado_en: string;
 };
 
-type Pestana = "inventario" | "publicar" | "exhibicion" | "suscriptores";
+type Catalogo = "general" | "trabajo";
+type Pestana = "inventario" | "trabajo" | "publicar" | "exhibicion" | "suscriptores";
 
 const ESTADOS = [
   { v: "en_preparacion", t: "En preparación" },
@@ -90,11 +92,12 @@ const VACIO = {
   ubicacion: "Chillán",
   descripcion: "",
   estado: "disponible",
+  catalogo: "general" as Catalogo,
 };
 
 const plata = (n: number) => "$" + n.toLocaleString("es-CL");
 const enVitrina = (a: Auto) =>
-  a.publicado && a.en_exhibicion && ["disponible", "reservado"].includes(a.estado);
+  a.catalogo !== "trabajo" && a.publicado && a.en_exhibicion && ["disponible", "reservado"].includes(a.estado);
 const visiblePublico = (a: Auto) => a.publicado && ["disponible", "reservado"].includes(a.estado);
 
 async function reducir(file: File): Promise<Blob> {
@@ -258,6 +261,7 @@ export default function Admin() {
       ubicacion: a.ubicacion ?? "",
       descripcion: a.descripcion ?? "",
       estado: a.estado,
+      catalogo: a.catalogo ?? "general",
     };
   }
 
@@ -290,8 +294,9 @@ export default function Admin() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function nuevo() {
+  function nuevo(catalogo: Catalogo = "general") {
     limpiar();
+    setForm({ ...VACIO, catalogo, tipo: catalogo === "trabajo" ? "Camioneta" : VACIO.tipo });
     setPestana("publicar");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -412,6 +417,9 @@ export default function Admin() {
         estado: form.estado,
         publicado: publicar,
         fotos: urls,
+        catalogo: form.catalogo,
+        // La exhibición de la portada es solo del catálogo general.
+        ...(form.catalogo === "trabajo" ? { en_exhibicion: false } : {}),
       };
       const r = editId
         ? await supabase.from("autos").update(datos).eq("id", editId)
@@ -427,7 +435,7 @@ export default function Admin() {
       );
       limpiar();
       await cargar();
-      setPestana("inventario");
+      setPestana(datos.catalogo === "trabajo" ? "trabajo" : "inventario");
     } catch (err) {
       avisar("Error: " + ((err as { message?: string }).message ?? "no se pudo guardar"), true);
     }
@@ -475,7 +483,26 @@ export default function Admin() {
     }
   }
 
+  async function cambiarCatalogo(a: Auto) {
+    const destino: Catalogo = a.catalogo === "trabajo" ? "general" : "trabajo";
+    const datos = destino === "trabajo" ? { catalogo: destino, en_exhibicion: false } : { catalogo: destino };
+    const { error } = await supabase
+      .from("autos")
+      .update(datos)
+      .eq("id", a.id)
+      .eq("automotora_id", automotoraId!);
+    if (error) avisar("Error: " + error.message, true);
+    else {
+      avisar(a.marca + " " + a.modelo + " pasó a " + (destino === "trabajo" ? "Vehículos de trabajo." : "Catálogo general."));
+      await cargar();
+    }
+  }
+
   async function cambiarExhibicion(a: Auto) {
+    if (a.catalogo === "trabajo") {
+      avisar("La exhibición de la portada es solo para el catálogo general.", true);
+      return;
+    }
     if (!a.publicado) {
       avisar("Primero debes publicar el auto para agregarlo a exhibición.", true);
       return;
@@ -561,17 +588,24 @@ export default function Admin() {
     }
   }
 
+  const catalogoVista: Catalogo = pestana === "trabajo" ? "trabajo" : "general";
+  const autosCatalogo = autos.filter((a) => (a.catalogo ?? "general") === catalogoVista);
   const cuenta = (e: string) =>
-    autos.filter((a) => a.publicado && a.estado === e).length;
+    autosCatalogo.filter((a) => a.publicado && a.estado === e).length;
 
-  const cuentaBorradores = autos.filter((a) => !a.publicado).length;
+  const cuentaBorradores = autosCatalogo.filter((a) => !a.publicado).length;
+  const totalTrabajo = autos.filter((a) => a.catalogo === "trabajo").length;
+  const totalPublicados = autos.filter((a) => a.publicado).length;
 
   const autosExhibicion = autos.filter(enVitrina);
-  const candidatosVitrina = autos.filter((a) => visiblePublico(a) && !a.en_exhibicion);
+  const candidatosVitrina = autos.filter(
+    (a) => a.catalogo !== "trabajo" && visiblePublico(a) && !a.en_exhibicion
+  );
 
   const autosFiltrados = useMemo(() => {
     const termino = busqueda.trim().toLowerCase();
     const lista = autos.filter((a) => {
+      if ((a.catalogo ?? "general") !== catalogoVista) return false;
       const coincideTexto =
         !termino ||
         [a.marca, a.modelo, a.codigo, String(a.anio), a.version ?? "", a.ubicacion ?? ""]
@@ -589,7 +623,7 @@ export default function Admin() {
     if (orden === "precio_asc") return [...lista].sort((a, b) => a.precio - b.precio);
     if (orden === "anio_desc") return [...lista].sort((a, b) => b.anio - a.anio);
     return lista;
-  }, [autos, busqueda, filtroEstado, orden]);
+  }, [autos, busqueda, filtroEstado, orden, catalogoVista]);
 
   const suscriptoresFiltrados = suscriptores.filter((s) => {
     const t = busquedaSus.trim().toLowerCase();
@@ -620,7 +654,7 @@ export default function Admin() {
   }
 
   const filtros = [
-    { v: "todos", t: "Todos", n: autos.length },
+    { v: "todos", t: "Todos", n: autosCatalogo.length },
     { v: "disponible", t: "Disponibles", n: cuenta("disponible") },
     { v: "reservado", t: "Reservados", n: cuenta("reservado") },
     { v: "en_preparacion", t: "En preparación", n: cuenta("en_preparacion") },
@@ -636,22 +670,28 @@ export default function Admin() {
           <h1>Panel de gestión</h1>
         </div>
         <div className="ap-top-acc">
-          <button type="button" className="btn fill" onClick={nuevo}>+ Publicar auto</button>
+          <button type="button" className="btn fill" onClick={() => nuevo(catalogoVista)}>
+            + {catalogoVista === "trabajo" ? "Publicar vehículo de trabajo" : "Publicar auto"}
+          </button>
           <Link className="btn" href="/" target="_blank">Ver la página</Link>
           <button type="button" className="btn" onClick={() => supabase.auth.signOut()}>Salir</button>
         </div>
       </header>
 
       <div className="ap-resumen">
+        <div><b>{autos.length - totalTrabajo}</b><span>Catálogo general</span></div>
+        <div><b>{totalTrabajo}</b><span>Vehículos de trabajo</span></div>
+        <div><b>{totalPublicados}</b><span>Publicados</span></div>
+        <div><b>{autos.length - totalPublicados}</b><span>No publicados</span></div>
         <div><b>{autos.filter(visiblePublico).length}</b><span>En la página</span></div>
         <div><b>{autosExhibicion.length}/{MAX_EXHIBICION}</b><span>En exhibición</span></div>
-        <div><b>{cuentaBorradores}</b><span>Borradores</span></div>
         <div><b>{suscriptores.length}</b><span>Suscriptores</span></div>
       </div>
 
       <nav className="ap-tabs" role="tablist" aria-label="Secciones del panel">
         {([
-          ["inventario", "Inventario", autos.length],
+          ["inventario", "Catálogo general", autos.length - totalTrabajo],
+          ["trabajo", "Vehículos de trabajo", totalTrabajo],
           ["publicar", editId ? "Editar auto" : "Publicar auto", null],
           ["exhibicion", "Exhibición", autosExhibicion.length + "/" + MAX_EXHIBICION],
           ["suscriptores", "Suscriptores", suscriptores.length],
@@ -669,8 +709,8 @@ export default function Admin() {
         ))}
       </nav>
 
-      {pestana === "inventario" && (
-        <section aria-label="Inventario">
+      {(pestana === "inventario" || pestana === "trabajo") && (
+        <section aria-label={catalogoVista === "trabajo" ? "Vehículos de trabajo" : "Catálogo general"}>
           <div className="adm-cuentas">
             {filtros.map((f) => (
               <button
@@ -716,15 +756,15 @@ export default function Admin() {
             </label>
           </div>
 
-          <p className="ap-conteo">{autosFiltrados.length} de {autos.length} autos</p>
+          <p className="ap-conteo">{autosFiltrados.length} de {autosCatalogo.length} vehículos</p>
 
-          {autos.length === 0 && (
+          {autosCatalogo.length === 0 && (
             <div className="ap-vacio">
-              <p>Aún no hay autos cargados.</p>
-              <button type="button" className="btn fill" onClick={nuevo}>Publicar el primero</button>
+              <p>{catalogoVista === "trabajo" ? "Aún no hay vehículos de trabajo." : "Aún no hay autos cargados."}</p>
+              <button type="button" className="btn fill" onClick={() => nuevo(catalogoVista)}>Publicar el primero</button>
             </div>
           )}
-          {autos.length > 0 && autosFiltrados.length === 0 && (
+          {autosCatalogo.length > 0 && autosFiltrados.length === 0 && (
             <p className="sub">No encontramos autos con esos criterios.</p>
           )}
 
@@ -777,21 +817,26 @@ export default function Admin() {
                     <button type="button" className="ap-b" onClick={() => cambiarPublicado(a)}>
                       {a.publicado ? "Pasar a borrador" : "Publicar"}
                     </button>
-                    <button
-                      type="button"
-                      className={"ap-b" + (a.en_exhibicion ? " activo" : "")}
-                      onClick={() => cambiarExhibicion(a)}
-                      disabled={
-                        !a.publicado ||
-                        (!a.en_exhibicion &&
-                          (!["disponible", "reservado"].includes(a.estado) ||
-                            autosExhibicion.length >= MAX_EXHIBICION))
-                      }
-                      title="Seleccionar o quitar de autos en exhibición"
-                    >
-                      {a.en_exhibicion ? "★ Quitar de exhibición" : "☆ Exhibir"}
-                    </button>
+                    {a.catalogo !== "trabajo" && (
+                      <button
+                        type="button"
+                        className={"ap-b" + (a.en_exhibicion ? " activo" : "")}
+                        onClick={() => cambiarExhibicion(a)}
+                        disabled={
+                          !a.publicado ||
+                          (!a.en_exhibicion &&
+                            (!["disponible", "reservado"].includes(a.estado) ||
+                              autosExhibicion.length >= MAX_EXHIBICION))
+                        }
+                        title="Seleccionar o quitar de autos en exhibición"
+                      >
+                        {a.en_exhibicion ? "★ Quitar de exhibición" : "☆ Exhibir"}
+                      </button>
+                    )}
                     <button type="button" className="ap-b" onClick={() => duplicar(a)}>Duplicar</button>
+                    <button type="button" className="ap-b" onClick={() => cambiarCatalogo(a)}>
+                      {a.catalogo === "trabajo" ? "Pasar a general" : "Pasar a trabajo"}
+                    </button>
                     {visiblePublico(a) && (
                       <a className="ap-b" href={"/autos/" + encodeURIComponent(a.codigo)} target="_blank" rel="noreferrer">Ver</a>
                     )}
@@ -807,12 +852,32 @@ export default function Admin() {
       {pestana === "publicar" && (
         <form className="ap-form" onSubmit={guardar}>
           <div className="ap-form-titulo">
-            <h2>{editId ? "Editar auto" : "Publicar auto"}</h2>
+            <h2>{editId ? "Editar vehículo" : "Publicar vehículo"}</h2>
             {editId && <span className="ap-ref">Editando · {form.marca} {form.modelo}</span>}
           </div>
 
           <fieldset className="ap-bloque">
-            <legend>1. Fotos</legend>
+            <legend>1. Catálogo</legend>
+            <div className="ap-catalogos">
+              {([
+                ["general", "Catálogo general", "Autos, SUV y demás vehículos de la página principal."],
+                ["trabajo", "Vehículos de trabajo", "Aparece solo en su catálogo independiente."],
+              ] as [Catalogo, string, string][]).map(([v, t, d]) => (
+                <label key={v} className={form.catalogo === v ? "on" : ""}>
+                  <input
+                    type="radio"
+                    name="catalogo"
+                    checked={form.catalogo === v}
+                    onChange={() => setForm({ ...form, catalogo: v })}
+                  />
+                  <span><b>{t}</b>{d}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset className="ap-bloque">
+            <legend>2. Fotos</legend>
             <label
               className={"ap-soltar" + (soltando ? " encima" : "")}
               onDragOver={(e) => {
@@ -882,7 +947,7 @@ export default function Admin() {
           </fieldset>
 
           <fieldset className="ap-bloque">
-            <legend>2. Datos principales <small>(obligatorios para publicar)</small></legend>
+            <legend>3. Datos principales <small>(obligatorios para publicar)</small></legend>
             <div className="adm-fila">
               <label>Marca<input list="ap-marcas" value={form.marca} onChange={campo("marca")} placeholder="Toyota, Ford…" /></label>
               <label>Modelo<input value={form.modelo} onChange={campo("modelo")} placeholder="Hilux, Ranger…" /></label>
@@ -899,7 +964,7 @@ export default function Admin() {
           </fieldset>
 
           <fieldset className="ap-bloque">
-            <legend>3. Detalles</legend>
+            <legend>4. Detalles</legend>
             <div className="adm-fila">
               <label>Versión<input value={form.version} onChange={campo("version")} placeholder="2.4 4x4 AT…" /></label>
               <label>Kilometraje<input type="number" inputMode="numeric" value={form.km} onChange={campo("km")} /></label>
@@ -946,7 +1011,7 @@ export default function Admin() {
                   : "✓ Listo para publicar" + (fotos.length ? "" : " (sin fotos)")}
             </p>
             <div className="acc">
-              <button type="button" className="btn" onClick={() => { limpiar(); setPestana("inventario"); }}>
+              <button type="button" className="btn" onClick={() => { setPestana(form.catalogo === "trabajo" ? "trabajo" : "inventario"); limpiar(); }}>
                 Cancelar
               </button>
               {editId && (
