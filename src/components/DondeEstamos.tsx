@@ -4,6 +4,7 @@ import "./secciones.css";
 import type { CSSProperties, ReactNode } from "react";
 import { DIRECCION, HORARIO, INSTAGRAM, FACEBOOK, TIKTOK, wa } from "@/lib/datos";
 import { useReveal } from "@/lib/useReveal";
+import { fondoCss } from "@/lib/img";
 
 const retraso = (ms: number): CSSProperties => ({ transitionDelay: ms + "ms" });
 
@@ -26,10 +27,10 @@ export default function DondeEstamos({ banner = "" }: { banner?: string }) {
       <div
         className="don-banner"
         style={
-          banner
+          banner && visto
             ? {
                 backgroundImage:
-                  "linear-gradient(180deg, rgba(0,0,0,.4), rgba(0,0,0,.92)), url(\"" + banner + "\")",
+                  "linear-gradient(180deg, rgba(0,0,0,.4), rgba(0,0,0,.92)), " + fondoCss(banner, 828, 45),
               }
             : undefined
         }

@@ -706,7 +706,7 @@ input, select, textarea { font-size: 16px; }
 .chips { display: flex; gap: 8px; overflow-x: auto; margin: 16px 0 4px; padding-bottom: 8px; -webkit-overflow-scrolling: touch; }
 .chip { flex: none; background: none; color: var(--crema); border: 2px solid var(--bronce); padding: 8px 18px; font: 700 .95rem var(--f-titulo), sans-serif; text-transform: uppercase; letter-spacing: .04em; cursor: pointer; transition: background .2s ease, border-color .2s ease; }
 .chip:hover { border-color: var(--rojo); }
-.chip.on { background: var(--rojo); border-color: var(--rojo); }
+.chip.on { background: var(--rojo); border-color: var(--rojo); color: #fff; }
 .chip:focus-visible { outline: 3px solid var(--crema); outline-offset: 3px; }
 .tipo-tag { align-self: flex-start; font: 700 .75rem var(--f-titulo), sans-serif; text-transform: uppercase; letter-spacing: .06em; color: var(--crema); border: 1px solid var(--bronce); padding: 1px 8px; }
 

@@ -4,6 +4,7 @@ import "./destacados.css";
 import Link from "next/link";
 import { wa } from "@/lib/datos";
 import { useRotacion } from "@/lib/useRotacion";
+import { fondoCss, imgSrc, imgSrcSet } from "@/lib/img";
 import Aparece from "./Aparece";
 
 export type AutoVitrina = {
@@ -42,7 +43,7 @@ export default function Vitrina({
     .map((auto) => auto.fotos[0])
     .slice(0, 5);
 
-  const { ref: refFondo, indice: fotoIndex } = useRotacion<HTMLDivElement>(fotosFondo);
+  const { ref: refFondo, indice: fotoIndex, visto } = useRotacion<HTMLDivElement>(fotosFondo);
 
   const ordenados = [...autos].sort(
     (a, b) => Number(!!b.destacado) - Number(!!a.destacado)
@@ -64,13 +65,13 @@ export default function Vitrina({
     <section id="autos" className="vit">
       {fotosFondo.length > 0 && (
         <div className="vit-fondo" aria-hidden="true" ref={refFondo}>
+          {visto && (
           <div
             key={fotoIndex}
             className="vit-fondo-foto"
-            style={{
-              backgroundImage: `url("${fotosFondo[fotoIndex]}")`,
-            }}
+            style={{ backgroundImage: fondoCss(fotosFondo[fotoIndex]) }}
           />
+          )}
         </div>
       )}
       <div className="wrap">
@@ -89,7 +90,14 @@ export default function Vitrina({
               >
                 {fotoEstrella ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={fotoEstrella} alt={estrella.marca + " " + estrella.modelo} decoding="async" />
+                  <img
+                    src={imgSrc(fotoEstrella, 828, 60)}
+                    srcSet={imgSrcSet(fotoEstrella, 60)}
+                    sizes="(max-width: 860px) 100vw, 640px"
+                    alt={estrella.marca + " " + estrella.modelo}
+                    decoding="async"
+                    fetchPriority="low"
+                  />
                 ) : (
                   <div className="foto">Foto próximamente</div>
                 )}
@@ -136,7 +144,14 @@ export default function Vitrina({
                   <Link href={"/autos/" + x.codigo} className="vit-foto" aria-label={"Ver " + x.marca + " " + x.modelo}>
                     {foto ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={foto} alt={x.marca + " " + x.modelo} loading="lazy" decoding="async" />
+                      <img
+                        src={imgSrc(foto, 640, 60)}
+                        srcSet={imgSrcSet(foto, 60)}
+                        sizes="(max-width: 760px) 92vw, 360px"
+                        alt={x.marca + " " + x.modelo}
+                        loading="lazy"
+                        decoding="async"
+                      />
                     ) : (
                       <div className="foto">Foto próximamente</div>
                     )}

@@ -4,7 +4,7 @@ import Vitrina from "@/components/Vitrina";
 import VendeTuAuto from "@/components/VendeTuAuto";
 import DondeEstamos from "@/components/DondeEstamos";
 import { getAutosExhibicion } from "@/lib/autos";
-import type { FotoFondo } from "@/lib/useAutosFondo";
+import type { FotoFondo } from "@/lib/autos";
 
 export const revalidate = 60;
 

@@ -3,25 +3,26 @@
 import Image from "next/image";
 import { wa } from "@/lib/datos";
 import { useRotacion } from "@/lib/useRotacion";
+import { fondoCss } from "@/lib/img";
 
 export default function RevisionTecnica({
   fotosFondo,
 }: {
   fotosFondo: string[];
 }) {
-  const { ref: refFondo, indice: fotoIndex } = useRotacion<HTMLDivElement>(fotosFondo);
+  const { ref: refFondo, indice: fotoIndex, visto } = useRotacion<HTMLDivElement>(fotosFondo);
 
   return (
     <section id="revision-tecnica" className="rt-section">
       {fotosFondo.length > 0 && (
         <div className="fondo-exhibicion" aria-hidden="true" ref={refFondo}>
+          {visto && (
           <div
             key={fotoIndex}
             className="fondo-exhibicion-foto rt-fondo-animado"
-            style={{
-              backgroundImage: `url("${fotosFondo[fotoIndex % fotosFondo.length]}")`,
-            }}
+            style={{ backgroundImage: fondoCss(fotosFondo[fotoIndex % fotosFondo.length]) }}
           />
+          )}
         </div>
       )}
 

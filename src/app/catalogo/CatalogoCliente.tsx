@@ -5,6 +5,7 @@ import Aparece from "@/components/Aparece";
 import { useMemo, useState } from "react";
 import { wa } from "@/lib/datos";
 import { useRotacion } from "@/lib/useRotacion";
+import { fondoCss, imgSrc, imgSrcSet } from "@/lib/img";
 
 type Auto = {
   id: string;
@@ -44,7 +45,7 @@ export default function CatalogoCliente({ autosInicial }: { autosInicial: Auto[]
       .slice(0, 5),
     [autos]
   );
-  const { ref: refFondo, indice: fotoFondoIndex } = useRotacion<HTMLDivElement>(fotosFondo);
+  const { ref: refFondo, indice: fotoFondoIndex, visto } = useRotacion<HTMLDivElement>(fotosFondo);
 
   const marcas = useMemo(
     () => Array.from(new Set(autos.map((a) => a.marca))).sort(),
@@ -103,13 +104,13 @@ export default function CatalogoCliente({ autosInicial }: { autosInicial: Auto[]
     <main className="det catalogo-fondo">
       {autos.some((auto) => auto.fotos && auto.fotos.length > 0) && (
         <div className="catalogo-fondo-capa" aria-hidden="true" ref={refFondo}>
+          {visto && (
           <div
             key={fotoFondoIndex}
             className="catalogo-fondo-foto"
-            style={{
-              backgroundImage: `url("${fotosFondo[fotoFondoIndex]}")`,
-            }}
+            style={{ backgroundImage: fondoCss(fotosFondo[fotoFondoIndex]) }}
           />
+          )}
         </div>
       )}
       <div className="catalogo-contenido">
@@ -197,7 +198,9 @@ export default function CatalogoCliente({ autosInicial }: { autosInicial: Auto[]
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   className="foto"
-                  src={x.fotos[0]}
+                  src={imgSrc(x.fotos[0], 640, 60)}
+                  srcSet={imgSrcSet(x.fotos[0], 60)}
+                  sizes="(max-width: 760px) 100vw, 360px"
                   alt={x.marca + " " + x.modelo}
                   loading={i === 0 ? "eager" : "lazy"}
                   fetchPriority={i === 0 ? "high" : "auto"}

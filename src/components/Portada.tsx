@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { wa } from "@/lib/datos";
-import type { FotoFondo } from "@/lib/useAutosFondo";
+import type { FotoFondo } from "@/lib/autos";
 import FondoPortada from "./FondoPortada";
 
 // Tiempo entre fotos de fondo, en milisegundos (4500 = 4,5 segundos)
@@ -88,6 +88,7 @@ export default function Portada({ fotos }: { fotos: FotoFondo[] }) {
                 alt="Logo de Chillán Vende Autos: camioneta roja clásica frente a las montañas"
                 width={520}
                 height={520}
+                sizes="(max-width: 760px) 86vw, 520px"
                 priority
               />
             </div>
