@@ -51,7 +51,7 @@ export default function FondoPortada({
             key={f.url + k}
             src={imgSrc(f.url, 640, 45)}
             srcSet={imgSrcSet(f.url, 45)}
-            sizes="(max-width: 760px) 100vw, 1080px"
+            sizes="(max-width: 760px) 40vw, 1080px"
             alt=""
             decoding="async"
             fetchPriority={k === 0 ? "high" : "low"}

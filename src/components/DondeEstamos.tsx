@@ -108,12 +108,15 @@ export default function DondeEstamos({ banner = "" }: { banner?: string }) {
           </div>
 
           <div className="don-mapa rvx" style={retraso(200)}>
-            <iframe
-              src={mapa}
-              title="Mapa de Chillán Vende Autos"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            />
+            {/* Google Maps pesa casi 500 KB: se carga recién al llegar a esta sección. */}
+            {visto && (
+              <iframe
+                src={mapa}
+                title="Mapa de Chillán Vende Autos"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            )}
           </div>
         </div>
       </div>

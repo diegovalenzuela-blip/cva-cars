@@ -52,6 +52,8 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   experimental: {
     agentFeedback: true,
+    // El CSS va dentro del HTML: la página se pinta sin esperar otra descarga.
+    inlineCss: true,
   },
   images: {
     remotePatterns: [
