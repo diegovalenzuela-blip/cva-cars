@@ -1,7 +1,8 @@
 "use client";
 
+import "./admin.css";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 
@@ -13,7 +14,7 @@ type FotoAdmin = {
 };
 
 type Auto = {
-    duenos: number | null;
+  duenos: number | null;
   id: string;
   publicado: boolean;
   codigo: string;
@@ -32,7 +33,18 @@ type Auto = {
   descripcion: string | null;
   estado: string;
   fotos: string[];
+  creado_en?: string;
 };
+
+type Suscriptor = {
+  id: string;
+  email: string;
+  telefono: string;
+  origen: string | null;
+  creado_en: string;
+};
+
+type Pestana = "inventario" | "publicar" | "exhibicion" | "suscriptores";
 
 const ESTADOS = [
   { v: "en_preparacion", t: "En preparación" },
@@ -50,6 +62,19 @@ const UBICACIONES = [
 
 const TIPOS = ["Auto", "SUV", "Camioneta", "Furgón", "Moto", "Camión", "Otro"];
 
+// Sugerencias para escribir más rápido (se puede escribir cualquier otro valor).
+const MARCAS = [
+  "Audi", "BMW", "Changan", "Chery", "Chevrolet", "Citroën", "Dodge", "Fiat", "Ford", "Geely",
+  "Great Wall", "Haval", "Honda", "Hyundai", "JAC", "Jaguar", "Jeep", "Kia", "KTM", "Maserati",
+  "Maxus", "Mazda", "Mercedes-Benz", "MG", "Mitsubishi", "Nissan", "Peugeot", "RAM", "Renault",
+  "Samsung", "SsangYong", "Subaru", "Suzuki", "Toyota", "Volkswagen", "Volvo",
+];
+const COMBUSTIBLES = ["Bencina", "Diésel", "Híbrido", "Eléctrico", "Gas"];
+const TRANSMISIONES = ["Manual", "Automática"];
+const COLORES = ["Blanco", "Negro", "Gris", "Plata", "Rojo", "Azul", "Verde", "Café", "Beige"];
+
+const MAX_EXHIBICION = 7;
+
 const VACIO = {
   marca: "",
   modelo: "",
@@ -63,9 +88,14 @@ const VACIO = {
   color: "",
   tipo: "Auto",
   ubicacion: "Chillán",
-    descripcion: "",
+  descripcion: "",
   estado: "disponible",
 };
+
+const plata = (n: number) => "$" + n.toLocaleString("es-CL");
+const enVitrina = (a: Auto) =>
+  a.publicado && a.en_exhibicion && ["disponible", "reservado"].includes(a.estado);
+const visiblePublico = (a: Auto) => a.publicado && ["disponible", "reservado"].includes(a.estado);
 
 async function reducir(file: File): Promise<Blob> {
   const bmp = await createImageBitmap(file, { imageOrientation: "from-image" });
@@ -107,16 +137,33 @@ export default function Admin() {
   const [errorLogin, setErrorLogin] = useState("");
   const [automotoraId, setAutomotoraId] = useState<string | null>(null);
   const [autos, setAutos] = useState<Auto[]>([]);
+  const [pestana, setPestana] = useState<Pestana>("inventario");
   const [busqueda, setBusqueda] = useState("");
-const [filtroEstado, setFiltroEstado] = useState("todos");
+  const [filtroEstado, setFiltroEstado] = useState("todos");
+  const [orden, setOrden] = useState("recientes");
   const [publicadoForm, setPublicadoForm] = useState(true);
   const [form, setForm] = useState(VACIO);
   const [editId, setEditId] = useState<string | null>(null);
   const [fotos, setFotos] = useState<FotoAdmin[]>([]);
   const [fotoArrastrada, setFotoArrastrada] = useState<number | null>(null);
+  const [soltando, setSoltando] = useState(false);
   const [guardando, setGuardando] = useState(false);
-  const [msg, setMsg] = useState("");
+  const [progreso, setProgreso] = useState("");
+  const [aviso, setAviso] = useState<{ texto: string; error: boolean } | null>(null);
   const [inputKey, setInputKey] = useState(0);
+  const [suscriptores, setSuscriptores] = useState<Suscriptor[]>([]);
+  const [busquedaSus, setBusquedaSus] = useState("");
+  const [errorSus, setErrorSus] = useState("");
+
+  // Avisos flotantes: se ven estés donde estés en el panel.
+  const avisar = useCallback((texto: string, error = false) => {
+    setAviso({ texto, error });
+  }, []);
+  useEffect(() => {
+    if (!aviso) return;
+    const id = window.setTimeout(() => setAviso(null), aviso.error ? 7000 : 3500);
+    return () => window.clearTimeout(id);
+  }, [aviso]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -133,7 +180,7 @@ const [filtroEstado, setFiltroEstado] = useState("todos");
       .select("automotora_id")
       .maybeSingle();
     if (!perfil) {
-      setMsg("Tu usuario no está vinculado a una automotora.");
+      avisar("Tu usuario no está vinculado a una automotora.", true);
       return;
     }
     setAutomotoraId(perfil.automotora_id);
@@ -143,12 +190,27 @@ const [filtroEstado, setFiltroEstado] = useState("todos");
       .eq("automotora_id", perfil.automotora_id)
       .order("creado_en", { ascending: false });
     setAutos((data as Auto[]) ?? []);
+  }, [avisar]);
+
+  const cargarSuscriptores = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("suscriptores")
+      .select("id,email,telefono,origen,creado_en")
+      .order("creado_en", { ascending: false });
+    if (error) {
+      setErrorSus("No se pudo cargar la lista de suscriptores: " + error.message);
+      return;
+    }
+    setErrorSus("");
+    setSuscriptores((data as Suscriptor[]) ?? []);
   }, []);
 
   useEffect(() => {
+    if (!sesion) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- carga inicial del panel al iniciar sesión
-    if (sesion) cargar();
-  }, [sesion, cargar]);
+    cargar();
+    cargarSuscriptores();
+  }, [sesion, cargar, cargarSuscriptores]);
 
   async function entrar(e: React.FormEvent) {
     e.preventDefault();
@@ -180,10 +242,8 @@ const [filtroEstado, setFiltroEstado] = useState("todos");
     setInputKey((k) => k + 1);
   }
 
-  function editar(a: Auto) {
-    setEditId(a.id);
-    setPublicadoForm(a.publicado);
-    setForm({
+  function aFormulario(a: Auto) {
+    return {
       marca: a.marca,
       modelo: a.modelo,
       version: a.version ?? "",
@@ -198,7 +258,13 @@ const [filtroEstado, setFiltroEstado] = useState("todos");
       ubicacion: a.ubicacion ?? "",
       descripcion: a.descripcion ?? "",
       estado: a.estado,
-    });
+    };
+  }
+
+  function editar(a: Auto) {
+    setEditId(a.id);
+    setPublicadoForm(a.publicado);
+    setForm(aFormulario(a));
     fotos.forEach((foto) => {
       if (foto.file) URL.revokeObjectURL(foto.preview);
     });
@@ -209,8 +275,39 @@ const [filtroEstado, setFiltroEstado] = useState("todos");
     })));
     setFotoArrastrada(null);
     setInputKey((k) => k + 1);
-    setMsg("");
+    setPestana("publicar");
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  // Copia un auto como borrador nuevo: útil para publicar uno parecido en segundos.
+  function duplicar(a: Auto) {
+    limpiar();
+    setForm({ ...aFormulario(a), estado: "disponible" });
+    setPublicadoForm(false);
+    setFotos((a.fotos ?? []).map((url, i) => ({ id: `copia-${i}-${url}`, url, preview: url })));
+    setPestana("publicar");
+    avisar("Copiaste " + a.marca + " " + a.modelo + ". Ajusta lo que cambie y publica.");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function nuevo() {
+    limpiar();
+    setPestana("publicar");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function agregarArchivos(lista: FileList | File[] | null) {
+    const archivos = Array.from(lista ?? []).filter((f) => f.type.startsWith("image/"));
+    if (!archivos.length) return;
+    setFotos((actual) => [
+      ...actual,
+      ...archivos.map((file) => ({
+        id: `${Date.now()}-${Math.random()}`,
+        file,
+        preview: URL.createObjectURL(file),
+      })),
+    ]);
+    setInputKey((k) => k + 1);
   }
 
   function moverFoto(indice: number, direccion: -1 | 1) {
@@ -219,6 +316,16 @@ const [filtroEstado, setFiltroEstado] = useState("todos");
       if (destino < 0 || destino >= lista.length) return lista;
       const copia = [...lista];
       [copia[indice], copia[destino]] = [copia[destino], copia[indice]];
+      return copia;
+    });
+  }
+
+  function hacerPortada(indice: number) {
+    setFotos((lista) => {
+      if (indice <= 0) return lista;
+      const copia = [...lista];
+      const [movida] = copia.splice(indice, 1);
+      copia.unshift(movida);
       return copia;
     });
   }
@@ -243,6 +350,13 @@ const [filtroEstado, setFiltroEstado] = useState("todos");
     });
   }
 
+  const faltan = [
+    !form.marca.trim() && "marca",
+    !form.modelo.trim() && "modelo",
+    !(Number(form.anio) > 0) && "año",
+    !(Number(form.precio) > 0) && "precio",
+  ].filter(Boolean) as string[];
+
   async function guardar(e: React.FormEvent) {
     e.preventDefault();
     if (!automotoraId) return;
@@ -253,27 +367,24 @@ const [filtroEstado, setFiltroEstado] = useState("todos");
       submitter?.dataset.publicado === "false" ? false :
       publicadoForm;
 
-    if (
-      publicar &&
-      (!form.marca.trim() ||
-        !form.modelo.trim() ||
-        Number(form.anio) <= 0 ||
-        Number(form.precio) <= 0)
-    ) {
-      setMsg("Para publicar debes completar marca, modelo, año y precio.");
+    if (publicar && faltan.length) {
+      avisar("Para publicar falta: " + faltan.join(", ") + ".", true);
       return;
     }
 
     setGuardando(true);
-    setMsg("");
     try {
       const urls: string[] = [];
+      const nuevas = fotos.filter((f) => !f.url && f.file).length;
+      let subidas = 0;
       for (const foto of fotos) {
         if (foto.url) {
           urls.push(foto.url);
           continue;
         }
         if (!foto.file) continue;
+        subidas += 1;
+        setProgreso("Subiendo foto " + subidas + " de " + nuevas + "…");
         const blob = await reducir(foto.file);
         const ruta =
           automotoraId + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + ".webp";
@@ -283,14 +394,15 @@ const [filtroEstado, setFiltroEstado] = useState("todos");
         if (error) throw error;
         urls.push(supabase.storage.from("autos").getPublicUrl(ruta).data.publicUrl);
       }
+      setProgreso("Guardando datos…");
       const datos = {
         marca: form.marca.trim(),
         modelo: form.modelo.trim(),
         version: form.version.trim() || null,
         anio: Number(form.anio) || 0,
         km: form.km ? Number(form.km) : null,
-duenos: form.duenos ? Number(form.duenos) : null,
-precio: Number(form.precio) || 0,
+        duenos: form.duenos ? Number(form.duenos) : null,
+        precio: Number(form.precio) || 0,
         combustible: form.combustible.trim() || null,
         transmision: form.transmision.trim() || null,
         color: form.color.trim() || null,
@@ -305,85 +417,148 @@ precio: Number(form.precio) || 0,
         ? await supabase.from("autos").update(datos).eq("id", editId)
         : await supabase.from("autos").insert({ ...datos, automotora_id: automotoraId });
       if (r.error) throw r.error;
-      setMsg(editId ? "Auto actualizado." : "Auto guardado.");
+      const nombre = datos.marca + " " + datos.modelo;
+      avisar(
+        editId
+          ? nombre + " actualizado."
+          : publicar
+            ? nombre + " publicado. Ya aparece en la página."
+            : nombre + " guardado como borrador."
+      );
       limpiar();
       await cargar();
+      setPestana("inventario");
     } catch (err) {
-      setMsg("Error: " + ((err as { message?: string }).message ?? "no se pudo guardar"));
+      avisar("Error: " + ((err as { message?: string }).message ?? "no se pudo guardar"), true);
     }
+    setProgreso("");
     setGuardando(false);
   }
 
+  async function cambiarEstado(a: Auto, estado: string) {
+    const datos = {
+      estado,
+      ...(estado === "vendido" || estado === "en_preparacion"
+        ? { en_exhibicion: false }
+        : {}),
+    };
 
-async function cambiarEstado(a: Auto, estado: string) {
-  const datos = {
-    estado,
-    ...(estado === "vendido" || estado === "en_preparacion"
-      ? { en_exhibicion: false }
-      : {}),
-  };
+    const { error } = await supabase
+      .from("autos")
+      .update(datos)
+      .eq("id", a.id)
+      .eq("automotora_id", automotoraId!);
 
-  const { error } = await supabase
-    .from("autos")
-    .update(datos)
-    .eq("id", a.id)
-    .eq("automotora_id", automotoraId!);
-
-  if (error) setMsg("Error: " + error.message);
-  else {
-    setMsg("Estado actualizado.");
-    await cargar();
-  }
-}
-
-async function cambiarExhibicion(a: Auto) {
-  if (!a.publicado) {
-    setMsg("Primero debes publicar el auto para agregarlo a exhibición.");
-    return;
+    if (error) avisar("Error: " + error.message, true);
+    else {
+      avisar(a.marca + " " + a.modelo + ": " + (ESTADOS.find((s) => s.v === estado)?.t ?? estado) + ".");
+      await cargar();
+    }
   }
 
-  const seleccionados = autos.filter(
-    (x) => x.publicado && x.en_exhibicion &&
-      ["disponible", "reservado"].includes(x.estado)
-  ).length;
-
-  if (!a.en_exhibicion && seleccionados >= 7) {
-    setMsg("Ya tienes 7 autos en exhibición. Quita uno antes de agregar otro.");
-    return;
+  // Publicar de inmediato o pasar a borrador sin abrir el formulario.
+  async function cambiarPublicado(a: Auto) {
+    if (!a.publicado && (!a.marca || !a.modelo || !(a.anio > 0) || !(a.precio > 0))) {
+      avisar("Para publicar completa marca, modelo, año y precio. Ábrelo con Editar.", true);
+      return;
+    }
+    const datos = a.publicado ? { publicado: false, en_exhibicion: false } : { publicado: true };
+    const { error } = await supabase
+      .from("autos")
+      .update(datos)
+      .eq("id", a.id)
+      .eq("automotora_id", automotoraId!);
+    if (error) avisar("Error: " + error.message, true);
+    else {
+      avisar(a.publicado ? "Pasó a borrador: ya no se ve en la página." : "Publicado: ya se ve en la página.");
+      await cargar();
+    }
   }
 
-  if (
-    !a.en_exhibicion &&
-    !["disponible", "reservado"].includes(a.estado)
-  ) {
-    setMsg("Solo puedes seleccionar autos disponibles o reservados.");
-    return;
+  async function cambiarExhibicion(a: Auto) {
+    if (!a.publicado) {
+      avisar("Primero debes publicar el auto para agregarlo a exhibición.", true);
+      return;
+    }
+
+    const seleccionados = autos.filter(enVitrina).length;
+
+    if (!a.en_exhibicion && seleccionados >= MAX_EXHIBICION) {
+      avisar("Ya tienes " + MAX_EXHIBICION + " autos en exhibición. Quita uno antes de agregar otro.", true);
+      return;
+    }
+
+    if (
+      !a.en_exhibicion &&
+      !["disponible", "reservado"].includes(a.estado)
+    ) {
+      avisar("Solo puedes seleccionar autos disponibles o reservados.", true);
+      return;
+    }
+
+    const { error } = await supabase
+      .from("autos")
+      .update({ en_exhibicion: !a.en_exhibicion })
+      .eq("id", a.id)
+      .eq("automotora_id", automotoraId!);
+
+    if (error) {
+      avisar("Error al actualizar exhibición: " + error.message, true);
+    } else {
+      avisar(
+        a.en_exhibicion
+          ? "Auto quitado de exhibición."
+          : "Auto agregado a exhibición."
+      );
+      await cargar();
+    }
   }
 
-  setMsg("");
-
-  const { error } = await supabase
-    .from("autos")
-    .update({ en_exhibicion: !a.en_exhibicion })
-    .eq("id", a.id)
-    .eq("automotora_id", automotoraId!);
-
-  if (error) {
-    setMsg("Error al actualizar exhibición: " + error.message);
-  } else {
-    setMsg(
-      a.en_exhibicion
-        ? "Auto quitado de exhibición."
-        : "Auto agregado a exhibición."
-    );
-    await cargar();
-  }
-}
   async function borrar(a: Auto) {
     if (!confirm("¿Borrar " + a.marca + " " + a.modelo + " (" + a.codigo + ")? No se puede deshacer.")) return;
     const { error } = await supabase.from("autos").delete().eq("id", a.id);
-    if (error) setMsg("Error: " + error.message);
-    else cargar();
+    if (error) avisar("Error: " + error.message, true);
+    else {
+      avisar("Auto borrado.");
+      cargar();
+    }
+  }
+
+  async function borrarSuscriptor(s: Suscriptor) {
+    if (!confirm("¿Quitar a " + s.email + " de la lista? No se puede deshacer.")) return;
+    const { error } = await supabase.from("suscriptores").delete().eq("id", s.id);
+    if (error) avisar("Error: " + error.message, true);
+    else {
+      avisar("Suscriptor quitado de la lista.");
+      cargarSuscriptores();
+    }
+  }
+
+  function exportarSuscriptores() {
+    const filas = [["Fecha", "Correo", "Teléfono", "Página"]].concat(
+      suscriptores.map((s) => [
+        new Date(s.creado_en).toLocaleString("es-CL"),
+        s.email,
+        s.telefono,
+        s.origen ?? "",
+      ])
+    );
+    // Separado por ";" y con BOM para que Excel en español lo abra bien.
+    const csv = "﻿" + filas.map((f) => f.map((c) => '"' + c.replace(/"/g, '""') + '"').join(";")).join("\r\n");
+    const enlace = document.createElement("a");
+    enlace.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    enlace.download = "suscriptores-chillan-vende-autos.csv";
+    enlace.click();
+    URL.revokeObjectURL(enlace.href);
+  }
+
+  async function copiarCorreos() {
+    try {
+      await navigator.clipboard.writeText(suscriptores.map((s) => s.email).join(", "));
+      avisar(suscriptores.length + " correos copiados. Pégalos en tu correo (en CCO).");
+    } catch {
+      avisar("No se pudieron copiar los correos.", true);
+    }
   }
 
   const cuenta = (e: string) =>
@@ -391,40 +566,41 @@ async function cambiarExhibicion(a: Auto) {
 
   const cuentaBorradores = autos.filter((a) => !a.publicado).length;
 
-  const autosExhibicion = autos.filter(
-    (a) =>
-      a.publicado &&
-      a.en_exhibicion &&
-      ["disponible", "reservado"].includes(a.estado)
-  );
+  const autosExhibicion = autos.filter(enVitrina);
+  const candidatosVitrina = autos.filter((a) => visiblePublico(a) && !a.en_exhibicion);
 
-  const autosFiltrados = autos.filter((a) => {
-  const termino = busqueda.trim().toLowerCase();
+  const autosFiltrados = useMemo(() => {
+    const termino = busqueda.trim().toLowerCase();
+    const lista = autos.filter((a) => {
+      const coincideTexto =
+        !termino ||
+        [a.marca, a.modelo, a.codigo, String(a.anio), a.version ?? "", a.ubicacion ?? ""]
+          .some((valor) => valor.toLowerCase().includes(termino));
 
-  const coincideTexto =
-    !termino ||
-    [
-      a.marca,
-      a.modelo,
-      a.codigo,
-      String(a.anio),
-      a.version ?? "",
-    ].some((valor) => valor.toLowerCase().includes(termino));
+      const coincideEstado =
+        filtroEstado === "todos" ||
+        (filtroEstado === "borradores"
+          ? !a.publicado
+          : a.publicado && a.estado === filtroEstado);
 
-  const coincideEstado =
-    filtroEstado === "todos" ||
-    (filtroEstado === "borradores"
-      ? !a.publicado
-      : a.publicado && a.estado === filtroEstado);
+      return coincideTexto && coincideEstado;
+    });
+    if (orden === "precio_desc") return [...lista].sort((a, b) => b.precio - a.precio);
+    if (orden === "precio_asc") return [...lista].sort((a, b) => a.precio - b.precio);
+    if (orden === "anio_desc") return [...lista].sort((a, b) => b.anio - a.anio);
+    return lista;
+  }, [autos, busqueda, filtroEstado, orden]);
 
-  return coincideTexto && coincideEstado;
-});
+  const suscriptoresFiltrados = suscriptores.filter((s) => {
+    const t = busquedaSus.trim().toLowerCase();
+    return !t || s.email.toLowerCase().includes(t) || s.telefono.includes(t);
+  });
 
   if (!listo) return null;
 
   if (!sesion) {
     return (
-      <main className="adm" style={{ maxWidth: 420 }}>
+      <main className="adm ap-login">
         <h1>Panel de administrador</h1>
         <p className="sub">Ingresa con tu correo y contraseña.</p>
         <form onSubmit={entrar}>
@@ -443,385 +619,474 @@ async function cambiarExhibicion(a: Auto) {
     );
   }
 
+  const filtros = [
+    { v: "todos", t: "Todos", n: autos.length },
+    { v: "disponible", t: "Disponibles", n: cuenta("disponible") },
+    { v: "reservado", t: "Reservados", n: cuenta("reservado") },
+    { v: "en_preparacion", t: "En preparación", n: cuenta("en_preparacion") },
+    { v: "vendido", t: "Vendidos", n: cuenta("vendido") },
+    { v: "borradores", t: "Borradores", n: cuentaBorradores },
+  ];
+
   return (
-    <main className="adm">
-      <div className="adm-top">
-        <h1>Panel de autos</h1>
-        <div className="acc">
-          <Link className="btn" href="/">Ver la página</Link>
-          <button className="btn" onClick={() => supabase.auth.signOut()}>Salir</button>
+    <main className="adm ap">
+      <header className="ap-top">
+        <div>
+          <span className="ap-marca">Chillán Vende Autos</span>
+          <h1>Panel de gestión</h1>
         </div>
+        <div className="ap-top-acc">
+          <button type="button" className="btn fill" onClick={nuevo}>+ Publicar auto</button>
+          <Link className="btn" href="/" target="_blank">Ver la página</Link>
+          <button type="button" className="btn" onClick={() => supabase.auth.signOut()}>Salir</button>
+        </div>
+      </header>
+
+      <div className="ap-resumen">
+        <div><b>{autos.filter(visiblePublico).length}</b><span>En la página</span></div>
+        <div><b>{autosExhibicion.length}/{MAX_EXHIBICION}</b><span>En exhibición</span></div>
+        <div><b>{cuentaBorradores}</b><span>Borradores</span></div>
+        <div><b>{suscriptores.length}</b><span>Suscriptores</span></div>
       </div>
 
-      <div className="adm-cuentas">
-        <button type="button" className={"adm-cuenta " + (filtroEstado === "todos" ? "activa" : "")} onClick={() => setFiltroEstado("todos")} aria-pressed={filtroEstado === "todos"}>
-          <b>{autos.length}</b>Todos los autos
-        </button>
-        <button type="button" className={"adm-cuenta " + (filtroEstado === "disponible" ? "activa" : "")} onClick={() => setFiltroEstado("disponible")} aria-pressed={filtroEstado === "disponible"}>
-          <b>{cuenta("disponible")}</b>Disponibles
-        </button>
-        <button type="button" className={"adm-cuenta " + (filtroEstado === "reservado" ? "activa" : "")} onClick={() => setFiltroEstado("reservado")} aria-pressed={filtroEstado === "reservado"}>
-          <b>{cuenta("reservado")}</b>Reservados
-        </button>
-        <button type="button" className={"adm-cuenta " + (filtroEstado === "en_preparacion" ? "activa" : "")} onClick={() => setFiltroEstado("en_preparacion")} aria-pressed={filtroEstado === "en_preparacion"}>
-          <b>{cuenta("en_preparacion")}</b>En preparación
-        </button>
-        <button type="button" className={"adm-cuenta " + (filtroEstado === "vendido" ? "activa" : "")} onClick={() => setFiltroEstado("vendido")} aria-pressed={filtroEstado === "vendido"}>
-          <b>{cuenta("vendido")}</b>Vendidos
-        </button>
-        <button type="button" className={"adm-cuenta " + (filtroEstado === "borradores" ? "activa" : "")} onClick={() => setFiltroEstado("borradores")} aria-pressed={filtroEstado === "borradores"}>
-          <b>{cuentaBorradores}</b>Borradores
-        </button>
-      </div>
-
-      <form className="adm-form" onSubmit={guardar}>
-        <h2>{editId ? "Editar auto" : "Agregar auto"}</h2>
-        <div className="adm-fila">
-          <label>Marca<input value={form.marca} onChange={campo("marca")} /></label>
-          <label>Modelo<input value={form.modelo} onChange={campo("modelo")} /></label>
-          <label>Versión<input value={form.version} onChange={campo("version")} /></label>
-          <label>Año<input type="number" value={form.anio} onChange={campo("anio")} /></label>
-          <label>Kilometraje<input type="number" value={form.km} onChange={campo("km")} /></label>
-          <label>Número de dueños<input type="number" min="0" step="1" value={form.duenos} onChange={campo("duenos")} placeholder="Ej. 2" /></label>
-          <label>Precio (CLP)<input type="number" value={form.precio} onChange={campo("precio")} /></label>
-          <label>Combustible<input value={form.combustible} onChange={campo("combustible")} placeholder="Bencina, diésel..." /></label>
-          <label>Transmisión<input value={form.transmision} onChange={campo("transmision")} placeholder="Manual, automática" /></label>
-          <label>Color<input value={form.color} onChange={campo("color")} /></label>
-          <label>
-            Tipo
-            <select value={form.tipo} onChange={campo("tipo")}>
-              <option value="">Sin definir</option>
-              {TIPOS.map((t) => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
-          </label>
-          <label>Ubicación<input list="ubicaciones" value={form.ubicacion} onChange={campo("ubicacion")} placeholder="Chillán, Bulnes..." /></label>
-          <datalist id="ubicaciones">
-            {UBICACIONES.map((u) => (
-              <option key={u} value={u} />
-            ))}
-          </datalist>
-          <label>
-            Estado
-            <select value={form.estado} onChange={campo("estado")}>
-              {ESTADOS.map((s) => (
-                <option key={s.v} value={s.v}>{s.t}</option>
-              ))}
-            </select>
-          </label>
-        </div>
-        <label style={{ display: "block", marginTop: 12 }}>
-          Descripción
-          <textarea rows={3} value={form.descripcion} onChange={campo("descripcion")} />
-        </label>
-
-        <label style={{ display: "block", marginTop: 12 }}>
-          Agregar fotografías
-          <input
-            key={inputKey}
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={(e) => {
-              const archivos = Array.from(e.target.files ?? []);
-              setFotos((lista) => [
-                ...lista,
-                ...archivos.map((file) => ({
-                  id: `${Date.now()}-${Math.random()}`,
-                  file,
-                  preview: URL.createObjectURL(file),
-                })),
-              ]);
-              setInputKey((k) => k + 1);
-            }}
-          />
-        </label>
-
-        <p className="adm-msg">
-          Ordena las fotografías arrastrándolas o usando las flechas.
-          La primera será la portada.
-        </p>
-
-        <div className="adm-fotos">
-          {fotos.map((foto, i) => (
-            <div
-              key={foto.id}
-              draggable
-              onDragStart={() => setFotoArrastrada(i)}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => {
-                e.preventDefault();
-                if (fotoArrastrada !== null) {
-                  reordenarFotos(fotoArrastrada, i);
-                }
-              }}
-              onDragEnd={() => setFotoArrastrada(null)}
-              className={fotoArrastrada === i ? "adm-foto-arrastrada" : ""}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={foto.preview} alt={`Foto ${i + 1} del auto`} />
-
-              <span className="adm-foto-posicion">
-                {i === 0 ? "PORTADA" : `FOTO ${i + 1}`}
-              </span>
-
-              <div className="adm-foto-controles">
-                <button
-                  type="button"
-                  title="Mover a la izquierda"
-                  aria-label="Mover fotografía hacia adelante"
-                  disabled={i === 0}
-                  onClick={() => moverFoto(i, -1)}
-                >
-                  ←
-                </button>
-                <button
-                  type="button"
-                  title="Mover a la derecha"
-                  aria-label="Mover fotografía hacia atrás"
-                  disabled={i === fotos.length - 1}
-                  onClick={() => moverFoto(i, 1)}
-                >
-                  →
-                </button>
-                <button
-                  type="button"
-                  title="Eliminar fotografía"
-                  aria-label="Eliminar fotografía"
-                  onClick={() => quitarFoto(i)}
-                >
-                  ×
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {fotos.length > 0 && (
-          <p className="adm-msg">
-            {fotos.length} fotografía(s) en la lista.
-          </p>
-        )}
-
-        <div className="acc" style={{ marginTop: 14 }}>
-          {editId && (
-            <button
-              className="btn"
-              type="submit"
-              data-publicado={String(publicadoForm)}
-              disabled={guardando}
-            >
-              {guardando ? "Guardando..." : "Guardar cambios"}
-            </button>
-          )}
+      <nav className="ap-tabs" role="tablist" aria-label="Secciones del panel">
+        {([
+          ["inventario", "Inventario", autos.length],
+          ["publicar", editId ? "Editar auto" : "Publicar auto", null],
+          ["exhibicion", "Exhibición", autosExhibicion.length + "/" + MAX_EXHIBICION],
+          ["suscriptores", "Suscriptores", suscriptores.length],
+        ] as [Pestana, string, number | string | null][]).map(([v, t, n]) => (
           <button
-            className="btn"
-            type="submit"
-            data-publicado="false"
-            disabled={guardando}
+            key={v}
+            type="button"
+            role="tab"
+            aria-selected={pestana === v}
+            className={"ap-tab" + (pestana === v ? " on" : "")}
+            onClick={() => setPestana(v)}
           >
-            Guardar como borrador
+            {t}{n !== null && <em>{n}</em>}
           </button>
-          <button
-            className="btn fill"
-            type="submit"
-            data-publicado="true"
-            disabled={guardando}
-          >
-            {guardando ? "Guardando..." : "Publicar auto"}
-          </button>
-          {editId && (
-            <button type="button" className="btn" onClick={limpiar}>
-              Cancelar
-            </button>
-          )}
-        </div>
-        {msg && <p className="adm-msg">{msg}</p>}
-      </form>
+        ))}
+      </nav>
 
-      <section className="adm-exhibicion">
-        <div className="adm-exhibicion-titulo">
-          <div>
-            <h2>Autos en exhibición</h2>
-            <p className="sub">
-              Vehículos que se muestran como destacados en la página pública.
-            </p>
-          </div>
-          <strong>{autosExhibicion.length} / 7 seleccionados</strong>
-        </div>
-
-        {autosExhibicion.length === 0 ? (
-          <p className="adm-exhibicion-vacio">
-            Todavía no tienes autos seleccionados para exhibición.
-            Puedes agregarlos desde la lista de Mis autos.
-          </p>
-        ) : (
-          <div className="adm-exhibicion-lista">
-            {autosExhibicion.map((a) => (
-              <article className="adm-exhibicion-auto" key={a.id}>
-                <div className="adm-exhibicion-foto">
-                  {a.fotos?.[0] ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={a.fotos[0]} alt={`${a.marca} ${a.modelo}`} />
-                  ) : (
-                    <span>Sin foto</span>
-                  )}
-                </div>
-
-                <div className="adm-exhibicion-datos">
-                  <strong>{a.marca} {a.modelo}</strong>
-                  <span>{a.anio} · Ref. {a.codigo}</span>
-                  <b>${a.precio.toLocaleString("es-CL")}</b>
-                </div>
-
-                <button
-                  type="button"
-                  className="btn"
-                  onClick={() => cambiarExhibicion(a)}
-                  title="Quitar este vehículo de exhibición"
-                >
-                  Quitar
-                </button>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <div style={{ marginBottom: 20 }}>
-  <h2>Mis autos</h2>
-  <p className="sub">
-    Seleccionados para exhibición: {
-      autos.filter(
-        (a) => a.publicado && a.en_exhibicion &&
-          ["disponible", "reservado"].includes(a.estado)
-      ).length
-    } de 7
-  </p>
-</div>
-<div style={{
-  display: "grid",
-  gridTemplateColumns: "minmax(220px, 2fr) minmax(180px, 1fr)",
-  gap: 12,
-  marginBottom: 18
-}}>
-  <label>
-    Buscar auto
-    <input
-      value={busqueda}
-      onChange={(e) => setBusqueda(e.target.value)}
-      placeholder="Marca, modelo, año o código..."
-    />
-  </label>
-
-  <label>
-    Filtrar por estado
-    <select
-      value={filtroEstado}
-      onChange={(e) => setFiltroEstado(e.target.value)}
-    >
-      <option value="todos">Todos los estados</option>
-      <option value="borradores">Borradores</option>
-      {ESTADOS.map((s) => (
-        <option key={s.v} value={s.v}>{s.t}</option>
-      ))}
-    </select>
-  </label>
-</div>
-      {autos.length === 0 && <p className="sub">Aún no hay autos cargados.</p>}
-      {autos.length > 0 && autosFiltrados.length === 0 && (
-  <p className="sub">No encontramos autos con esos criterios.</p>
-)}
-      {autosFiltrados.map((a) => (
-        <article className="adm-item adm-item-nuevo" key={a.id}>
-          <div className="adm-item-foto">
-            {a.fotos && a.fotos[0] ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={a.fotos[0]} alt={`${a.marca} ${a.modelo}`} />
-            ) : (
-              <div className="adm-sinfoto">Sin fotografía</div>
-            )}
-            <span className="adm-item-numfotos">
-              {a.fotos?.length ?? 0} fotos
-            </span>
-          </div>
-
-          <div className="adm-item-info">
-            <div className="adm-item-encabezado">
-              {!a.publicado ? (
-                <span className="adm-estado adm-borrador">Borrador</span>
-              ) : (
-                <span className={`adm-estado adm-estado-${a.estado}`}>
-                  {ESTADOS.find((s) => s.v === a.estado)?.t ?? a.estado}
-                </span>
-              )}
-              {a.publicado && a.en_exhibicion && (
-                <span className="adm-en-exhibicion">En exhibición</span>
-              )}
-            </div>
-
-            <h3>{a.marca || "Sin marca"} {a.modelo || "Sin modelo"}</h3>
-            {a.version && <p className="adm-item-version">{a.version}</p>}
-
-            <strong className="adm-item-precio">
-              {a.precio > 0
-                ? `$${a.precio.toLocaleString("es-CL")}`
-                : "Precio pendiente"}
-            </strong>
-
-            <div className="adm-item-datos">
-              <span>{a.anio > 0 ? a.anio : "Año pendiente"}</span>
-              <span>Ref. {a.codigo}</span>
-              {a.km != null && <span>{a.km.toLocaleString("es-CL")} km</span>}
-              {a.ubicacion && <span>{a.ubicacion}</span>}
-            </div>
-          </div>
-
-          <div className="adm-acc adm-item-acciones">
-            <button
-              type="button"
-              className={"btn " + (a.en_exhibicion ? "fill" : "")}
-              onClick={() => cambiarExhibicion(a)}
-              disabled={
-                !a.publicado ||
-                (!a.en_exhibicion &&
-                  (
-                    !["disponible", "reservado"].includes(a.estado) ||
-                    autos.filter(
-                      (x) => x.publicado && x.en_exhibicion &&
-                        ["disponible", "reservado"].includes(x.estado)
-                    ).length >= 7
-                  ))
-              }
-              title="Seleccionar o quitar de autos en exhibición"
-            >
-              {a.en_exhibicion ? "Quitar de exhibición" : "Agregar a exhibición"}
-            </button>
-
-            <label className="adm-item-cambiar-estado">
-              Cambiar estado
-              <select
-                value={a.estado}
-                onChange={(e) => cambiarEstado(a, e.target.value)}
+      {pestana === "inventario" && (
+        <section aria-label="Inventario">
+          <div className="adm-cuentas">
+            {filtros.map((f) => (
+              <button
+                key={f.v}
+                type="button"
+                className={"adm-cuenta " + (filtroEstado === f.v ? "activa" : "")}
+                onClick={() => setFiltroEstado(f.v)}
+                aria-pressed={filtroEstado === f.v}
               >
+                <b>{f.n}</b>{f.t}
+              </button>
+            ))}
+          </div>
+
+          <div className="ap-barra">
+            <label className="ap-buscar">
+              <span className="ap-oculto">Buscar auto</span>
+              <input
+                type="search"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                placeholder="Buscar por marca, modelo, año, código o ubicación…"
+              />
+            </label>
+            <label>
+              <span className="ap-oculto">Filtrar por estado</span>
+              <select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)}>
+                <option value="todos">Todos los estados</option>
+                <option value="borradores">Borradores</option>
                 {ESTADOS.map((s) => (
                   <option key={s.v} value={s.v}>{s.t}</option>
                 ))}
               </select>
             </label>
+            <label>
+              <span className="ap-oculto">Ordenar</span>
+              <select value={orden} onChange={(e) => setOrden(e.target.value)}>
+                <option value="recientes">Más recientes</option>
+                <option value="precio_desc">Precio: mayor a menor</option>
+                <option value="precio_asc">Precio: menor a mayor</option>
+                <option value="anio_desc">Año: más nuevos</option>
+              </select>
+            </label>
+          </div>
 
-            <div className="adm-item-botones">
-              <button type="button" className="btn fill" onClick={() => editar(a)}>
-                Editar vehículo
+          <p className="ap-conteo">{autosFiltrados.length} de {autos.length} autos</p>
+
+          {autos.length === 0 && (
+            <div className="ap-vacio">
+              <p>Aún no hay autos cargados.</p>
+              <button type="button" className="btn fill" onClick={nuevo}>Publicar el primero</button>
+            </div>
+          )}
+          {autos.length > 0 && autosFiltrados.length === 0 && (
+            <p className="sub">No encontramos autos con esos criterios.</p>
+          )}
+
+          <div className="ap-lista">
+            {autosFiltrados.map((a) => (
+              <article className={"ap-auto" + (a.publicado ? "" : " borrador")} key={a.id}>
+                <button type="button" className="ap-auto-foto" onClick={() => editar(a)} aria-label={"Editar " + a.marca + " " + a.modelo}>
+                  {a.fotos && a.fotos[0] ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={a.fotos[0]} alt="" loading="lazy" />
+                  ) : (
+                    <span className="adm-sinfoto">Sin foto</span>
+                  )}
+                  <span className="ap-auto-numfotos">{a.fotos?.length ?? 0} fotos</span>
+                </button>
+
+                <div className="ap-auto-info">
+                  <div className="ap-etiquetas">
+                    {!a.publicado ? (
+                      <span className="adm-estado adm-borrador">Borrador</span>
+                    ) : (
+                      <span className={`adm-estado adm-estado-${a.estado}`}>
+                        {ESTADOS.find((s) => s.v === a.estado)?.t ?? a.estado}
+                      </span>
+                    )}
+                    {enVitrina(a) && <span className="adm-en-exhibicion">★ En exhibición</span>}
+                    <span className="ap-ref">Ref. {a.codigo}</span>
+                  </div>
+                  <h3>{a.marca || "Sin marca"} {a.modelo || "Sin modelo"}</h3>
+                  <p className="ap-auto-datos">
+                    {[a.version, a.anio > 0 ? String(a.anio) : "Año pendiente", a.km != null ? a.km.toLocaleString("es-CL") + " km" : null, a.ubicacion]
+                      .filter(Boolean).join(" · ")}
+                  </p>
+                  <strong className="adm-item-precio">
+                    {a.precio > 0 ? plata(a.precio) : "Precio pendiente"}
+                  </strong>
+                </div>
+
+                <div className="ap-auto-acc">
+                  <label className="ap-estado-rapido">
+                    <span className="ap-oculto">Cambiar estado</span>
+                    <select value={a.estado} onChange={(e) => cambiarEstado(a, e.target.value)}>
+                      {ESTADOS.map((s) => (
+                        <option key={s.v} value={s.v}>{s.t}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <div className="ap-botones">
+                    <button type="button" className="ap-b principal" onClick={() => editar(a)}>Editar</button>
+                    <button type="button" className="ap-b" onClick={() => cambiarPublicado(a)}>
+                      {a.publicado ? "Pasar a borrador" : "Publicar"}
+                    </button>
+                    <button
+                      type="button"
+                      className={"ap-b" + (a.en_exhibicion ? " activo" : "")}
+                      onClick={() => cambiarExhibicion(a)}
+                      disabled={
+                        !a.publicado ||
+                        (!a.en_exhibicion &&
+                          (!["disponible", "reservado"].includes(a.estado) ||
+                            autosExhibicion.length >= MAX_EXHIBICION))
+                      }
+                      title="Seleccionar o quitar de autos en exhibición"
+                    >
+                      {a.en_exhibicion ? "★ Quitar de exhibición" : "☆ Exhibir"}
+                    </button>
+                    <button type="button" className="ap-b" onClick={() => duplicar(a)}>Duplicar</button>
+                    {visiblePublico(a) && (
+                      <a className="ap-b" href={"/autos/" + encodeURIComponent(a.codigo)} target="_blank" rel="noreferrer">Ver</a>
+                    )}
+                    <button type="button" className="ap-b peligro" onClick={() => borrar(a)}>Borrar</button>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {pestana === "publicar" && (
+        <form className="ap-form" onSubmit={guardar}>
+          <div className="ap-form-titulo">
+            <h2>{editId ? "Editar auto" : "Publicar auto"}</h2>
+            {editId && <span className="ap-ref">Editando · {form.marca} {form.modelo}</span>}
+          </div>
+
+          <fieldset className="ap-bloque">
+            <legend>1. Fotos</legend>
+            <label
+              className={"ap-soltar" + (soltando ? " encima" : "")}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setSoltando(true);
+              }}
+              onDragLeave={() => setSoltando(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setSoltando(false);
+                agregarArchivos(e.dataTransfer.files);
+              }}
+            >
+              <input
+                key={inputKey}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => agregarArchivos(e.target.files)}
+              />
+              <strong>Arrastra las fotos aquí o toca para elegirlas</strong>
+              <span>Puedes elegir varias a la vez. Se achican solas antes de subir.</span>
+            </label>
+
+            {fotos.length > 0 && (
+              <>
+                <p className="ap-ayuda">
+                  {fotos.length} foto(s). Arrastra para ordenar; la primera es la <b>portada</b>.
+                </p>
+                <div className="adm-fotos">
+                  {fotos.map((foto, i) => (
+                    <div
+                      key={foto.id}
+                      draggable
+                      onDragStart={() => setFotoArrastrada(i)}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (fotoArrastrada !== null) {
+                          reordenarFotos(fotoArrastrada, i);
+                        }
+                      }}
+                      onDragEnd={() => setFotoArrastrada(null)}
+                      className={fotoArrastrada === i ? "adm-foto-arrastrada" : ""}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={foto.preview} alt={`Foto ${i + 1} del auto`} />
+
+                      <span className="adm-foto-posicion">
+                        {i === 0 ? "PORTADA" : `FOTO ${i + 1}`}
+                      </span>
+
+                      <div className="adm-foto-controles">
+                        <button type="button" title="Mover a la izquierda" aria-label="Mover fotografía hacia adelante" disabled={i === 0} onClick={() => moverFoto(i, -1)}>←</button>
+                        {i > 0 && (
+                          <button type="button" title="Usar como portada" aria-label="Usar como portada" onClick={() => hacerPortada(i)}>★</button>
+                        )}
+                        <button type="button" title="Mover a la derecha" aria-label="Mover fotografía hacia atrás" disabled={i === fotos.length - 1} onClick={() => moverFoto(i, 1)}>→</button>
+                        <button type="button" title="Eliminar fotografía" aria-label="Eliminar fotografía" onClick={() => quitarFoto(i)}>×</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </fieldset>
+
+          <fieldset className="ap-bloque">
+            <legend>2. Datos principales <small>(obligatorios para publicar)</small></legend>
+            <div className="adm-fila">
+              <label>Marca<input list="ap-marcas" value={form.marca} onChange={campo("marca")} placeholder="Toyota, Ford…" /></label>
+              <label>Modelo<input value={form.modelo} onChange={campo("modelo")} placeholder="Hilux, Ranger…" /></label>
+              <label>Año<input type="number" inputMode="numeric" value={form.anio} onChange={campo("anio")} placeholder="2020" /></label>
+              <label>
+                Precio (CLP)
+                <input type="number" inputMode="numeric" value={form.precio} onChange={campo("precio")} placeholder="12990000" />
+                {Number(form.precio) > 0 && <small className="ap-precio">{plata(Number(form.precio))}</small>}
+              </label>
+            </div>
+            <datalist id="ap-marcas">
+              {MARCAS.map((m) => <option key={m} value={m} />)}
+            </datalist>
+          </fieldset>
+
+          <fieldset className="ap-bloque">
+            <legend>3. Detalles</legend>
+            <div className="adm-fila">
+              <label>Versión<input value={form.version} onChange={campo("version")} placeholder="2.4 4x4 AT…" /></label>
+              <label>Kilometraje<input type="number" inputMode="numeric" value={form.km} onChange={campo("km")} /></label>
+              <label>Número de dueños<input type="number" min="0" step="1" value={form.duenos} onChange={campo("duenos")} placeholder="Ej. 2" /></label>
+              <label>Combustible<input list="ap-combustibles" value={form.combustible} onChange={campo("combustible")} placeholder="Bencina, diésel..." /></label>
+              <label>Transmisión<input list="ap-transmisiones" value={form.transmision} onChange={campo("transmision")} placeholder="Manual, automática" /></label>
+              <label>Color<input list="ap-colores" value={form.color} onChange={campo("color")} /></label>
+              <label>
+                Tipo
+                <select value={form.tipo} onChange={campo("tipo")}>
+                  <option value="">Sin definir</option>
+                  {TIPOS.map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+              </label>
+              <label>Ubicación<input list="ubicaciones" value={form.ubicacion} onChange={campo("ubicacion")} placeholder="Chillán, Bulnes..." /></label>
+              <label>
+                Estado
+                <select value={form.estado} onChange={campo("estado")}>
+                  {ESTADOS.map((s) => (
+                    <option key={s.v} value={s.v}>{s.t}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <datalist id="ubicaciones">{UBICACIONES.map((u) => <option key={u} value={u} />)}</datalist>
+            <datalist id="ap-combustibles">{COMBUSTIBLES.map((u) => <option key={u} value={u} />)}</datalist>
+            <datalist id="ap-transmisiones">{TRANSMISIONES.map((u) => <option key={u} value={u} />)}</datalist>
+            <datalist id="ap-colores">{COLORES.map((u) => <option key={u} value={u} />)}</datalist>
+            <label className="ap-descripcion">
+              Descripción
+              <textarea rows={4} value={form.descripcion} onChange={campo("descripcion")} placeholder="Estado, mantenciones, equipamiento, papeles al día…" />
+              <small>{form.descripcion.length} caracteres</small>
+            </label>
+          </fieldset>
+
+          <div className="ap-acciones">
+            <p className="ap-faltan">
+              {progreso
+                ? progreso
+                : faltan.length
+                  ? "Para publicar falta: " + faltan.join(", ")
+                  : "✓ Listo para publicar" + (fotos.length ? "" : " (sin fotos)")}
+            </p>
+            <div className="acc">
+              <button type="button" className="btn" onClick={() => { limpiar(); setPestana("inventario"); }}>
+                Cancelar
               </button>
-              <button type="button" className="btn" onClick={() => borrar(a)}>
-                Borrar
+              {editId && (
+                <button className="btn" type="submit" data-publicado={String(publicadoForm)} disabled={guardando}>
+                  {guardando ? "Guardando..." : "Guardar cambios"}
+                </button>
+              )}
+              <button className="btn" type="submit" data-publicado="false" disabled={guardando}>
+                Guardar como borrador
+              </button>
+              <button className="btn fill" type="submit" data-publicado="true" disabled={guardando}>
+                {guardando ? "Guardando..." : editId ? "Guardar y publicar" : "Publicar auto"}
               </button>
             </div>
           </div>
-        </article>
-      ))}
+        </form>
+      )}
+
+      {pestana === "exhibicion" && (
+        <section className="adm-exhibicion" aria-label="Autos en exhibición">
+          <div className="adm-exhibicion-titulo">
+            <div>
+              <h2>Autos en exhibición</h2>
+              <p className="sub">
+                Vehículos que se muestran como destacados en la página pública.
+              </p>
+            </div>
+            <strong>{autosExhibicion.length} / {MAX_EXHIBICION} seleccionados</strong>
+          </div>
+
+          {autosExhibicion.length === 0 ? (
+            <p className="adm-exhibicion-vacio">
+              Todavía no tienes autos seleccionados para exhibición. Agrégalos desde la lista de abajo.
+            </p>
+          ) : (
+            <div className="adm-exhibicion-lista">
+              {autosExhibicion.map((a) => (
+                <article className="adm-exhibicion-auto" key={a.id}>
+                  <div className="adm-exhibicion-foto">
+                    {a.fotos?.[0] ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={a.fotos[0]} alt={`${a.marca} ${a.modelo}`} />
+                    ) : (
+                      <span>Sin foto</span>
+                    )}
+                  </div>
+                  <div className="adm-exhibicion-datos">
+                    <strong>{a.marca} {a.modelo}</strong>
+                    <span>{a.anio} · Ref. {a.codigo}</span>
+                    <b>{plata(a.precio)}</b>
+                  </div>
+                  <button type="button" className="btn" onClick={() => cambiarExhibicion(a)} title="Quitar este vehículo de exhibición">
+                    Quitar
+                  </button>
+                </article>
+              ))}
+            </div>
+          )}
+
+          <h3 className="ap-sub">Agregar a la exhibición</h3>
+          {candidatosVitrina.length === 0 ? (
+            <p className="sub">No hay más autos publicados y disponibles para agregar.</p>
+          ) : (
+            <div className="ap-candidatos">
+              {candidatosVitrina.map((a) => (
+                <button
+                  type="button"
+                  key={a.id}
+                  className="ap-candidato"
+                  onClick={() => cambiarExhibicion(a)}
+                  disabled={autosExhibicion.length >= MAX_EXHIBICION}
+                >
+                  {a.fotos?.[0] ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={a.fotos[0]} alt="" loading="lazy" />
+                  ) : (
+                    <span className="adm-sinfoto">Sin foto</span>
+                  )}
+                  <span>
+                    <b>{a.marca} {a.modelo}</b>
+                    {a.anio} · {plata(a.precio)}
+                  </span>
+                  <em>+ Agregar</em>
+                </button>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {pestana === "suscriptores" && (
+        <section aria-label="Suscriptores">
+          <div className="ap-form-titulo">
+            <h2>Suscriptores</h2>
+            <span className="ap-ref">Personas que pidieron recibir noticias y ofertas</span>
+          </div>
+          {errorSus && <p className="adm-msg">{errorSus}</p>}
+          <div className="ap-barra">
+            <label className="ap-buscar">
+              <span className="ap-oculto">Buscar suscriptor</span>
+              <input type="search" value={busquedaSus} onChange={(e) => setBusquedaSus(e.target.value)} placeholder="Buscar por correo o teléfono…" />
+            </label>
+            <button type="button" className="btn" onClick={copiarCorreos} disabled={!suscriptores.length}>Copiar correos</button>
+            <button type="button" className="btn fill" onClick={exportarSuscriptores} disabled={!suscriptores.length}>Descargar Excel (CSV)</button>
+          </div>
+          <p className="ap-conteo">{suscriptoresFiltrados.length} de {suscriptores.length} suscriptores</p>
+
+          {suscriptores.length === 0 ? (
+            <div className="ap-vacio">
+              <p>Todavía no hay suscriptores. Aparecerán aquí cuando alguien se anote desde la ventana de la página.</p>
+            </div>
+          ) : (
+            <div className="ap-tabla-envoltura">
+              <table className="ap-tabla">
+                <thead>
+                  <tr><th>Fecha</th><th>Correo</th><th>Teléfono</th><th>Página</th><th><span className="ap-oculto">Acciones</span></th></tr>
+                </thead>
+                <tbody>
+                  {suscriptoresFiltrados.map((s) => (
+                    <tr key={s.id}>
+                      <td>{new Date(s.creado_en).toLocaleDateString("es-CL", { day: "2-digit", month: "short", year: "numeric" })}</td>
+                      <td><a href={"mailto:" + s.email}>{s.email}</a></td>
+                      <td><a href={"https://wa.me/" + s.telefono.replace(/\D/g, "")} target="_blank" rel="noreferrer">{s.telefono}</a></td>
+                      <td>{s.origen ?? "—"}</td>
+                      <td><button type="button" className="ap-b peligro" onClick={() => borrarSuscriptor(s)}>Quitar</button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      )}
+
+      {aviso && (
+        <div className={"ap-aviso" + (aviso.error ? " error" : "")} role="status" aria-live="polite">
+          <span>{aviso.texto}</span>
+          <button type="button" onClick={() => setAviso(null)} aria-label="Cerrar aviso">×</button>
+        </div>
+      )}
     </main>
   );
 }
