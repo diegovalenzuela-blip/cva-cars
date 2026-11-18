@@ -29,6 +29,9 @@ export const metadata: Metadata = {
   ],
   metadataBase: new URL("https://www.chillanvendeautos.cl"),
   robots: { index: true, follow: true },
+  // Prueba de que la página es nuestra para Google Search Console. No borrar:
+  // si se quita, Google deja de mostrar los datos de búsqueda.
+  verification: { google: "Y2aGTzYc-mFUFdYR9PudKnKCHzFyjKwM61uC8G8fKbA" },
   // Vista previa al compartir el link por WhatsApp, Facebook, etc.
   openGraph: {
     title: TITULO,
