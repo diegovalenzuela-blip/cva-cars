@@ -4,6 +4,7 @@
 import { supabase } from "@/lib/supabase";
 import type {
   Actividad,
+  AutoCRM,
   Canal,
   Cliente,
   DatosCliente,
@@ -47,6 +48,37 @@ async function todas<T>(tabla: string, automotoraId: string) {
     filas.push(...((data ?? []) as T[]));
     if (!data || data.length < POR_PAGINA) return filas;
   }
+}
+
+export async function obtenerAutomotora() {
+  const { data, error } = await supabase.from("perfiles").select("automotora_id").maybeSingle();
+  if (error) fallar(error);
+  return (data?.automotora_id as string | undefined) ?? null;
+}
+
+export async function cargarAutosCRM(automotoraId: string) {
+  const autos: AutoCRM[] = [];
+  for (let desde = 0; ; desde += POR_PAGINA) {
+    const { data, error } = await supabase
+      .from("autos")
+      .select("id,codigo,marca,modelo,anio,precio,estado")
+      .eq("automotora_id", automotoraId)
+      .order("creado_en", { ascending: false })
+      .order("id")
+      .range(desde, desde + POR_PAGINA - 1);
+    if (error) fallar(error);
+    autos.push(...((data ?? []) as AutoCRM[]));
+    if (!data || data.length < POR_PAGINA) return autos;
+  }
+}
+
+export async function marcarAutoVendido(id: string, automotoraId: string) {
+  const { error } = await supabase
+    .from("autos")
+    .update({ estado: "vendido", en_exhibicion: false })
+    .eq("id", id)
+    .eq("automotora_id", automotoraId);
+  if (error) fallar(error);
 }
 
 export async function cargarCRM(automotoraId: string) {

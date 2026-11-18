@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
-import PanelCRM from "./crm/PanelCRM";
+import AccesoAdmin from "./AccesoAdmin";
 
 type FotoAdmin = {
   id: string;
@@ -50,7 +50,7 @@ type Suscriptor = {
 };
 
 type Catalogo = "general" | "trabajo";
-type Pestana = "inventario" | "trabajo" | "publicar" | "exhibicion" | "clientes" | "suscriptores";
+type Pestana = "inventario" | "trabajo" | "publicar" | "exhibicion" | "suscriptores";
 
 const ESTADOS = [
   { v: "en_preparacion", t: "En preparación" },
@@ -142,9 +142,6 @@ async function reducir(file: File): Promise<Blob> {
 export default function Admin() {
   const [sesion, setSesion] = useState<Session | null>(null);
   const [listo, setListo] = useState(false);
-  const [email, setEmail] = useState("");
-  const [clave, setClave] = useState("");
-  const [errorLogin, setErrorLogin] = useState("");
   const [automotoraId, setAutomotoraId] = useState<string | null>(null);
   const [autos, setAutos] = useState<Auto[]>([]);
   const [pestana, setPestana] = useState<Pestana>("inventario");
@@ -221,16 +218,6 @@ export default function Admin() {
     cargar();
     cargarSuscriptores();
   }, [sesion, cargar, cargarSuscriptores]);
-
-  async function entrar(e: React.FormEvent) {
-    e.preventDefault();
-    setErrorLogin("");
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim().toLowerCase(),
-      password: clave,
-    });
-    if (error) setErrorLogin("Correo o contraseña incorrectos.");
-  }
 
   function campo(k: keyof typeof VACIO) {
     return (
@@ -646,26 +633,7 @@ export default function Admin() {
 
   if (!listo) return null;
 
-  if (!sesion) {
-    return (
-      <main className="adm ap-login">
-        <h1>Panel de administrador</h1>
-        <p className="sub">Ingresa con tu correo y contraseña.</p>
-        <form onSubmit={entrar}>
-          <label>
-            Correo
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
-          </label>
-          <label>
-            Contraseña
-            <input type="password" value={clave} onChange={(e) => setClave(e.target.value)} required autoComplete="current-password" />
-          </label>
-          <button className="btn fill" type="submit">Entrar</button>
-          {errorLogin && <p className="adm-msg">{errorLogin}</p>}
-        </form>
-      </main>
-    );
-  }
+  if (!sesion) return <AccesoAdmin />;
 
   const filtros = [
     { v: "todos", t: "Todos", n: autosCatalogo.length },
@@ -687,6 +655,7 @@ export default function Admin() {
           <button type="button" className="btn fill" onClick={() => nuevo(catalogoVista)}>
             + {catalogoVista === "trabajo" ? "Publicar vehículo de trabajo" : "Publicar auto"}
           </button>
+          <Link className="btn" href="/admin/crm">CRM</Link>
           <Link className="btn" href="/" target="_blank">Ver la página</Link>
           <button type="button" className="btn" onClick={() => supabase.auth.signOut()}>Salir</button>
         </div>
@@ -708,7 +677,6 @@ export default function Admin() {
           ["trabajo", "Vehículos de trabajo", totalTrabajo],
           ["publicar", editId ? "Editar auto" : "Publicar auto", null],
           ["exhibicion", "Exhibición", autosExhibicion.length + "/" + MAX_EXHIBICION],
-          ["clientes", "Clientes", null],
           ["suscriptores", "Suscriptores", suscriptores.length],
         ] as [Pestana, string, number | string | null][]).map(([v, t, n]) => (
           <button
@@ -1132,18 +1100,6 @@ export default function Admin() {
             </div>
           )}
         </section>
-      )}
-
-      {pestana === "clientes" && (
-        <PanelCRM
-          automotoraId={automotoraId}
-          autos={autos}
-          avisar={avisar}
-          marcarAutoVendido={async (id) => {
-            const auto = autos.find((a) => a.id === id);
-            if (auto) await cambiarEstado(auto, "vendido");
-          }}
-        />
       )}
 
       {pestana === "suscriptores" && (
