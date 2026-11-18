@@ -29,6 +29,7 @@ export function CamposCliente({
   return (
     <div className="crm-campos">
       <label>Nombre *<input {...campo("nombre")} required maxLength={120} autoComplete="off" /></label>
+      <label>RUT<input {...campo("rut")} placeholder="12.345.678-5" maxLength={14} autoComplete="off" /></label>
       <label>Teléfono<input {...campo("telefono")} type="tel" inputMode="tel" placeholder="9 1234 5678" maxLength={24} autoComplete="off" /></label>
       <label>Correo<input {...campo("email")} type="email" maxLength={254} autoComplete="off" /></label>
       <label>Usuario de red social<input {...campo("red_social")} placeholder="@usuario" maxLength={120} autoComplete="off" /></label>

@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { CamposCliente, CamposOportunidad, SelectorEtapa } from "./Campos";
+import type { BaseCRM } from "./importador/coincidencias";
+import VehiculosCliente from "./VehiculosCliente";
 import {
   actualizarCliente,
   actualizarOportunidad,
@@ -157,7 +159,9 @@ export default function FichaCliente({
   recargar,
   cambiarEtapa,
   cerrar,
+  base,
 }: Comunes & {
+  base: BaseCRM | null;
   cliente: Cliente;
   oportunidades: Oportunidad[];
   cambiarEtapa: (o: Oportunidad, etapa: Etapa, motivo: string | null) => Promise<void>;
@@ -258,7 +262,7 @@ export default function FichaCliente({
         <div>
           <h2>{cliente.nombre}</h2>
           <p className="ap-auto-datos">
-            {[cliente.telefono, cliente.email, cliente.red_social, cliente.comuna].filter(Boolean).join(" · ")}
+            {[cliente.rut, cliente.telefono, cliente.email, cliente.red_social, cliente.comuna].filter(Boolean).join(" · ")}
           </p>
           {cliente.notas && <p className="crm-notas">{cliente.notas}</p>}
         </div>
@@ -308,6 +312,8 @@ export default function FichaCliente({
           </div>
         </form>
       )}
+
+      {base && <VehiculosCliente clienteId={cliente.id} base={base} avisar={avisar} recargar={recargar} />}
 
       <div className="crm-ficha-cuerpo">
         <div>
