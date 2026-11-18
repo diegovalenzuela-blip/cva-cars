@@ -3,12 +3,12 @@
 import "./paginas.css";
 import "./consignacion.css";
 import Link from "next/link";
-import { useState } from "react";
 import type { ReactNode } from "react";
 import { wa } from "@/lib/datos";
 import type { FotoFondo } from "@/lib/autos";
 import Aparece from "./Aparece";
 import FondoAutos from "./FondoAutos";
+import FormularioEvaluacion from "./FormularioEvaluacion";
 
 // Tiempo entre fotos, en milisegundos (3000 = 3 segundos, 4000 = 4 segundos)
 const INTERVALO = 4000;
@@ -53,21 +53,6 @@ const BENEFICIOS = [
 ];
 
 export default function ConsignacionPagina({ fotos }: { fotos: FotoFondo[] }) {
-  const [enviado, setEnviado] = useState(false);
-
-  function enviar(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const f = new FormData(e.currentTarget);
-    const km = f.get("k") ? ", con " + f.get("k") + " km" : "";
-    const precio = f.get("p") ? ". Precio que espero: $" + f.get("p") : "";
-    window.open(
-      wa("Hola, soy " + f.get("n") + ". Quiero dejar mi " + f.get("a") + km + precio + " en consignación."),
-      "_blank",
-      "noopener,noreferrer"
-    );
-    setEnviado(true);
-  }
-
   return (
     <main className="csg cs">
       <section className="csg-hero cs-hero">
@@ -124,7 +109,7 @@ export default function ConsignacionPagina({ fotos }: { fotos: FotoFondo[] }) {
         <div className="wrap csg-form-sec">
           <Aparece>
             <h2>Tu próximo comprador puede estar más cerca de lo que imaginas</h2>
-            <p className="sub">Cuéntanos de tu vehículo y te respondemos por WhatsApp con una propuesta.</p>
+            <p className="sub">Cuéntanos de tu vehículo y solicita una evaluación.</p>
             <div className="csg-cond">
               <h3>Condiciones y comisión</h3>
               <p>Escríbenos por WhatsApp y te explicamos cómo funciona en tu caso.</p>
@@ -132,14 +117,7 @@ export default function ConsignacionPagina({ fotos }: { fotos: FotoFondo[] }) {
           </Aparece>
 
           <Aparece retraso={140}>
-            <form className="csg-form" onSubmit={enviar}>
-              <label>Tu nombre<input name="n" required autoComplete="name" /></label>
-              <label>Marca, modelo y año<input name="a" required placeholder="Ejemplo: Chevrolet C10 1985" /></label>
-              <label>Kilometraje aproximado<input name="k" inputMode="numeric" /></label>
-              <label>Precio que esperas (opcional)<input name="p" inputMode="numeric" /></label>
-              <button className="btn fill" type="submit">Quiero vender mi vehículo</button>
-              {enviado && <p className="csg-ok" role="status">Abrimos WhatsApp con tus datos. ¡Gracias!</p>}
-            </form>
+            <FormularioEvaluacion />
           </Aparece>
         </div>
       </section>

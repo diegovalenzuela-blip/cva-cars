@@ -18,6 +18,8 @@ type Auto = {
   fotos: string[];
   ubicacion: string | null;
   tipo: string | null;
+  acepta_parte_pago?: boolean;
+  precio_negociable?: boolean;
 };
 
 const plata = (n: number) => "$" + n.toLocaleString("es-CL");
@@ -51,6 +53,8 @@ export default function CatalogoCliente({
   const [tipo, setTipo] = useState("");
   const [min, setMin] = useState("");
   const [max, setMax] = useState("");
+  const [partePago, setPartePago] = useState(false);
+  const [negociable, setNegociable] = useState(false);
   const [orden, setOrden] = useState("recientes");
   // En el teléfono los filtros van plegados para que los autos se vean de inmediato.
   const [verFiltros, setVerFiltros] = useState(false);
@@ -97,6 +101,8 @@ export default function CatalogoCliente({
         (!tipo || (a.tipo ?? "") === tipo) &&
         (desde === null || a.precio >= desde) &&
         (hasta === null || a.precio <= hasta) &&
+        (!partePago || a.acepta_parte_pago === true) &&
+        (!negociable || a.precio_negociable === true) &&
         (!t ||
           (a.marca + " " + a.modelo + " " + a.anio + " " + a.codigo + " " + (a.ubicacion ?? "") + " " + (a.tipo ?? ""))
             .toLowerCase()
@@ -106,10 +112,10 @@ export default function CatalogoCliente({
     if (orden === "precio_desc") r = [...r].sort((a, b) => b.precio - a.precio);
     if (orden === "anio_desc") r = [...r].sort((a, b) => b.anio - a.anio);
     return r;
-  }, [autos, q, marca, modelo, anioDesde, kmMax, ubic, tipo, desde, hasta, orden]);
+  }, [autos, q, marca, modelo, anioDesde, kmMax, ubic, tipo, desde, hasta, partePago, negociable, orden]);
 
-  const hayFiltros = Boolean(q || marca || modelo || anioDesde || kmHasta || ubic || tipo || min || max);
-  const plegados = [ubic, marca, modelo, anioDesde, kmHasta, min, max, orden !== "recientes" ? orden : ""].filter(Boolean).length;
+  const hayFiltros = Boolean(q || marca || modelo || anioDesde || kmHasta || ubic || tipo || min || max || partePago || negociable);
+  const plegados = [ubic, marca, modelo, anioDesde, kmHasta, min, max, partePago ? "pago" : "", negociable ? "negociable" : "", orden !== "recientes" ? orden : ""].filter(Boolean).length;
 
   function limpiar() {
     setQ("");
@@ -121,6 +127,8 @@ export default function CatalogoCliente({
     setTipo("");
     setMin("");
     setMax("");
+    setPartePago(false);
+    setNegociable(false);
     setOrden("recientes");
   }
 
@@ -236,6 +244,14 @@ export default function CatalogoCliente({
           onChange={(e) => setMax(e.target.value)}
           aria-label="Precio hasta"
         />
+        <label className="f-check">
+          <input type="checkbox" checked={partePago} onChange={(e) => setPartePago(e.target.checked)} />
+          Acepta parte de pago
+        </label>
+        <label className="f-check">
+          <input type="checkbox" checked={negociable} onChange={(e) => setNegociable(e.target.checked)} />
+          Precio negociable
+        </label>
         <select value={orden} onChange={(e) => setOrden(e.target.value)} aria-label="Ordenar">
           <option value="recientes">Más recientes</option>
           <option value="precio_asc">Precio: menor a mayor</option>

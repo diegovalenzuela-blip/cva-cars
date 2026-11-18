@@ -79,6 +79,16 @@
 .crm-vehiculos > .crm-grupo { margin-bottom: 14px; }
 .crm-consignacion { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin: 8px 0; padding-top: 8px; border-top: 1px solid #2a1d10; }
 .crm-respaldo { margin-bottom: 10px; }
+.crm-solicitud { display: grid; gap: 9px; }
+.crm-solicitud .ap-botones { margin: 0; }
+.crm-estado { flex: none; padding: 3px 8px; border: 1px solid var(--bronce); color: #ffd28a; font-size: .8rem; }
+.crm-sol-fotos { display: flex; gap: 6px; overflow-x: auto; }
+.crm-sol-fotos img { display: block; width: 92px; height: 69px; object-fit: cover; }
+.crm-resolver { display: grid; gap: 8px; }
+.crm-resolver p { margin: 0; }
+.crm-resolver .ap-b { justify-self: start; }
+.crm-convertir { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; align-items: end; padding: 10px; background: #0d0a07; border: 1px solid #3a2a18; }
+.crm-convertir label { font-size: .86rem; }
 .crm-filtro { display: block; max-width: 280px; margin-bottom: 12px; }
 
 @media (max-width: 860px) {
