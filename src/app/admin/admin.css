@@ -95,6 +95,18 @@
 .ap-soltar.encima, .ap-soltar:hover { border-color: var(--rojo); background: #1b0f0b; }
 .ap-soltar:focus-within { outline: 2px solid var(--crema); outline-offset: 2px; }
 
+/* Autocompletar desde texto */
+.ap-autocompletar { display: grid; gap: 10px; }
+.ap-autocompletar textarea { margin-top: 4px; }
+.ap-autocompletar > .btn { justify-self: start; padding: 10px 16px; font-size: .9rem; }
+.ap-autocompletar > .btn:disabled { opacity: .45; cursor: not-allowed; }
+.ap-auto-resultado { padding: 10px; font-size: .9rem; background: #13261a; border: 1px solid #2f7a48; color: #d9f5e2; }
+.ap-auto-resultado p { margin: 0 0 4px; }
+.ap-auto-resultado p:last-child { margin: 0; }
+.ap-auto-conflictos { display: grid; gap: 8px; padding: 10px; font-size: .9rem; background: #1b0f0b; border: 1px solid var(--bronce); }
+.ap-auto-conflictos p { margin: 0; }
+.ap-auto-conflicto { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; overflow-wrap: anywhere; }
+
 /* Barra fija de acciones al final del formulario */
 .ap-acciones {
   position: sticky; bottom: 0; z-index: 15; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;

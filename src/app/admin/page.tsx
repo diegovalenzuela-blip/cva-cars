@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import AccesoAdmin from "./AccesoAdmin";
+import AutocompletarTexto from "./AutocompletarTexto";
 
 type FotoAdmin = {
   id: string;
@@ -838,6 +839,13 @@ export default function Admin() {
             <h2>{editId ? "Editar vehículo" : "Publicar vehículo"}</h2>
             {editId && <span className="ap-ref">Editando · {form.marca} {form.modelo}</span>}
           </div>
+
+          <AutocompletarTexto
+            key={inputKey}
+            formulario={form}
+            valoresIniciales={editId ? {} : { tipo: VACIO.tipo, ubicacion: VACIO.ubicacion }}
+            aplicar={(cambios) => setForm((actual) => ({ ...actual, ...cambios }))}
+          />
 
           <fieldset className="ap-bloque">
             <legend>1. Catálogo</legend>
