@@ -7,7 +7,7 @@ import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import AccesoAdmin from "./AccesoAdmin";
 import AutocompletarTexto from "./AutocompletarTexto";
-import { esHeic, esImagenAdmitida, extensionFoto, puedeAbrirse } from "./fotos";
+import { esHeic, esImagenAdmitida, extensionFoto, puedeAbrirse, reducirFoto } from "@/lib/fotos";
 
 type FotoAdmin = {
   id: string;
@@ -40,6 +40,8 @@ type Auto = {
   estado_papeles: string | null;
   mantenciones: string | null;
   revision_tecnica: string | null;
+  acepta_parte_pago?: boolean;
+  precio_negociable?: boolean;
   creado_en?: string;
 };
 
@@ -102,6 +104,8 @@ const VACIO = {
   estado_papeles: "",
   mantenciones: "",
   revision_tecnica: "",
+  acepta_parte_pago: false,
+  precio_negociable: false,
 };
 
 const plata = (n: number) => "$" + n.toLocaleString("es-CL");
@@ -111,40 +115,6 @@ const visiblePublico = (a: Auto) => a.publicado && ["disponible", "reservado"].i
 
 const rutaFoto = (automotoraId: string, extension: string) =>
   automotoraId + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "." + extension;
-
-async function reducir(file: File): Promise<Blob> {
-  const bmp = await createImageBitmap(file, { imageOrientation: "from-image" });
-  try {
-    const max = 1280;
-    const esc = Math.min(1, max / Math.max(bmp.width, bmp.height));
-    const c = document.createElement("canvas");
-    c.width = Math.round(bmp.width * esc);
-    c.height = Math.round(bmp.height * esc);
-
-    const ctx = c.getContext("2d");
-    if (!ctx) throw new Error("No se pudo procesar la foto");
-
-    ctx.drawImage(bmp, 0, 0, c.width, c.height);
-
-    const generar = (tipo: string, calidad: number) =>
-      new Promise<Blob>((ok, fallo) =>
-        c.toBlob(
-          (b) => (b ? ok(b) : fallo(new Error("No se pudo procesar la foto"))),
-          tipo,
-          calidad
-        )
-      );
-
-    // Safari no genera WebP: en ese caso la foto se sube como JPG.
-    let blob = await generar("image/webp", 0.8);
-    if (!extensionFoto(blob.type)) blob = await generar("image/jpeg", 0.85);
-    if (!extensionFoto(blob.type)) throw new Error("Este navegador no pudo preparar la foto");
-
-    return blob;
-  } finally {
-    bmp.close();
-  }
-}
 
 export default function Admin() {
   const [sesion, setSesion] = useState<Session | null>(null);
@@ -278,6 +248,8 @@ export default function Admin() {
       estado_papeles: a.estado_papeles ?? "",
       mantenciones: a.mantenciones ?? "",
       revision_tecnica: a.revision_tecnica ?? "",
+      acepta_parte_pago: a.acepta_parte_pago === true,
+      precio_negociable: a.precio_negociable === true,
     };
   }
 
@@ -304,7 +276,7 @@ export default function Admin() {
   function duplicar(a: Auto) {
     limpiar();
     // El respaldo es propio de cada vehículo: no se copia.
-    setForm({ ...aFormulario(a), estado: "disponible", estado_papeles: "", mantenciones: "", revision_tecnica: "" });
+    setForm({ ...aFormulario(a), estado: "disponible", estado_papeles: "", mantenciones: "", revision_tecnica: "", acepta_parte_pago: false, precio_negociable: false });
     setPublicadoForm(false);
     setFotos((a.fotos ?? []).map((url, i) => ({ id: `copia-${i}-${url}`, url, preview: url })));
     setPestana("publicar");
@@ -429,7 +401,7 @@ export default function Admin() {
         if (!foto.file) continue;
         subidas += 1;
         setProgreso("Subiendo foto " + subidas + " de " + nuevas + "…");
-        const blob = await reducir(foto.file);
+        const blob = await reducirFoto(foto.file);
         const ruta = rutaFoto(automotoraId, extensionFoto(blob.type)!);
         const { error } = await supabase.storage
           .from("autos")
@@ -459,6 +431,8 @@ export default function Admin() {
         estado_papeles: form.estado_papeles.trim() || null,
         mantenciones: form.mantenciones.trim() || null,
         revision_tecnica: form.revision_tecnica.trim() || null,
+        acepta_parte_pago: form.acepta_parte_pago,
+        precio_negociable: form.precio_negociable,
         // La exhibición de la portada es solo del catálogo general.
         ...(form.catalogo === "trabajo" ? { en_exhibicion: false } : {}),
       };
@@ -1034,7 +1008,28 @@ export default function Admin() {
           </fieldset>
 
           <fieldset className="ap-bloque">
-            <legend>5. Respaldo del vehículo <small>(opcional)</small></legend>
+            <legend>5. Condiciones comerciales</legend>
+            <div className="ap-switches">
+              {([
+                ["acepta_parte_pago", "Acepta vehículo en parte de pago"],
+                ["precio_negociable", "Precio negociable"],
+              ] as const).map(([clave, texto]) => (
+                <label key={clave} className="ap-switch">
+                  <input
+                    type="checkbox"
+                    role="switch"
+                    checked={form[clave]}
+                    onChange={(e) => setForm((actual) => ({ ...actual, [clave]: e.target.checked }))}
+                  />
+                  <span aria-hidden="true" />
+                  <b>{texto}</b>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset className="ap-bloque">
+            <legend>6. Respaldo del vehículo <small>(opcional)</small></legend>
             <p className="ap-ayuda">Se muestra en la ficha solo lo que completes. Escribe únicamente lo que puedas respaldar.</p>
             <div className="adm-fila">
               <label>Papeles<input list="ap-papeles" maxLength={200} value={form.estado_papeles} onChange={campo("estado_papeles")} placeholder="Ej. Al día" /></label>

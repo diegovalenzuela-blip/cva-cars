@@ -1183,6 +1183,11 @@ input, select, textarea { font-size: 16px; }
 .det-respaldo div { padding: 8px 0; border-top: 1px solid #3a2a18; }
 .det-respaldo dt { color: #c9bb88; font-size: .85rem; }
 .det-respaldo dd { margin: 2px 0 0; font-weight: 600; white-space: pre-line; }
+.det-condiciones ul { margin: 0; padding: 0; list-style: none; }
+.det-condiciones li { display: flex; gap: 8px; padding: 8px 0; border-top: 1px solid #3a2a18; font-weight: 600; }
+.det-condiciones li::before { content: "✓"; color: var(--rojo); }
+.filtros2 .f-check { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 10px; background: var(--panel); border: 1px solid var(--bronce); cursor: pointer; }
+.filtros2 .f-check input { width: 18px; height: 18px; flex: none; margin: 0; accent-color: var(--rojo); }
 .catalogo-bajada { margin-bottom: 0; }
 .catalogo-vacio { margin-top: 24px; padding: 28px; background: var(--panel); border: 1px dashed var(--bronce); }
 .catalogo-vacio p { margin: 0 0 16px; max-width: 54ch; }

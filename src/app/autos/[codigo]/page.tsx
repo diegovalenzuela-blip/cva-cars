@@ -70,6 +70,11 @@ export default async function Detalle({ params }: Props) {
     ] as [string, string | null][]
   ).filter((d): d is [string, string] => Boolean(d[1]));
 
+  const condiciones = [
+    auto.acepta_parte_pago ? "Acepta vehículo en parte de pago" : null,
+    auto.precio_negociable ? "Precio negociable" : null,
+  ].filter((c): c is string => Boolean(c));
+
   return (
     <main className="det">
       <JsonLd datos={autoJson(auto)} />
@@ -88,6 +93,12 @@ export default async function Detalle({ params }: Props) {
               <div key={k}><dt>{k}</dt><dd>{v}</dd></div>
             ))}
           </dl>
+          {condiciones.length > 0 && (
+            <section className="det-respaldo det-condiciones" aria-labelledby="condiciones-titulo">
+              <h2 id="condiciones-titulo">Condiciones comerciales</h2>
+              <ul>{condiciones.map((c) => <li key={c}>{c}</li>)}</ul>
+            </section>
+          )}
           {respaldo.length > 0 && (
             <section className="det-respaldo" aria-labelledby="respaldo-titulo">
               <h2 id="respaldo-titulo">Respaldo del vehículo</h2>

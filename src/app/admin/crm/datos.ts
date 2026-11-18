@@ -32,6 +32,28 @@ export type MensajeGuardado = {
   enviado_texto: string | null;
   texto: string;
 };
+export type SolicitudEvaluacion = {
+  id: string;
+  cliente_id: string | null;
+  oportunidad_id: string | null;
+  estado: "nueva" | "en_revision" | "convertida" | "descartada";
+  coincidencia: "cliente_nuevo" | "cliente_existente" | "revisar";
+  candidatos: string[];
+  nombre: string;
+  telefono: string;
+  email: string | null;
+  comuna: string;
+  marca: string;
+  modelo: string;
+  version: string | null;
+  anio: number;
+  km: number;
+  patente: string | null;
+  precio_esperado: number | null;
+  observaciones: string | null;
+  fotos: string[];
+  creado_en: string;
+};
 export type CambioCRM = {
   id: number;
   operacion: string;
@@ -129,6 +151,47 @@ export async function cargarBaseImportacion(automotoraId: string): Promise<BaseC
   ]);
   const documentos = await todas<DocumentoBase>("crm_vehiculo_documentos", automotoraId);
   return { clientes, vehiculos, consignaciones, documentos };
+}
+
+export async function cargarSolicitudes(automotoraId: string) {
+  return todas<SolicitudEvaluacion>("crm_solicitudes_evaluacion", automotoraId);
+}
+
+export async function urlsFotosSolicitud(rutas: string[]) {
+  if (!rutas.length) return {} as Record<string, string>;
+  const { data, error } = await supabase.storage.from("evaluaciones").createSignedUrls(rutas, 3600);
+  if (error) fallar(error);
+  return Object.fromEntries((data ?? []).flatMap((f) => (f.path && f.signedUrl ? [[f.path, f.signedUrl]] : []))) as Record<string, string>;
+}
+
+export async function actualizarSolicitud(id: string, estado: SolicitudEvaluacion["estado"]) {
+  const { error } = await supabase.from("crm_solicitudes_evaluacion").update({ estado }).eq("id", id);
+  if (error) fallar(error);
+}
+
+export async function resolverSolicitud(id: string, cliente: string | null) {
+  const { error } = await supabase.rpc("crm_resolver_solicitud", { p_id: id, p_cliente: cliente });
+  if (error) fallar(error);
+}
+
+export async function convertirSolicitud(datos: {
+  id: string;
+  patente: string;
+  precio_solicitado: string;
+  precio_minimo: string;
+  estado: string;
+}) {
+  const { error } = await supabase.rpc("crm_convertir_solicitud", { p: datos });
+  if (error) fallar(error);
+}
+
+export async function borrarSolicitud(s: SolicitudEvaluacion) {
+  if (s.fotos.length) {
+    const { error } = await supabase.storage.from("evaluaciones").remove(s.fotos);
+    if (error) fallar(error);
+  }
+  const { error } = await supabase.from("crm_solicitudes_evaluacion").delete().eq("id", s.id);
+  if (error) fallar(error);
 }
 
 export async function confirmarImportacion(solicitud: object) {

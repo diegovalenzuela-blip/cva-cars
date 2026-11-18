@@ -17,6 +17,8 @@ export type AutoPublico = {
   tipo: string | null;
   destacado: boolean | null;
   catalogo: Catalogo;
+  acepta_parte_pago: boolean;
+  precio_negociable: boolean;
 };
 
 type Fila = {
@@ -33,6 +35,8 @@ type Fila = {
   tipo?: string | null;
   destacado?: boolean | null;
   catalogo?: string | null;
+  acepta_parte_pago?: boolean | null;
+  precio_negociable?: boolean | null;
 };
 
 // Solo se aceptan fotos con enlace http(s). Nada que venga de la base de datos
@@ -59,6 +63,8 @@ function aPublico(a: Fila): AutoPublico {
     tipo: a.tipo ?? null,
     destacado: a.destacado ?? false,
     catalogo: aCatalogo(a.catalogo),
+    acepta_parte_pago: a.acepta_parte_pago === true,
+    precio_negociable: a.precio_negociable === true,
   };
 }
 
@@ -145,6 +151,8 @@ export async function getAutoPorCodigo(codigo: string): Promise<AutoDetalle | nu
       tipo: txt("tipo"),
       destacado: a.destacado === true,
       catalogo: aCatalogo(a.catalogo),
+      acepta_parte_pago: a.acepta_parte_pago === true,
+      precio_negociable: a.precio_negociable === true,
       version: txt("version"),
       combustible: txt("combustible"),
       transmision: txt("transmision"),

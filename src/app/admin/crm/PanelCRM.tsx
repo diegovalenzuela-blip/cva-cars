@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { SelectorEtapa } from "./Campos";
 import { actualizarOportunidad, cargarBaseImportacion, cargarCRM, ErrorCRM } from "./datos";
 import type { BaseCRM } from "./importador/coincidencias";
+import SolicitudesEvaluacion from "./SolicitudesEvaluacion";
 import { ESTADOS_CONSIGNACION, nombreVehiculo, SelectorConsignacion } from "./VehiculosCliente";
 import FichaCliente from "./FichaCliente";
 import FormContacto from "./FormContacto";
@@ -27,10 +28,10 @@ import {
   type Oportunidad,
 } from "./tipos";
 
-type Vista = "hoy" | "oportunidades" | "consignaciones" | "clientes";
+type Vista = "hoy" | "solicitudes" | "oportunidades" | "consignaciones" | "clientes";
 type Modo = { tipo: "lista" } | { tipo: "nuevo" } | { tipo: "ficha"; id: string };
 
-const VISTAS: [Vista, string][] = [["hoy", "Seguimiento"], ["oportunidades", "Oportunidades"], ["consignaciones", "Consignaciones"], ["clientes", "Clientes"]];
+const VISTAS: [Vista, string][] = [["hoy", "Seguimiento"], ["solicitudes", "Solicitudes"], ["oportunidades", "Oportunidades"], ["consignaciones", "Consignaciones"], ["clientes", "Clientes"]];
 
 export default function PanelCRM({
   automotoraId,
@@ -330,6 +331,14 @@ export default function PanelCRM({
                 {grupo("Próximos", seguimiento.proximas)}
               </>
             )
+          ) : vista === "solicitudes" && automotoraId ? (
+            <SolicitudesEvaluacion
+              automotoraId={automotoraId}
+              clientes={clientes}
+              avisar={avisar}
+              recargarCRM={recargar}
+              abrirFicha={(id) => setModo({ tipo: "ficha", id })}
+            />
           ) : vista === "consignaciones" ? (
             !base ? (
               <div className="ap-vacio"><p>Las consignaciones estarán disponibles cuando se active el importador.</p></div>
