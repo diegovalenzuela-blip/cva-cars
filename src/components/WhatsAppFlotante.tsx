@@ -14,7 +14,7 @@ export default function WhatsAppFlotante() {
 
   return (
     <a
-      className="wsp"
+      className={"wsp" + (m ? " en-ficha" : "")}
       href={wa(texto)}
       target="_blank"
       rel="noopener noreferrer"

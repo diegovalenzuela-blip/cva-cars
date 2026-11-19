@@ -23,6 +23,7 @@ type Auto = {
 };
 
 const plata = (n: number) => "$" + n.toLocaleString("es-CL");
+const POCOS = 8;
 
 function numero(t: string): number | null {
   const n = Number(t.replace(/\D/g, ""));
@@ -179,7 +180,8 @@ export default function CatalogoCliente({
         </div>
       )}
 
-      {autos.length > 0 && <div className={"filtros2" + (verFiltros ? " abiertos" : "")}>
+      {/* Con pocos vehículos bastan los botones por tipo: los filtros solo estorban. */}
+      {autos.length > POCOS && <div className={"filtros2" + (verFiltros ? " abiertos" : "")}>
         <input
           className="f-buscar"
           type="search"
@@ -304,7 +306,7 @@ export default function CatalogoCliente({
               <h3><Link href={"/autos/" + x.codigo}>{x.marca} {x.modelo}</Link></h3>
               {x.tipo && <span className="tipo-tag">{x.tipo}</span>}
               <p className="dat">
-                {x.anio} · {x.km ? x.km.toLocaleString("es-CL") + " km" : "km por confirmar"} · Ref {x.codigo}
+                {x.anio} · {x.km ? x.km.toLocaleString("es-CL") + " km" : "km por confirmar"} · <span className="ref">Ref {x.codigo}</span>
                 {x.estado === "reservado" ? " · RESERVADO" : ""}
               </p>
               {x.ubicacion && (
@@ -314,9 +316,9 @@ export default function CatalogoCliente({
                 </p>
               )}
               <div className="precio">{plata(x.precio)}</div>
-              <Link className="btn" href={"/autos/" + x.codigo}>Ver fotos y detalles</Link>
+              <Link className="btn fill" href={"/autos/" + x.codigo}>Ver fotos y detalles</Link>
               <a
-                className="btn"
+                className="btn btn-wsp"
                 href={wa("Hola, me interesa el " + x.marca + " " + x.modelo + " " + x.anio + " (Ref " + x.codigo + ")")}
               >
                 Consultar por WhatsApp

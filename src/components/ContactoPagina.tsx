@@ -55,7 +55,6 @@ const ICONO_REDES = (
 export default function ContactoPagina({ fotos }: { fotos: FotoFondo[] }) {
   const portada = fotos.slice(0, 1);
 
-  const mapa = "https://www.google.com/maps?q=" + encodeURIComponent(DIRECCION) + "&output=embed";
 
   return (
     <main className="cto">
@@ -107,8 +106,8 @@ export default function ContactoPagina({ fotos }: { fotos: FotoFondo[] }) {
               <div className="cto-card">
                 <span className="cto-ic">{ICONO_PIN}</span>
                 <div>
-                  <h3>Ubicación</h3>
-                  <p>{DIRECCION}</p>
+                  <h3>Zona</h3>
+                  <p>{DIRECCION}. Te mostramos el auto en el lugar que acordemos.</p>
                   <a className="btn" href={wa("Hola, quiero coordinar una visita.")}>Coordinar visita</a>
                 </div>
               </div>
@@ -137,16 +136,6 @@ export default function ContactoPagina({ fotos }: { fotos: FotoFondo[] }) {
             </Aparece>
           </div>
 
-          <Aparece retraso={150}>
-            <div className="cto-mapa">
-              <iframe
-                src={mapa}
-                title="Mapa de Chillán Vende Autos"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
-            </div>
-          </Aparece>
         </div>
 
         <Aparece>

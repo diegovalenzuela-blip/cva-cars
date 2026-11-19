@@ -7,6 +7,7 @@ import InstagramFlotante from "@/components/InstagramFlotante";
 import TikTokFlotante from "@/components/TikTokFlotante";
 import { JsonLd, automotora } from "@/lib/seo";
 import Suscripcion from "@/components/Suscripcion";
+import PiePagina from "@/components/PiePagina";
 
 const oswald = Oswald({ subsets: ["latin"], weight: ["500", "700"], display: "swap", variable: "--f-titulo" });
 const archivo = Archivo({ subsets: ["latin"], weight: ["400", "600"], display: "swap", variable: "--f-texto" });
@@ -54,6 +55,7 @@ export default function RootLayout({
         <JsonLd datos={automotora} />
         <Menu />
         {children}
+        <PiePagina />
         <InstagramFlotante />
         <TikTokFlotante />
         <WhatsAppFlotante />

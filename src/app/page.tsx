@@ -6,8 +6,7 @@ import VendeTuAuto from "@/components/VendeTuAuto";
 import DondeEstamos from "@/components/DondeEstamos";
 import { getAutosExhibicion, getAutosPublicos } from "@/lib/autos";
 import type { FotoFondo } from "@/lib/autos";
-import { VIDEOS, INSTAGRAM, FACEBOOK, TIKTOK } from "@/lib/datos";
-import Link from "next/link";
+import { VIDEOS } from "@/lib/datos";
 
 export const revalidate = 60;
 
@@ -49,10 +48,15 @@ export default async function Home() {
     });
   }
 
-  // Tarjeta de la portada: el auto o camioneta publicado más reciente que no sea el de la
-  // vitrina (la vitrina ya muestra el destacado justo debajo, así no se repite).
+  // Tarjeta de la portada: el auto elegido en el panel o, si no hay, el auto o camioneta
+  // publicado más reciente que no sea el destacado de la vitrina.
   const estrella = [...autos].sort((a, b) => Number(!!b.destacado) - Number(!!a.destacado))[0];
-  const reciente = sinMotos.find((a) => a !== estrella && a.fotos.length > 0) ?? (estrella?.fotos.length ? estrella : undefined);
+  // Si en el panel se eligió un auto para la portada, manda esa elección.
+  const elegido = publicos.find((a) => a.en_portada && a.catalogo === "general" && a.fotos.length > 0);
+  const reciente =
+    elegido ??
+    sinMotos.find((a) => a !== estrella && a.fotos.length > 0) ??
+    (estrella?.fotos.length ? estrella : undefined);
   const destacado = reciente
     ? {
         codigo: reciente.codigo,
@@ -63,7 +67,7 @@ export default async function Home() {
         precio: reciente.precio,
         foto: reciente.fotos[0],
         reservado: reciente.estado === "reservado",
-        etiqueta: reciente === estrella ? "Auto destacado" : "Recién publicado",
+        etiqueta: elegido || reciente === estrella ? "Auto destacado" : "Recién publicado",
       }
     : null;
 
@@ -76,35 +80,13 @@ export default async function Home() {
       <main>
       <Portada fotos={fotosPortada} destacado={destacado} datos={datos} />
       {/* Los autos primero: es lo que viene a ver el comprador. */}
-      <Vitrina autos={autos} cargando={false} />
+      {/* El auto de la tarjeta de la portada no se repite en la vitrina de abajo. */}
+      <Vitrina autos={autos.filter((a) => a.codigo !== destacado?.codigo)} cargando={false} />
       <VideosDestacados videos={videos} />
       <VendeTuAuto fotosFondo={fotosFondo} />
       <DondeEstamos banner={fotosFondo[2] ?? fotosFondo[0] ?? ""} />
       </main>
 
-      <footer className="pie">
-        <div className="wrap pie-grid">
-          <div>
-            <strong className="pie-marca">Chillán Vende Autos</strong>
-            <p>Autos y camionetas usados en Chillán y la Región de Ñuble.</p>
-          </div>
-          <nav aria-label="Enlaces del sitio">
-            <Link href="/catalogo">Catálogo</Link>
-            <Link href="/vehiculos-de-trabajo">Vehículos de trabajo</Link>
-            <Link href="/consignacion">Vende tu auto</Link>
-            <a href="#contacto">Contacto</a>
-          </nav>
-          <nav aria-label="Redes sociales">
-            <a href={INSTAGRAM} target="_blank" rel="noopener noreferrer">Instagram</a>
-            <a href={FACEBOOK} target="_blank" rel="noopener noreferrer">Facebook</a>
-            <a href={TIKTOK} target="_blank" rel="noopener noreferrer">TikTok</a>
-          </nav>
-        </div>
-        <div className="wrap pie-final">
-          <span>© Chillán Vende Autos</span>
-          <span>Hecho con CVA Cars</span>
-        </div>
-      </footer>
     </>
   );
 }
