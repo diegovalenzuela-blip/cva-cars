@@ -98,8 +98,8 @@ export default function Portada({
               <span className="por-auto-foto">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={imgSrc(destacado.foto, 828, 65)}
-                  srcSet={imgSrcSet(destacado.foto, 65)}
+                  src={imgSrc(destacado.foto, 828, 60)}
+                  srcSet={imgSrcSet(destacado.foto, 60)}
                   sizes="(max-width: 760px) 92vw, 460px"
                   alt={destacado.nombre}
                   fetchPriority="high"
