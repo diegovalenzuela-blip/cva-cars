@@ -1,7 +1,10 @@
 :root {
-  --bg: #000;
+  /* Negro café: combina con el bronce y es menos duro que el negro puro. */
+  --bg: #0b0907;
   --crema: #f0e1a6;
   --rojo: #c8372d;
+  /* Rojo más claro para textos chicos: el rojo de marca no se lee bien en letra pequeña. */
+  --rojo-texto: #e5544a;
   --bronce: #8b5a2b;
   --panel: #15110c;
   color-scheme: dark;
@@ -371,7 +374,7 @@ html { scroll-padding-top: 72px; }
 }
 
 .menu-link.on {
-  color: var(--rojo);
+  color: var(--rojo-texto);
   border-bottom-color: rgba(200,55,45,.65);
   background: linear-gradient(90deg, rgba(200,55,45,.12), transparent);
 }
