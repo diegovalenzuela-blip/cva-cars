@@ -248,7 +248,11 @@ section.vit { border-top: 0; }
    tarjeta gira de frente y se acerca. Todo con transform: liviano para el teléfono. */
 .vid-fila { perspective: 1100px; perspective-origin: 50% 35%; justify-content: center; padding-top: 34px; padding-bottom: 64px; }
 .vid-item { transform-style: preserve-3d; }
+/* Las tarjetas laterales quedan detrás del plano de su contenedor (translateZ negativo)
+   y el contenedor transparente se quedaba con el toque. Solo la tarjeta recibe clics. */
+.vid-fila .vid-item { pointer-events: none; }
 .vid-fila .vid {
+  pointer-events: auto;
   --giro: 0deg; --prof: 0px; --alto: 0px;
   transform-style: preserve-3d;
   transform: translateY(var(--alto)) rotateY(var(--giro)) translateZ(var(--prof));
