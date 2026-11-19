@@ -255,9 +255,6 @@ section.vit { border-top: 0; }
 .vid-fila::-webkit-scrollbar { display: none; }
 .vid-fila.cabe { justify-content: center; }
 .vid-item { flex: 0 0 min(250px, 70vw); scroll-snap-align: start; }
-/* "Aparece" agrega la clase "in", que en globals.css también da estilo a las tarjetas del
-   catálogo (flex, padding). Aquí se anula para que no cambie el diseño de esta sección. */
-.vid-sec .apa { display: block; flex: none; padding: 0; gap: 0; }
 .vid-sec .apa.vid-item-in { display: flex; flex-direction: column; gap: 12px; height: 100%; }
 .vid { border-radius: 6px; overflow: hidden; box-shadow: 0 0 0 1px #000, 0 22px 40px rgba(0, 0, 0, .7), 0 0 30px rgba(200, 55, 45, .18); }
 .vid-video { object-fit: cover; }

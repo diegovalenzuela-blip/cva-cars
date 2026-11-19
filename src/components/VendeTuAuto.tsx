@@ -1,12 +1,12 @@
 "use client";
 
 import "./secciones.css";
+import "./consignacion.css";
 import Link from "next/link";
-import { useState } from "react";
 import type { CSSProperties } from "react";
-import { wa } from "@/lib/datos";
 import { imgSrc, imgSrcSet } from "@/lib/img";
 import { useReveal } from "@/lib/useReveal";
+import FormularioEvaluacion from "./FormularioEvaluacion";
 
 const PASOS = [
   { n: "1", t: "Cuéntanos de tu auto", d: "Marca, modelo, año y kilometraje." },
@@ -19,27 +19,12 @@ const retraso = (ms: number): CSSProperties => ({ transitionDelay: ms + "ms" });
 export default function VendeTuAuto({ fotosFondo }: { fotosFondo: string[] }) {
   const foto = fotosFondo[1] ?? fotosFondo[0] ?? "";
   const { ref, visto } = useReveal<HTMLElement>();
-  const [enviado, setEnviado] = useState(false);
-
-  function enviar(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const f = new FormData(e.currentTarget);
-    const km = f.get("k") ? ", con " + f.get("k") + " km" : "";
-    const precio = f.get("p") ? ". Precio que espero: $" + f.get("p") : "";
-    window.open(
-      wa("Hola, soy " + f.get("n") + ". Quiero vender mi " + f.get("a") + km + precio + "."),
-      "_blank",
-      "noopener,noreferrer"
-    );
-    setEnviado(true);
-  }
-
   return (
     <section id="vende" className={"vta" + (visto ? " in" : "")} ref={ref}>
       <div className="wrap">
         <h2 className="rvx" style={retraso(0)}>Vende tu auto con nosotros</h2>
         <p className="sub rvx" style={retraso(80)}>
-          Cuéntanos qué auto tienes y te respondemos por WhatsApp con una propuesta.
+          Cuéntanos qué auto tienes y te contactamos por WhatsApp con una propuesta.
         </p>
 
         <div className="vta-grid">
@@ -69,18 +54,12 @@ export default function VendeTuAuto({ fotosFondo }: { fotosFondo: string[] }) {
             </ol>
           </div>
 
-          <form className="vta-form rvx" onSubmit={enviar} style={retraso(240)}>
-            <h3>Cuéntanos de tu auto</h3>
-            <label>Tu nombre<input name="n" required autoComplete="name" /></label>
-            <label>Marca, modelo y año<input name="a" required placeholder="Ejemplo: Chevrolet C10 1985" /></label>
-            <label>Kilometraje aproximado<input name="k" inputMode="numeric" /></label>
-            <label>Precio que esperas (opcional)<input name="p" inputMode="numeric" /></label>
-            <button className="btn fill vta-enviar" type="submit">Enviar por WhatsApp</button>
-            {enviado && (
-              <p className="vta-ok" role="status">Abrimos WhatsApp con tus datos. ¡Gracias!</p>
-            )}
+          {/* La solicitud llega al CRM (Solicitudes de evaluación), igual que la de /consignacion. */}
+          <div className="vta-form rvx" style={retraso(240)}>
+            <h3>Pide la evaluación de tu auto</h3>
+            <FormularioEvaluacion compacto />
             <Link className="vta-link" href="/consignacion">Conoce cómo funciona la consignación →</Link>
-          </form>
+          </div>
         </div>
       </div>
     </section>

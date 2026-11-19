@@ -27,7 +27,9 @@ h2 { font-size: clamp(2rem, 4.5vw, 3rem); margin-bottom: 8px; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 22px; }
 .car { background: var(--panel); border: 1px solid var(--bronce); display: flex; flex-direction: column; }
 .foto { aspect-ratio: 4/3; background: repeating-linear-gradient(135deg, #1d160d, #1d160d 12px, #16100a 12px, #16100a 24px); display: grid; place-items: center; color: var(--bronce); font: 500 .95rem var(--f-titulo), sans-serif; text-transform: uppercase; }
-.in { padding: 16px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+/* Contenido de la tarjeta del catálogo. Va limitado a .car porque "in" también es la clase
+   que marca las secciones ya visibles (Aparece, useReveal). */
+.car > .in { padding: 16px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
 .car h3 { font-size: 1.4rem; }
 .dat { margin: 0; color: #c9bb88; font-size: .95rem; }
 .precio { font: 700 1.6rem var(--f-titulo), sans-serif; color: var(--rojo); margin-top: auto; padding-top: 8px; }
@@ -432,7 +434,7 @@ input, select, textarea { font-size: 16px; }
   .topbar { padding-left: 16px; padding-right: 16px; }
   .wrap, .det, .adm { padding-left: 16px; padding-right: 16px; }
   .btn { padding: 12px 18px; }
-  .acc .btn, .in .btn { flex: 1 1 auto; }
+  .acc .btn, .car > .in .btn { flex: 1 1 auto; }
 }
 @media (max-width: 420px) {
   .topbar-logo { font-size: 1rem; }

@@ -16,7 +16,9 @@ type Errores = Partial<Record<keyof BorradorEvaluacion, string>>;
 const MAX_MB = 25;
 const EXITO = "¡Solicitud recibida! Nuestro equipo revisará la información de tu vehículo y se pondrá en contacto contigo para continuar con la evaluación.";
 
-export default function FormularioEvaluacion() {
+// "compacto" es la versión corta de la portada: solo lo necesario para evaluar,
+// con las fotos como opción. Va a la misma solicitud del CRM que la versión completa.
+export default function FormularioEvaluacion({ compacto = false }: { compacto?: boolean }) {
   const [datos, setDatos] = useState(BORRADOR_EVALUACION);
   const [errores, setErrores] = useState<Errores>({});
   const [fotos, setFotos] = useState<Foto[]>([]);
@@ -145,63 +147,90 @@ export default function FormularioEvaluacion() {
     );
   }
 
+  const selectorFotos = (
+    <>
+      <label className={"ev-subir" + (fotos.length >= MAX_FOTOS_EVALUACION ? " lleno" : "")}>
+        <input type="file" accept="image/*,.heic,.heif" multiple disabled={fotos.length >= MAX_FOTOS_EVALUACION || !!enviando} onChange={(e) => { agregar(e.target.files); e.target.value = ""; }} />
+        <strong>{revisando ? "Revisando fotos…" : "Agregar fotografías"}</strong>
+        <span>{fotos.length} de {MAX_FOTOS_EVALUACION}</span>
+      </label>
+      {avisoFotos && <p className="ev-error" role="alert">{avisoFotos}</p>}
+      {fotos.length > 0 && (
+        <div className="ev-fotos">
+          {fotos.map((f, i) => (
+            <div key={f.id}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={f.preview} alt={`Fotografía ${i + 1} del vehículo`} />
+              <button type="button" onClick={() => quitar(f)} disabled={!!enviando} aria-label={`Eliminar fotografía ${i + 1}`}>×</button>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+
   return (
-    <form className="ev-form" onSubmit={enviar} noValidate>
-      <fieldset>
-        <legend><span>1</span> Tus datos</legend>
-        <div className="ev-campos">
-          <label htmlFor="ev-nombre">Nombre completo<input {...campo("nombre")} autoComplete="name" maxLength={120} />{mensaje("nombre")}</label>
-          <label htmlFor="ev-telefono">WhatsApp<input {...campo("telefono")} type="tel" inputMode="tel" autoComplete="tel" placeholder="9 1234 5678" maxLength={24} />{mensaje("telefono")}</label>
-          <label htmlFor="ev-email">Correo <em>opcional</em><input {...campo("email")} type="email" autoComplete="email" maxLength={254} />{mensaje("email")}</label>
-          <label htmlFor="ev-comuna">Ciudad o comuna<input {...campo("comuna")} list="ev-comunas" autoComplete="address-level2" maxLength={80} />{mensaje("comuna")}</label>
-        </div>
-      </fieldset>
-
-      <fieldset>
-        <legend><span>2</span> Información del vehículo</legend>
-        <div className="ev-campos">
-          <label htmlFor="ev-marca">Marca<input {...campo("marca")} list="ev-marcas" maxLength={60} />{mensaje("marca")}</label>
-          <label htmlFor="ev-modelo">Modelo<input {...campo("modelo")} maxLength={80} />{mensaje("modelo")}</label>
-          <label htmlFor="ev-version">Versión <em>opcional</em><input {...campo("version")} maxLength={120} />{mensaje("version")}</label>
-          <label htmlFor="ev-anio">Año<input {...campo("anio")} inputMode="numeric" maxLength={4} />{mensaje("anio")}</label>
-          <label htmlFor="ev-km">Kilometraje<input {...campo("km")} inputMode="numeric" maxLength={10} />{mensaje("km")}</label>
-          <label htmlFor="ev-patente">Patente <em>opcional</em><input {...campo("patente")} autoCapitalize="characters" maxLength={10} />{mensaje("patente")}</label>
-          <label htmlFor="ev-precio_esperado">Precio esperado <em>opcional</em><input {...campo("precio_esperado")} inputMode="numeric" placeholder="$" maxLength={16} />{mensaje("precio_esperado")}</label>
-          <label className="ev-ancho" htmlFor="ev-observaciones">Observaciones <em>opcional</em><textarea {...campo("observaciones")} rows={3} maxLength={2000} />{mensaje("observaciones")}</label>
-        </div>
-      </fieldset>
-
-      <fieldset>
-        <legend><span>3</span> Fotografías</legend>
-        <p className="ev-ayuda">Suma fotos generales: frontal, trasera, laterales, interior y tablero. Hasta {MAX_FOTOS_EVALUACION}.</p>
-        <label className={"ev-subir" + (fotos.length >= MAX_FOTOS_EVALUACION ? " lleno" : "")}>
-          <input type="file" accept="image/*,.heic,.heif" multiple disabled={fotos.length >= MAX_FOTOS_EVALUACION || !!enviando} onChange={(e) => { agregar(e.target.files); e.target.value = ""; }} />
-          <strong>{revisando ? "Revisando fotos…" : "Agregar fotografías"}</strong>
-          <span>{fotos.length} de {MAX_FOTOS_EVALUACION}</span>
-        </label>
-        {avisoFotos && <p className="ev-error" role="alert">{avisoFotos}</p>}
-        {fotos.length > 0 && (
-          <div className="ev-fotos">
-            {fotos.map((f, i) => (
-              <div key={f.id}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={f.preview} alt={`Fotografía ${i + 1} del vehículo`} />
-                <button type="button" onClick={() => quitar(f)} disabled={!!enviando} aria-label={`Eliminar fotografía ${i + 1}`}>×</button>
-              </div>
-            ))}
+    <form className={"ev-form" + (compacto ? " ev-compacto" : "")} onSubmit={enviar} noValidate>
+      {compacto ? (
+        <>
+          <div className="ev-campos">
+            <label htmlFor="ev-nombre">Tu nombre<input {...campo("nombre")} autoComplete="name" maxLength={120} />{mensaje("nombre")}</label>
+            <label htmlFor="ev-telefono">WhatsApp<input {...campo("telefono")} type="tel" inputMode="tel" autoComplete="tel" placeholder="9 1234 5678" maxLength={24} />{mensaje("telefono")}</label>
+            <label htmlFor="ev-marca">Marca<input {...campo("marca")} list="ev-marcas" maxLength={60} />{mensaje("marca")}</label>
+            <label htmlFor="ev-modelo">Modelo<input {...campo("modelo")} maxLength={80} />{mensaje("modelo")}</label>
+            <label htmlFor="ev-anio">Año<input {...campo("anio")} inputMode="numeric" maxLength={4} />{mensaje("anio")}</label>
+            <label htmlFor="ev-km">Kilometraje<input {...campo("km")} inputMode="numeric" maxLength={10} />{mensaje("km")}</label>
+            <label htmlFor="ev-comuna">Comuna<input {...campo("comuna")} list="ev-comunas" autoComplete="address-level2" maxLength={80} />{mensaje("comuna")}</label>
+            <label htmlFor="ev-precio_esperado">Precio esperado <em>opcional</em><input {...campo("precio_esperado")} inputMode="numeric" placeholder="$" maxLength={16} />{mensaje("precio_esperado")}</label>
           </div>
-        )}
-      </fieldset>
+          <details className="ev-mas-fotos" open={fotos.length > 0}>
+            <summary>Agregar fotos <em>opcional, ayudan a evaluar más rápido</em></summary>
+            {selectorFotos}
+          </details>
+        </>
+      ) : (
+        <>
+          <fieldset>
+            <legend><span>1</span> Tus datos</legend>
+            <div className="ev-campos">
+              <label htmlFor="ev-nombre">Nombre completo<input {...campo("nombre")} autoComplete="name" maxLength={120} />{mensaje("nombre")}</label>
+              <label htmlFor="ev-telefono">WhatsApp<input {...campo("telefono")} type="tel" inputMode="tel" autoComplete="tel" placeholder="9 1234 5678" maxLength={24} />{mensaje("telefono")}</label>
+              <label htmlFor="ev-email">Correo <em>opcional</em><input {...campo("email")} type="email" autoComplete="email" maxLength={254} />{mensaje("email")}</label>
+              <label htmlFor="ev-comuna">Ciudad o comuna<input {...campo("comuna")} list="ev-comunas" autoComplete="address-level2" maxLength={80} />{mensaje("comuna")}</label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend><span>2</span> Información del vehículo</legend>
+            <div className="ev-campos">
+              <label htmlFor="ev-marca">Marca<input {...campo("marca")} list="ev-marcas" maxLength={60} />{mensaje("marca")}</label>
+              <label htmlFor="ev-modelo">Modelo<input {...campo("modelo")} maxLength={80} />{mensaje("modelo")}</label>
+              <label htmlFor="ev-version">Versión <em>opcional</em><input {...campo("version")} maxLength={120} />{mensaje("version")}</label>
+              <label htmlFor="ev-anio">Año<input {...campo("anio")} inputMode="numeric" maxLength={4} />{mensaje("anio")}</label>
+              <label htmlFor="ev-km">Kilometraje<input {...campo("km")} inputMode="numeric" maxLength={10} />{mensaje("km")}</label>
+              <label htmlFor="ev-patente">Patente <em>opcional</em><input {...campo("patente")} autoCapitalize="characters" maxLength={10} />{mensaje("patente")}</label>
+              <label htmlFor="ev-precio_esperado">Precio esperado <em>opcional</em><input {...campo("precio_esperado")} inputMode="numeric" placeholder="$" maxLength={16} />{mensaje("precio_esperado")}</label>
+              <label className="ev-ancho" htmlFor="ev-observaciones">Observaciones <em>opcional</em><textarea {...campo("observaciones")} rows={3} maxLength={2000} />{mensaje("observaciones")}</label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend><span>3</span> Fotografías</legend>
+            <p className="ev-ayuda">Suma fotos generales: frontal, trasera, laterales, interior y tablero. Hasta {MAX_FOTOS_EVALUACION}.</p>
+            {selectorFotos}
+          </fieldset>
+        </>
+      )}
 
       <datalist id="ev-comunas">{COMUNAS.map((c) => <option key={c} value={c} />)}</datalist>
       <datalist id="ev-marcas">{MARCAS.map((m) => <option key={m.nombre} value={m.nombre} />)}</datalist>
       <label className="ev-trampa" aria-hidden="true">Sitio web<input tabIndex={-1} autoComplete="off" value={trampa} onChange={(e) => setTrampa(e.target.value)} /></label>
 
       <div className="ev-enviar">
-        <div className="ev-paso"><span>4</span> Enviar solicitud</div>
+        {!compacto && <div className="ev-paso"><span>4</span> Enviar solicitud</div>}
         {error && <p className="ev-error" role="alert">{error}</p>}
         <button className="btn fill" type="submit" disabled={!!enviando || revisando} aria-busy={!!enviando}>
-          {enviando || "SOLICITAR EVALUACIÓN"}
+          {enviando || (compacto ? "PEDIR EVALUACIÓN" : "SOLICITAR EVALUACIÓN")}
         </button>
       </div>
     </form>
