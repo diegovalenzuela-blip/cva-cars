@@ -80,8 +80,8 @@ export default async function Home() {
       <main>
       <Portada fotos={fotosPortada} destacado={destacado} datos={datos} />
       {/* Los autos primero: es lo que viene a ver el comprador. */}
-      {/* El auto de la tarjeta de la portada no se repite en la vitrina de abajo. */}
-      <Vitrina autos={autos.filter((a) => a.codigo !== destacado?.codigo)} cargando={false} />
+      {/* La vitrina muestra siempre todos los autos en exhibición elegidos en el panel. */}
+      <Vitrina autos={autos} cargando={false} />
       <VideosDestacados videos={videos} />
       <VendeTuAuto fotosFondo={fotosFondo} />
       <DondeEstamos banner={fotosFondo[2] ?? fotosFondo[0] ?? ""} />
