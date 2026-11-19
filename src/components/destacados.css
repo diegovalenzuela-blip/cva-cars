@@ -63,11 +63,6 @@
 .vid-play::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--rojo); z-index: -1; opacity: 0; }
 .vid-play:hover { transform: scale(1.1); background: #e0443a; }
 .vid-play:focus-visible { outline: 3px solid var(--crema); outline-offset: 4px; }
-@media (min-width: 900px) {
-  .vid-fila { overflow: visible; justify-content: center; align-items: center; gap: 30px; }
-  .vid-item { flex: 0 0 270px; }
-  .vid-item.centro { flex-basis: 320px; }
-}
 
 /* ===== Vitrina ===== */
 .vit { position: relative; overflow: hidden; }
@@ -242,69 +237,81 @@ section.vit { border-top: 0; }
   .vit-foco::after { display: none; }
 }
 
-/* ===== Videos en 3D =====
-   Las tres tarjetas se ven como pantallas en una vitrina: las de los lados giradas
-   hacia el centro y la del medio adelante. Al pasar el mouse (o al reproducir) la
-   tarjeta gira de frente y se acerca. Todo con transform: liviano para el teléfono. */
-.vid-fila { perspective: 1100px; perspective-origin: 50% 35%; justify-content: center; padding-top: 34px; padding-bottom: 64px; }
-.vid-item { transform-style: preserve-3d; }
-/* Las tarjetas laterales quedan detrás del plano de su contenedor (translateZ negativo)
-   y el contenedor transparente se quedaba con el toque. Solo la tarjeta recibe clics. */
-.vid-fila .vid-item { pointer-events: none; }
-.vid-fila .vid {
-  pointer-events: auto;
-  --giro: 0deg; --prof: 0px; --alto: 0px;
-  transform-style: preserve-3d;
-  transform: translateY(var(--alto)) rotateY(var(--giro)) translateZ(var(--prof));
-  transition: transform .55s cubic-bezier(.2, .8, .2, 1), box-shadow .5s ease, border-color .3s ease;
-  border-radius: 6px;
-  box-shadow:
-    0 0 0 1px #000,
-    0 26px 44px rgba(0, 0, 0, .75),
-    0 0 34px rgba(200, 55, 45, .22);
+/* ===== Carrusel de videos =====
+   Cada tarjeta muestra un avance corto sin sonido y, debajo, el auto que aparece en el video.
+   En celular se desliza de lado; en computador hay flechas cuando no caben todos. */
+.vid-cab { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px 24px; flex-wrap: wrap; }
+.vid-cab .sub { margin-bottom: 0; }
+.vid-tiktok {
+  display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; margin-bottom: 4px;
+  border: 1px solid var(--bronce); background: rgba(0, 0, 0, .55); color: var(--crema); text-decoration: none;
+  font: 700 .9rem var(--f-titulo), sans-serif; text-transform: uppercase; letter-spacing: .06em;
+  transition: border-color .2s ease, background .2s ease;
 }
-.vid-fila .vid-item:first-child .vid { --giro: 22deg; --prof: -40px; }
-.vid-fila .vid-item:last-child .vid { --giro: -22deg; --prof: -40px; }
-.vid-fila .vid-item.centro .vid { --prof: 40px; border-color: var(--rojo); }
-.vid-fila .vid:hover, .vid-fila .vid:focus-within, .vid-fila .vid.jugando {
-  --giro: 0deg; --prof: 90px; --alto: -6px;
-  border-color: var(--rojo);
-  box-shadow: 0 0 0 1px #000, 0 34px 60px rgba(0, 0, 0, .8), 0 0 60px rgba(200, 55, 45, .5);
-  z-index: 3;
+.vid-tiktok:hover { border-color: var(--rojo); background: rgba(200, 55, 45, .2); }
+.vid-tiktok:focus-visible { outline: 3px solid var(--crema); outline-offset: 3px; }
+
+.vid-fila { position: relative; gap: 18px; padding: 26px 2px 10px; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.vid-fila::-webkit-scrollbar { display: none; }
+.vid-fila.cabe { justify-content: center; }
+.vid-item { flex: 0 0 min(250px, 70vw); scroll-snap-align: start; }
+/* "Aparece" agrega la clase "in", que en globals.css también da estilo a las tarjetas del
+   catálogo (flex, padding). Aquí se anula para que no cambie el diseño de esta sección. */
+.vid-sec .apa { display: block; flex: none; padding: 0; gap: 0; }
+.vid-sec .apa.vid-item-in { display: flex; flex-direction: column; gap: 12px; height: 100%; }
+.vid { border-radius: 6px; overflow: hidden; box-shadow: 0 0 0 1px #000, 0 22px 40px rgba(0, 0, 0, .7), 0 0 30px rgba(200, 55, 45, .18); }
+.vid-video { object-fit: cover; }
+.vid.jugando .vid-video { object-fit: contain; }
+.vid-avance {
+  position: absolute; left: 10px; bottom: 10px; padding: 3px 8px; pointer-events: none;
+  background: rgba(0, 0, 0, .65); color: var(--crema); font: 600 .72rem var(--f-texto), sans-serif; letter-spacing: .02em;
 }
-.vid-fila .vid-video { border-radius: 4px; }
-/* "Piso" brillante bajo cada tarjeta */
-.vid-fila .vid::after {
-  content: ""; position: absolute; left: 6%; right: 6%; top: calc(100% + 10px); height: 34px; pointer-events: none;
-  background: radial-gradient(ellipse at 50% 0%, rgba(200, 55, 45, .45), transparent 70%);
-  filter: blur(6px); opacity: .8;
+.vid-play { width: 72px; height: 72px; margin: -36px 0 0 -36px; box-shadow: 0 0 0 6px rgba(200, 55, 45, .28), 0 0 0 12px rgba(200, 55, 45, .12), 0 10px 30px rgba(0, 0, 0, .7); }
+.vid-play-txt {
+  position: absolute; top: calc(100% + 16px); left: 50%; transform: translateX(-50%); white-space: nowrap;
+  padding: 4px 12px; background: rgba(0, 0, 0, .7); border: 1px solid var(--rojo);
+  font: 700 .82rem var(--f-titulo), sans-serif; text-transform: uppercase; letter-spacing: .08em; color: var(--crema);
 }
 /* Reflejo que cruza la tarjeta */
 .vid-brillo {
-  position: absolute; inset: 0; pointer-events: none; overflow: hidden; border-radius: 4px;
+  position: absolute; inset: 0; pointer-events: none; overflow: hidden;
   background: linear-gradient(110deg, transparent 35%, rgba(255, 240, 210, .18) 48%, transparent 60%);
   background-size: 260% 100%; background-position: 120% 0;
   transition: background-position .9s ease;
 }
 .vid:hover .vid-brillo { background-position: -60% 0; }
 .vid.jugando .vid-brillo { display: none; }
-/* Botón de reproducir más llamativo, con anillo y texto */
-.vid-fila .vid-play { width: 86px; height: 86px; margin: -43px 0 0 -43px; box-shadow: 0 0 0 6px rgba(200, 55, 45, .28), 0 0 0 12px rgba(200, 55, 45, .12), 0 10px 30px rgba(0, 0, 0, .7); }
-.vid-fila .vid:hover .vid-play { transform: scale(1.1); }
-.vid-play-txt {
-  position: absolute; top: calc(100% + 18px); left: 50%; transform: translateX(-50%); white-space: nowrap;
-  padding: 4px 12px; background: rgba(0, 0, 0, .7); border: 1px solid var(--rojo);
-  font: 700 .85rem var(--f-titulo), sans-serif; text-transform: uppercase; letter-spacing: .08em; color: var(--crema);
+
+.vid-info { flex: 1; display: flex; flex-direction: column; gap: 6px; padding: 0 2px; }
+.vid-info h3 { font-size: 1.12rem; letter-spacing: .02em; }
+.vid-info h3 a { color: var(--crema); text-decoration: none; }
+.vid-info h3 a:hover { color: #fff; }
+.vid-precio { margin: 0; color: var(--rojo); font: 700 1.3rem var(--f-titulo), sans-serif; display: flex; align-items: center; gap: 10px; }
+.vid-reservado { padding: 1px 8px; border: 1px solid var(--bronce); color: var(--crema); font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; }
+.vid-nota { margin: 0; color: #c9bb88; font-size: .92rem; }
+.vid-acc { display: flex; gap: 8px; margin-top: auto; padding-top: 4px; }
+.vid-acc a {
+  flex: 1; padding: 10px 8px; text-align: center; text-decoration: none; border: 1px solid var(--rojo); color: var(--crema);
+  font: 700 .82rem var(--f-titulo), sans-serif; text-transform: uppercase; letter-spacing: .05em;
+  transition: background .2s ease, color .2s ease;
+}
+.vid-acc a.fill { background: var(--rojo); color: #fff; }
+.vid-acc a:hover { background: #e0443a; color: #fff; }
+.vid-acc a:focus-visible { outline: 3px solid var(--crema); outline-offset: 2px; }
+
+.vid-nav { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 18px; color: var(--crema); font: 700 .95rem var(--f-titulo), sans-serif; letter-spacing: .08em; }
+.vid-nav button {
+  width: 44px; height: 44px; display: grid; place-items: center; cursor: pointer;
+  border: 1px solid var(--bronce); background: rgba(0, 0, 0, .6); color: var(--crema); transition: border-color .2s ease, background .2s ease;
+}
+.vid-nav button:hover:not(:disabled) { border-color: var(--rojo); background: rgba(200, 55, 45, .25); }
+.vid-nav button:disabled { opacity: .35; cursor: default; }
+.vid-nav button:focus-visible { outline: 3px solid var(--crema); outline-offset: 2px; }
+
+@media (min-width: 900px) {
+  .vid-item { flex-basis: 270px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .vid-fila .vid { transition: none; }
+  .vid-fila { scroll-behavior: auto; }
   .vid-brillo { display: none; }
-}
-/* Teléfono: los videos se deslizan de lado; inclinación más suave para que se vean bien */
-@media (max-width: 760px) {
-  .vid-fila { justify-content: flex-start; perspective: 900px; padding-bottom: 54px; }
-  .vid-fila .vid-item:first-child .vid { --giro: 12deg; --prof: -16px; }
-  .vid-fila .vid-item:last-child .vid { --giro: -12deg; --prof: -16px; }
-  .vid-fila .vid-item.centro .vid { --prof: 16px; }
-  .vid-fila .vid.jugando { --prof: 30px; }
 }

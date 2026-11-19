@@ -4,15 +4,27 @@ import VideosDestacados from "@/components/VideosDestacados";
 import Vitrina from "@/components/Vitrina";
 import VendeTuAuto from "@/components/VendeTuAuto";
 import DondeEstamos from "@/components/DondeEstamos";
-import { getAutosExhibicion } from "@/lib/autos";
+import { getAutosExhibicion, getAutosPublicos } from "@/lib/autos";
 import type { FotoFondo } from "@/lib/autos";
+import { VIDEOS } from "@/lib/datos";
 
 export const revalidate = 60;
 
 export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 export default async function Home() {
-  const autos = await getAutosExhibicion();
+  const [autos, publicos] = await Promise.all([getAutosExhibicion(), getAutosPublicos()]);
+
+  // Cada video muestra el auto que aparece en él, si sigue en venta.
+  const videos = VIDEOS.map(({ codigo, ...v }) => {
+    const a = codigo ? publicos.find((x) => x.codigo === codigo) : undefined;
+    return {
+      ...v,
+      auto: a
+        ? { codigo: a.codigo, nombre: a.marca + " " + a.modelo + " " + a.anio, precio: a.precio, reservado: a.estado === "reservado" }
+        : null,
+    };
+  });
 
   // Máximo 5 fotos de fondo: más que eso solo gasta datos y memoria en el teléfono.
   const fotosFondo = autos
@@ -39,7 +51,7 @@ export default async function Home() {
       <Portada fotos={fotosPortada} />
       {/* Los autos primero: es lo que viene a ver el comprador. */}
       <Vitrina autos={autos} cargando={false} />
-      <VideosDestacados />
+      <VideosDestacados videos={videos} />
       <VendeTuAuto fotosFondo={fotosFondo} />
       <DondeEstamos banner={fotosFondo[2] ?? fotosFondo[0] ?? ""} />
       </main>
