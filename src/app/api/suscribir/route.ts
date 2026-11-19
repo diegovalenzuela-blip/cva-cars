@@ -4,6 +4,8 @@ import { SLUG } from "@/lib/datos";
 
 // Recibe la suscripción de la ventana de noticias y la guarda en Supabase.
 // La tabla solo permite insertar: nadie de afuera puede leer la lista.
+// Al guardarse, la base también crea o actualiza el contacto en el CRM
+// (migración 20261122_suscriptores_crm.sql); esta ruta no necesita hacer nada más.
 
 const CORREO = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
