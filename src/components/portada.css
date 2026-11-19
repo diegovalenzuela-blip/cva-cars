@@ -1,5 +1,5 @@
 /* ===== Portada con fotos de fondo ===== */
-.por-sec { position: relative; isolation: isolate; overflow: hidden; display: flex; align-items: center; min-height: min(76vh, 700px); background: #000; }
+.por-sec { position: relative; isolation: isolate; overflow: hidden; display: flex; align-items: center; min-height: min(76vh, 700px); background: var(--bg); }
 .por-sec > .wrap { position: relative; z-index: 2; width: 100%; }
 .por-sec .hero { padding: 56px 0 72px; }
 
@@ -108,7 +108,8 @@
 .por-busca label span { font: 700 .78rem var(--f-titulo), sans-serif; text-transform: uppercase; letter-spacing: .06em; color: #c9bb88; }
 .por-busca select { padding: 10px; background: #0d0a07; }
 .por-busca select:focus { border-color: var(--rojo); outline: none; box-shadow: 0 0 0 3px rgba(200, 55, 45, .3); }
-.por-busca .btn { padding: 11px 22px; min-height: 0; }
+.por-busca .btn { padding: 11px 22px; min-height: 0; background: var(--crema); border-color: var(--crema); color: #17110b; }
+.por-busca .btn:hover { background: #fff; border-color: #fff; color: #000; }
 
 @media (prefers-reduced-motion: reduce) {
   .por-auto, .por-auto-foto img { transition: none; }

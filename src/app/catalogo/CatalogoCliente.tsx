@@ -316,7 +316,7 @@ export default function CatalogoCliente({
                 </p>
               )}
               <div className="precio">{plata(x.precio)}</div>
-              <Link className="btn fill" href={"/autos/" + x.codigo}>Ver fotos y detalles</Link>
+              <Link className="btn" href={"/autos/" + x.codigo}>Ver fotos y detalles</Link>
               <a
                 className="btn btn-wsp"
                 href={wa("Hola, me interesa el " + x.marca + " " + x.modelo + " " + x.anio + " (Ref " + x.codigo + ")")}

@@ -7,7 +7,7 @@
 /* Encabezado */
 .ap-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
 .ap-top h1 { margin: 0; }
-.ap-marca { font: 700 .8rem var(--f-titulo), sans-serif; text-transform: uppercase; letter-spacing: .08em; color: var(--rojo); }
+.ap-marca { font: 700 .8rem var(--f-titulo), sans-serif; text-transform: uppercase; letter-spacing: .08em; color: var(--rojo-texto); }
 .ap-top-acc { display: flex; gap: 10px; flex-wrap: wrap; }
 .ap-top-acc .btn { padding: 10px 16px; font-size: .92rem; }
 

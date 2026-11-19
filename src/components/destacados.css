@@ -17,7 +17,7 @@
 @media (max-width: 760px) { .por-logo { order: -1; max-width: min(220px, 60vw); } }
 
 /* ===== Videos ===== */
-.vid-sec { position: relative; overflow: hidden; padding: 72px 0 84px; background: #000; }
+.vid-sec { position: relative; overflow: hidden; padding: 72px 0 84px; background: var(--bg); }
 /* ===== Fondo de autos en sección de videos ===== */
 .vid-sec { isolation: isolate; }
 .vid-sec::before { z-index: 1; }
@@ -292,7 +292,7 @@ section.vit { border-top: 0; }
   font: 700 .82rem var(--f-titulo), sans-serif; text-transform: uppercase; letter-spacing: .05em;
   transition: background .2s ease, color .2s ease;
 }
-.vid-acc a.fill { background: var(--rojo); color: #fff; }
+.vid-acc a.fill { border-color: var(--crema); color: var(--crema); }
 .vid-acc a:hover { background: #e0443a; color: #fff; }
 .vid-acc a:focus-visible { outline: 3px solid var(--crema); outline-offset: 2px; }
 
