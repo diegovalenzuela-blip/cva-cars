@@ -53,16 +53,6 @@
 }
 .don-redes a:hover { border-color: var(--rojo); background: rgba(200, 55, 45, .2); }
 
-/* ===== Pie de página ===== */
-.pie { padding: 36px 0 96px; } /* espacio para los botones flotantes de WhatsApp */
-.pie .pie-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 24px; align-items: start; }
-.pie-marca { display: block; font: 700 1.3rem var(--f-titulo), sans-serif; text-transform: uppercase; }
-.pie-grid p { margin: 6px 0 0; color: #c9bb88; max-width: 36ch; }
-.pie nav { display: grid; gap: 8px; }
-.pie nav a { color: var(--crema); text-decoration: none; }
-.pie nav a:hover { color: var(--rojo); }
-.pie-final { margin-top: 26px; padding-top: 18px; border-top: 1px solid rgba(139, 90, 43, .4); color: #c9bb88; font-size: .88rem; }
-
 @media (max-width: 860px) {
   .vta-grid { grid-template-columns: 1fr; }
   .vta-visual { min-height: 380px; }
@@ -70,8 +60,6 @@
   .don-panel { grid-template-columns: 1fr; padding: 20px; }
   .don-wsp { flex-direction: column; gap: 12px; }
   .don-btn { width: 100%; text-align: center; }
-  .pie .pie-grid { grid-template-columns: 1fr 1fr; }
-  .pie-grid > div { grid-column: 1 / -1; }
 }
 
 /* ===== Movimiento (se apaga con "Reducir movimiento") ===== */

@@ -6,7 +6,7 @@ export const revalidate = 60;
 
 export const metadata: Metadata = {
   alternates: { canonical: "/contacto" },
-  title: "Contacto | Chillán Vende Autos",
+  title: "Contacto en Chillán | Chillán Vende Autos",
   description: "Escríbenos por WhatsApp o llámanos y coordinamos tu atención en Chillán.",
 };
 

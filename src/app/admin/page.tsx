@@ -42,6 +42,8 @@ type Auto = {
   revision_tecnica: string | null;
   acepta_parte_pago?: boolean;
   precio_negociable?: boolean;
+  destacado?: boolean | null;
+  en_portada?: boolean;
   creado_en?: string;
 };
 
@@ -556,6 +558,22 @@ export default function Admin() {
     }
   }
 
+  // Solo un auto en la tarjeta de la portada y uno destacado en la vitrina:
+  // primero se quita la marca a todos y después se pone en el elegido.
+  async function elegirUnico(campo: "en_portada" | "destacado", id: string, aviso: string) {
+    if (!automotoraId) return;
+    const quitar = await supabase.from("autos").update({ [campo]: false }).eq("automotora_id", automotoraId).eq(campo, true);
+    const poner = !quitar.error && id
+      ? await supabase.from("autos").update({ [campo]: true }).eq("id", id).eq("automotora_id", automotoraId)
+      : { error: null };
+    const error = quitar.error ?? poner.error;
+    if (error) avisar("No se pudo guardar: " + error.message, true);
+    else {
+      avisar(aviso);
+      await cargar();
+    }
+  }
+
   async function borrar(a: Auto) {
     if (!confirm("¿Borrar " + a.marca + " " + a.modelo + " (" + a.codigo + ")? No se puede deshacer.")) return;
     const { error } = await supabase.from("autos").delete().eq("id", a.id);
@@ -616,6 +634,9 @@ export default function Admin() {
   const candidatosVitrina = autos.filter(
     (a) => a.catalogo !== "trabajo" && visiblePublico(a) && !a.en_exhibicion
   );
+  const candidatosPortada = autos.filter((a) => a.catalogo !== "trabajo" && visiblePublico(a) && a.fotos?.length);
+  const autoPortada = candidatosPortada.find((a) => a.en_portada);
+  const autoDestacado = autosExhibicion.find((a) => a.destacado);
 
   const autosFiltrados = useMemo(() => {
     const termino = busqueda.trim().toLowerCase();
@@ -1085,6 +1106,40 @@ export default function Admin() {
             <strong>{autosExhibicion.length} / {MAX_EXHIBICION} seleccionados</strong>
           </div>
 
+          <div className="adm-portada">
+            <label>
+              <span>Auto de la tarjeta de la portada</span>
+              <select
+                value={autoPortada?.id ?? ""}
+                onChange={(e) =>
+                  elegirUnico("en_portada", e.target.value, e.target.value ? "Auto de la portada actualizado." : "La portada vuelve a mostrar el último auto publicado.")
+                }
+              >
+                <option value="">Automático: el último auto publicado</option>
+                {candidatosPortada.map((a) => (
+                  <option key={a.id} value={a.id}>{a.marca} {a.modelo} {a.anio} · {a.codigo}</option>
+                ))}
+              </select>
+              <small>Es el auto grande que aparece arriba, al lado del título.</small>
+            </label>
+            <label>
+              <span>Auto destacado de la vitrina</span>
+              <select
+                value={autoDestacado?.id ?? ""}
+                onChange={(e) =>
+                  elegirUnico("destacado", e.target.value, e.target.value ? "Auto destacado actualizado." : "La vitrina vuelve a destacar el auto más reciente.")
+                }
+                disabled={autosExhibicion.length === 0}
+              >
+                <option value="">Automático: el más reciente en exhibición</option>
+                {autosExhibicion.map((a) => (
+                  <option key={a.id} value={a.id}>{a.marca} {a.modelo} {a.anio} · {a.codigo}</option>
+                ))}
+              </select>
+              <small>Es el auto grande al inicio de &quot;Autos en exhibición&quot;. Elige entre los que están en exhibición.</small>
+            </label>
+          </div>
+
           {autosExhibicion.length === 0 ? (
             <p className="adm-exhibicion-vacio">
               Todavía no tienes autos seleccionados para exhibición. Agrégalos desde la lista de abajo.
@@ -1102,6 +1157,7 @@ export default function Admin() {
                     )}
                   </div>
                   <div className="adm-exhibicion-datos">
+                    {a.destacado && <span className="adm-marca-destacado">★ Destacado</span>}
                     <strong>{a.marca} {a.modelo}</strong>
                     <span>{a.anio} · Ref. {a.codigo}</span>
                     <b>{plata(a.precio)}</b>

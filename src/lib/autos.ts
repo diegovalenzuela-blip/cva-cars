@@ -16,6 +16,7 @@ export type AutoPublico = {
   ubicacion: string | null;
   tipo: string | null;
   destacado: boolean | null;
+  en_portada: boolean;
   catalogo: Catalogo;
   acepta_parte_pago: boolean;
   precio_negociable: boolean;
@@ -34,6 +35,7 @@ type Fila = {
   ubicacion?: string | null;
   tipo?: string | null;
   destacado?: boolean | null;
+  en_portada?: boolean | null;
   catalogo?: string | null;
   acepta_parte_pago?: boolean | null;
   precio_negociable?: boolean | null;
@@ -62,6 +64,7 @@ function aPublico(a: Fila): AutoPublico {
     ubicacion: a.ubicacion ?? null,
     tipo: a.tipo ?? null,
     destacado: a.destacado ?? false,
+    en_portada: a.en_portada === true,
     catalogo: aCatalogo(a.catalogo),
     acepta_parte_pago: a.acepta_parte_pago === true,
     precio_negociable: a.precio_negociable === true,
@@ -150,6 +153,7 @@ export async function getAutoPorCodigo(codigo: string): Promise<AutoDetalle | nu
       ubicacion: txt("ubicacion"),
       tipo: txt("tipo"),
       destacado: a.destacado === true,
+      en_portada: a.en_portada === true,
       catalogo: aCatalogo(a.catalogo),
       acepta_parte_pago: a.acepta_parte_pago === true,
       precio_negociable: a.precio_negociable === true,

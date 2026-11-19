@@ -180,3 +180,11 @@
   .ap-bloque { padding: 14px; }
   .ap-catalogos { grid-template-columns: 1fr; }
 }
+
+/* ===== Elegir auto de la portada y destacado de la vitrina ===== */
+.adm-portada { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 0 0 18px; padding: 14px; background: var(--bg); border: 1px solid #3a2a18; border-left: 4px solid var(--rojo); }
+.adm-portada label { display: grid; gap: 6px; min-width: 0; }
+.adm-portada label > span { font: 700 .95rem var(--f-titulo), sans-serif; text-transform: uppercase; letter-spacing: .04em; }
+.adm-portada small { color: #b7aa96; font-size: .82rem; }
+.adm-marca-destacado { display: inline-block; width: fit-content; padding: 1px 8px; background: var(--rojo); color: #fff; font: 700 .72rem var(--f-titulo), sans-serif; text-transform: uppercase; letter-spacing: .06em; }
+@media (max-width: 760px) { .adm-portada { grid-template-columns: 1fr; } }

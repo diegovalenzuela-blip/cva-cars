@@ -6,7 +6,7 @@ export const revalidate = 60;
 
 export const metadata: Metadata = {
   alternates: { canonical: "/consignacion" },
-  title: "Consignación | Chillán Vende Autos",
+  title: "Consignación de autos en Chillán | Chillán Vende Autos",
   description: "Deja tu auto en consignación: lo publicamos, lo mostramos y atendemos a los interesados.",
 };
 

@@ -12,8 +12,13 @@ export default function Galeria({ fotos, titulo }: { fotos: string[]; titulo: st
     <div>
       <div className="gal-main">
         {actual ? (
-          // eslint-disable-next-line @next/next/no-img-element
+          <>
+          {/* Fondo difuminado de la misma foto: las fotos verticales llenan el cuadro sin franjas negras. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="gal-fondo" src={imgSrc(actual, 384, 45)} alt="" aria-hidden="true" decoding="async" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
+            className="gal-foto"
             src={imgSrc(actual, 828, 75)}
             srcSet={imgSrcSet(actual, 75)}
             sizes="(max-width: 860px) 100vw, 680px"
@@ -21,6 +26,7 @@ export default function Galeria({ fotos, titulo }: { fotos: string[]; titulo: st
             decoding="async"
             fetchPriority="high"
           />
+          </>
         ) : (
           <div className="foto" style={{ height: "100%" }}>Foto próximamente</div>
         )}
