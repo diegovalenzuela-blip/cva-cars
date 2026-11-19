@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Aparece from "@/components/Aparece";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { wa } from "@/lib/datos";
 import { imgSrc, imgSrcSet } from "@/lib/img";
 
@@ -58,6 +58,17 @@ export default function CatalogoCliente({
   const [orden, setOrden] = useState("recientes");
   // En el teléfono los filtros van plegados para que los autos se vean de inmediato.
   const [verFiltros, setVerFiltros] = useState(false);
+
+  // El buscador de la portada llega con ?tipo=SUV&max=10000000.
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    const t = p.get("tipo") ?? "";
+    const m = (p.get("max") ?? "").replace(/\D/g, "");
+    /* eslint-disable react-hooks/set-state-in-effect -- filtros iniciales desde la dirección */
+    if (t) setTipo(t);
+    if (m) setMax(m);
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, []);
 
   const marcas = useMemo(
     () => Array.from(new Set(autos.map((a) => a.marca))).sort(),

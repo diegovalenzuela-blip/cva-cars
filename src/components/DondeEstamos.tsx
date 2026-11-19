@@ -2,11 +2,14 @@
 
 import "./secciones.css";
 import type { CSSProperties, ReactNode } from "react";
-import { DIRECCION, HORARIO, INSTAGRAM, FACEBOOK, TIKTOK, wa } from "@/lib/datos";
+import { DIRECCION, HORARIO, INSTAGRAM, FACEBOOK, TIKTOK, TEL, wa } from "@/lib/datos";
 import { useReveal } from "@/lib/useReveal";
 import { fondoCss } from "@/lib/img";
 
 const retraso = (ms: number): CSSProperties => ({ transitionDelay: ms + "ms" });
+
+// "56922328543" → "+56 9 2232 8543"
+const telefono = TEL.replace(/^56(\d)(\d{4})(\d{4})$/, "+56 $1 $2 $3");
 
 function Icono({ children }: { children: ReactNode }) {
   return (
@@ -16,10 +19,10 @@ function Icono({ children }: { children: ReactNode }) {
   );
 }
 
+// Sin dirección física: la sección invita a escribir y coordinar dónde ver el auto,
+// en vez de mostrar un mapa de toda la ciudad que no ayuda a llegar a ningún lado.
 export default function DondeEstamos({ banner = "" }: { banner?: string }) {
   const { ref, visto } = useReveal<HTMLElement>();
-
-  const mapa = "https://www.google.com/maps?q=" + encodeURIComponent(DIRECCION) + "&output=embed";
 
   return (
     <section id="contacto" className={"don" + (visto ? " in" : "")} ref={ref}>
@@ -35,87 +38,68 @@ export default function DondeEstamos({ banner = "" }: { banner?: string }) {
         }
       >
         <div className="wrap">
-          <h2 className="rvx" style={retraso(0)}>Dónde estamos</h2>
+          <h2 className="rvx" style={retraso(0)}>Contacto</h2>
           <p className="rvx" style={retraso(100)}>
-            Atendemos en Chillán y la Región de Ñuble. Escríbenos y coordinamos.
+            Atendemos en {DIRECCION}. Escríbenos y coordinamos dónde mostrarte el auto.
           </p>
         </div>
       </div>
 
       <div className="wrap don-cuerpo">
-        <div className="don-grid">
-          <div className="don-cards">
-            <div className="don-card rvx" style={retraso(140)}>
-              <span className="don-icono don-pin">
-                <Icono>
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                  <circle cx="12" cy="10" r="3" />
-                </Icono>
-              </span>
-              <div>
-                <h3>Ubicación</h3>
-                <p>{DIRECCION}</p>
-                <a className="btn" href={wa("Hola, quiero coordinar una visita.")}>Coordinar visita</a>
-              </div>
-            </div>
-
-            <div className="don-card rvx" style={retraso(220)}>
-              <span className="don-icono">
-                <Icono>
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="12 6 12 12 16 14" />
-                </Icono>
-              </span>
-              <div>
-                <h3>Atención</h3>
-                <p>{HORARIO}</p>
-              </div>
-            </div>
-
-            <div className="don-card rvx" style={retraso(300)}>
-              <span className="don-icono">
-                <Icono>
-                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-                </Icono>
-              </span>
-              <div>
-                <h3>WhatsApp</h3>
-                <p>Respondemos tus consultas por mensaje.</p>
-                <a className="btn fill" href={wa("Hola, quiero hacer una consulta.")}>Escribir ahora</a>
-              </div>
-            </div>
-
-            <div className="don-card rvx" style={retraso(380)}>
-              <span className="don-icono">
-                <Icono>
-                  <circle cx="18" cy="5" r="3" />
-                  <circle cx="6" cy="12" r="3" />
-                  <circle cx="18" cy="19" r="3" />
-                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-                </Icono>
-              </span>
-              <div>
-                <h3>Redes sociales</h3>
-                <div className="don-redes">
-                  <a className="btn" href={INSTAGRAM} target="_blank" rel="noopener noreferrer">Instagram</a>
-                  <a className="btn" href={FACEBOOK} target="_blank" rel="noopener noreferrer">Facebook</a>
-                  <a className="btn" href={TIKTOK} target="_blank" rel="noopener noreferrer">TikTok</a>
-                </div>
-              </div>
+        <div className="don-panel rvx" style={retraso(160)}>
+          <div className="don-wsp">
+            <span className="don-icono">
+              <Icono>
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+              </Icono>
+            </span>
+            <div>
+              <h3>Escríbenos por WhatsApp</h3>
+              <p>Consultas, visitas y evaluación de tu auto. Te respondemos por mensaje.</p>
+              <a className="btn fill don-btn" href={wa("Hola, vi la página de Chillán Vende Autos y quiero hacer una consulta.")}>
+                {telefono}
+              </a>
             </div>
           </div>
 
-          <div className="don-mapa rvx" style={retraso(200)}>
-            {/* Google Maps pesa casi 500 KB: se carga recién al llegar a esta sección. */}
-            {visto && (
-              <iframe
-                src={mapa}
-                title="Mapa de Chillán Vende Autos"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
-            )}
+          <ul className="don-datos">
+            <li>
+              <Icono>
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </Icono>
+              <div>
+                <strong>Zona</strong>
+                <span>{DIRECCION}</span>
+              </div>
+            </li>
+            <li>
+              <Icono>
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </Icono>
+              <div>
+                <strong>Atención</strong>
+                <span>{HORARIO}</span>
+              </div>
+            </li>
+            <li>
+              <Icono>
+                <rect x="3" y="11" width="18" height="10" rx="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </Icono>
+              <div>
+                <strong>Visitas</strong>
+                <span>Te mostramos el auto en el lugar que acordemos.</span>
+              </div>
+            </li>
+          </ul>
+
+          <div className="don-redes">
+            <span>Síguenos</span>
+            <a href={INSTAGRAM} target="_blank" rel="noopener noreferrer">Instagram</a>
+            <a href={FACEBOOK} target="_blank" rel="noopener noreferrer">Facebook</a>
+            <a href={TIKTOK} target="_blank" rel="noopener noreferrer">TikTok</a>
           </div>
         </div>
       </div>

@@ -4,9 +4,9 @@ import "./destacados.css";
 import "./portada.css";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef } from "react";
 import { wa } from "@/lib/datos";
 import type { FotoFondo } from "@/lib/autos";
+import { imgSrc, imgSrcSet } from "@/lib/img";
 import FondoPortada from "./FondoPortada";
 
 // Tiempo entre fotos de fondo, en milisegundos (4500 = 4,5 segundos)
@@ -14,42 +14,33 @@ const INTERVALO = 4500;
 
 const PALABRAS = ["Tu", "próximo", "auto", "está", "en", "Chillán"];
 
-export default function Portada({ fotos }: { fotos: FotoFondo[] }) {
-  const ref = useRef<HTMLDivElement>(null);
+const PRESUPUESTOS = [5_000_000, 10_000_000, 15_000_000, 20_000_000, 30_000_000];
 
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    if (!window.matchMedia("(pointer: fine)").matches) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+export type AutoPortada = {
+  codigo: string;
+  nombre: string;
+  detalle: string;
+  precio: number;
+  foto: string;
+  reservado: boolean;
+  etiqueta: string;
+};
 
-    let raf = 0;
-    const mover = (e: PointerEvent) => {
-      const r = el.getBoundingClientRect();
-      const x = ((e.clientX - r.left) / r.width - 0.5) * 2;
-      const y = ((e.clientY - r.top) / r.height - 0.5) * 2;
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        el.style.setProperty("--mx", x.toFixed(3));
-        el.style.setProperty("--my", y.toFixed(3));
-      });
-    };
-    const salir = () => {
-      el.style.setProperty("--mx", "0");
-      el.style.setProperty("--my", "0");
-    };
+export type DatosPortada = { tipos: string[] };
 
-    el.addEventListener("pointermove", mover);
-    el.addEventListener("pointerleave", salir);
-    return () => {
-      cancelAnimationFrame(raf);
-      el.removeEventListener("pointermove", mover);
-      el.removeEventListener("pointerleave", salir);
-    };
-  }, []);
+const plata = (n: number) => "$" + n.toLocaleString("es-CL");
 
+export default function Portada({
+  fotos,
+  destacado,
+  datos,
+}: {
+  fotos: FotoFondo[];
+  destacado: AutoPortada | null;
+  datos: DatosPortada;
+}) {
   return (
-    <div className="por-sec" ref={ref}>
+    <div className="por-sec">
       <FondoPortada fotos={fotos} intervalo={INTERVALO} />
       <div className="wrap">
         <header className="hero por">
@@ -77,11 +68,56 @@ export default function Portada({ fotos }: { fotos: FotoFondo[] }) {
               </a>
               <Link className="btn" href="/catalogo">Catálogo</Link>
             </div>
+
+            {/* Buscador rápido: lleva al catálogo con el filtro ya puesto. Funciona sin JavaScript. */}
+            <form className="por-busca" action="/catalogo" method="get">
+              <label>
+                <span>¿Qué buscas?</span>
+                <select name="tipo" defaultValue="">
+                  <option value="">Todos los tipos</option>
+                  {datos.tipos.map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span>Presupuesto</span>
+                <select name="max" defaultValue="">
+                  <option value="">Sin límite</option>
+                  {PRESUPUESTOS.map((p) => (
+                    <option key={p} value={p}>Hasta {plata(p)}</option>
+                  ))}
+                </select>
+              </label>
+              <button className="btn fill" type="submit">Buscar</button>
+            </form>
           </div>
 
-          <div className="por-logo">
-            <div className="por-halo" aria-hidden="true" />
-            <div className="por-logo-mov">
+          {destacado ? (
+            <Link className="por-auto" href={"/autos/" + destacado.codigo}>
+              <span className="por-auto-foto">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={imgSrc(destacado.foto, 828, 65)}
+                  srcSet={imgSrcSet(destacado.foto, 65)}
+                  sizes="(max-width: 760px) 92vw, 460px"
+                  alt={destacado.nombre}
+                  fetchPriority="high"
+                  decoding="async"
+                />
+                <span className="por-auto-tag">{destacado.reservado ? "Reservado" : destacado.etiqueta}</span>
+              </span>
+              <span className="por-auto-info">
+                <strong>{destacado.nombre}</strong>
+                <span className="por-auto-dat">{destacado.detalle}</span>
+                <span className="por-auto-pie">
+                  <span className="por-auto-precio">{plata(destacado.precio)}</span>
+                  <span className="por-auto-ver">Ver ficha →</span>
+                </span>
+              </span>
+            </Link>
+          ) : (
+            <div className="por-logo">
               <Image
                 className="por-img"
                 src="/logo.jpg"
@@ -92,10 +128,8 @@ export default function Portada({ fotos }: { fotos: FotoFondo[] }) {
                 quality={60}
                 loading="eager"
               />
-              {/* Reflejo que se mueve con el mouse: da sensación de placa en 3D */}
-              <span className="por-brillo3d" aria-hidden="true" />
             </div>
-          </div>
+          )}
         </header>
       </div>
     </div>
