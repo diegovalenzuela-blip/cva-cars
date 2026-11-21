@@ -56,7 +56,13 @@ type Suscriptor = {
 };
 
 type Catalogo = "general" | "trabajo";
-type Pestana = "inventario" | "trabajo" | "publicar" | "exhibicion" | "suscriptores";
+type Pestana = "inventario" | "trabajo" | "etchevers" | "publicar" | "exhibicion" | "suscriptores";
+// Clasificación interna: solo existe en el panel. Nunca se envía a la página pública.
+type Clasificacion = "neutro" | "etchevers";
+const CLASIFICACIONES: { v: Clasificacion; t: string }[] = [
+  { v: "neutro", t: "Neutro" },
+  { v: "etchevers", t: "Etchevers" },
+];
 
 const ESTADOS = [
   { v: "en_preparacion", t: "En preparación" },
@@ -103,6 +109,7 @@ const VACIO = {
   descripcion: "",
   estado: "disponible",
   catalogo: "general" as Catalogo,
+  clasificacion: "" as Clasificacion | "",
   estado_papeles: "",
   mantenciones: "",
   revision_tecnica: "",
@@ -126,6 +133,8 @@ export default function Admin() {
   const [pestana, setPestana] = useState<Pestana>("inventario");
   const [busqueda, setBusqueda] = useState("");
   const [filtroEstado, setFiltroEstado] = useState("todos");
+  const [clasificaciones, setClasificaciones] = useState<Record<string, Clasificacion>>({});
+  const [filtroClasificacion, setFiltroClasificacion] = useState<"todos" | Clasificacion>("todos");
   const [orden, setOrden] = useState("recientes");
   const [publicadoForm, setPublicadoForm] = useState(true);
   const [form, setForm] = useState(VACIO);
@@ -180,7 +189,35 @@ export default function Admin() {
       .eq("automotora_id", perfil.automotora_id)
       .order("creado_en", { ascending: false });
     setAutos((data as Auto[]) ?? []);
+    const { data: clases, error: errorClases } = await supabase
+      .from("autos_clasificacion")
+      .select("auto_id,clasificacion")
+      .eq("automotora_id", perfil.automotora_id);
+    if (errorClases) avisar("No se pudo cargar la clasificación interna: " + errorClases.message, true);
+    setClasificaciones(
+      Object.fromEntries(
+        ((clases as { auto_id: string; clasificacion: Clasificacion }[]) ?? []).map((c) => [c.auto_id, c.clasificacion])
+      )
+    );
   }, [avisar]);
+
+  // Sin fila guardada, un auto cuenta como neutro (así nacen todos).
+  const clasificacionDe = (id: string): Clasificacion => clasificaciones[id] ?? "neutro";
+
+  async function guardarClasificacion(autoId: string, clasificacion: Clasificacion) {
+    return supabase
+      .from("autos_clasificacion")
+      .upsert({ auto_id: autoId, automotora_id: automotoraId!, clasificacion }, { onConflict: "auto_id" });
+  }
+
+  async function cambiarClasificacion(a: Auto, clasificacion: Clasificacion) {
+    const { error } = await guardarClasificacion(a.id, clasificacion);
+    if (error) avisar("Error: " + error.message, true);
+    else {
+      avisar(a.marca + " " + a.modelo + ": " + (clasificacion === "etchevers" ? "Etchevers" : "Neutro") + ".");
+      await cargar();
+    }
+  }
 
   const cargarSuscriptores = useCallback(async () => {
     const { data, error } = await supabase
@@ -247,6 +284,7 @@ export default function Admin() {
       descripcion: a.descripcion ?? "",
       estado: a.estado,
       catalogo: a.catalogo ?? "general",
+      clasificacion: clasificacionDe(a.id) as Clasificacion | "",
       estado_papeles: a.estado_papeles ?? "",
       mantenciones: a.mantenciones ?? "",
       revision_tecnica: a.revision_tecnica ?? "",
@@ -286,9 +324,9 @@ export default function Admin() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function nuevo(catalogo: Catalogo = "general") {
+  function nuevo(catalogo: Catalogo = "general", clasificacion: Clasificacion | "" = "") {
     limpiar();
-    setForm({ ...VACIO, catalogo, tipo: catalogo === "trabajo" ? "Camioneta" : VACIO.tipo });
+    setForm({ ...VACIO, catalogo, clasificacion, tipo: catalogo === "trabajo" ? "Camioneta" : VACIO.tipo });
     setPestana("publicar");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -390,6 +428,12 @@ export default function Admin() {
       return;
     }
 
+    const clasificacion = form.clasificacion;
+    if (!clasificacion) {
+      avisar("Elige la clasificación interna: Neutro o Etchevers.", true);
+      return;
+    }
+
     setGuardando(true);
     try {
       const urls: string[] = [];
@@ -439,10 +483,21 @@ export default function Admin() {
         ...(form.catalogo === "trabajo" ? { en_exhibicion: false } : {}),
       };
       const r = editId
-        ? await supabase.from("autos").update(datos).eq("id", editId)
-        : await supabase.from("autos").insert({ ...datos, automotora_id: automotoraId });
+        ? await supabase.from("autos").update(datos).eq("id", editId).select("id").single()
+        : await supabase.from("autos").insert({ ...datos, automotora_id: automotoraId }).select("id").single();
       if (r.error) throw r.error;
       const nombre = datos.marca + " " + datos.modelo;
+      const c = await guardarClasificacion(r.data.id, clasificacion);
+      if (c.error) {
+        // El auto ya quedó guardado; solo falló la clasificación.
+        avisar(nombre + " se guardó, pero no su clasificación interna: " + c.error.message + ". Cámbiala desde el listado.", true);
+        limpiar();
+        await cargar();
+        setPestana(datos.catalogo === "trabajo" ? "trabajo" : "inventario");
+        setProgreso("");
+        setGuardando(false);
+        return;
+      }
       avisar(
         editId
           ? nombre + " actualizado."
@@ -622,7 +677,13 @@ export default function Admin() {
   }
 
   const catalogoVista: Catalogo = pestana === "trabajo" ? "trabajo" : "general";
-  const autosCatalogo = autos.filter((a) => (a.catalogo ?? "general") === catalogoVista);
+  // "Autos de Etchevers" junta los de ambos catálogos que tengan esa clasificación.
+  const vistaEtchevers = pestana === "etchevers";
+  const totalEtchevers = autos.filter((a) => clasificacionDe(a.id) === "etchevers").length;
+  const autosCatalogo = vistaEtchevers
+    ? autos.filter((a) => clasificacionDe(a.id) === "etchevers")
+    : autos.filter((a) => (a.catalogo ?? "general") === catalogoVista);
+  const cuentaClase = (c: Clasificacion) => autosCatalogo.filter((a) => clasificacionDe(a.id) === c).length;
   const cuenta = (e: string) =>
     autosCatalogo.filter((a) => a.publicado && a.estado === e).length;
 
@@ -641,7 +702,13 @@ export default function Admin() {
   const autosFiltrados = useMemo(() => {
     const termino = busqueda.trim().toLowerCase();
     const lista = autos.filter((a) => {
-      if ((a.catalogo ?? "general") !== catalogoVista) return false;
+      const clase = clasificaciones[a.id] ?? "neutro";
+      if (pestana === "etchevers") {
+        if (clase !== "etchevers") return false;
+      } else {
+        if ((a.catalogo ?? "general") !== catalogoVista) return false;
+        if (filtroClasificacion !== "todos" && clase !== filtroClasificacion) return false;
+      }
       const coincideTexto =
         !termino ||
         [a.marca, a.modelo, a.codigo, String(a.anio), a.version ?? "", a.ubicacion ?? ""]
@@ -659,7 +726,7 @@ export default function Admin() {
     if (orden === "precio_asc") return [...lista].sort((a, b) => a.precio - b.precio);
     if (orden === "anio_desc") return [...lista].sort((a, b) => b.anio - a.anio);
     return lista;
-  }, [autos, busqueda, filtroEstado, orden, catalogoVista]);
+  }, [autos, busqueda, filtroEstado, orden, catalogoVista, pestana, clasificaciones, filtroClasificacion]);
 
   const suscriptoresFiltrados = suscriptores.filter((s) => {
     const t = busquedaSus.trim().toLowerCase();
@@ -687,8 +754,8 @@ export default function Admin() {
           <h1>Panel de gestión</h1>
         </div>
         <div className="ap-top-acc">
-          <button type="button" className="btn fill" onClick={() => nuevo(catalogoVista)}>
-            + {catalogoVista === "trabajo" ? "Publicar vehículo de trabajo" : "Publicar auto"}
+          <button type="button" className="btn fill" onClick={() => nuevo(catalogoVista, vistaEtchevers ? "etchevers" : "")}>
+            + {vistaEtchevers ? "Publicar auto de Etchevers" : catalogoVista === "trabajo" ? "Publicar vehículo de trabajo" : "Publicar auto"}
           </button>
           <Link className="btn" href="/admin/crm">CRM</Link>
           <Link className="btn" href="/" target="_blank">Ver la página</Link>
@@ -710,6 +777,7 @@ export default function Admin() {
         {([
           ["inventario", "Catálogo general", autos.length - totalTrabajo],
           ["trabajo", "Vehículos de trabajo", totalTrabajo],
+          ["etchevers", "Autos de Etchevers", totalEtchevers],
           ["publicar", editId ? "Editar auto" : "Publicar auto", null],
           ["exhibicion", "Exhibición", autosExhibicion.length + "/" + MAX_EXHIBICION],
           ["suscriptores", "Suscriptores", suscriptores.length],
@@ -727,8 +795,13 @@ export default function Admin() {
         ))}
       </nav>
 
-      {(pestana === "inventario" || pestana === "trabajo") && (
-        <section aria-label={catalogoVista === "trabajo" ? "Vehículos de trabajo" : "Catálogo general"}>
+      {(pestana === "inventario" || pestana === "trabajo" || vistaEtchevers) && (
+        <section aria-label={vistaEtchevers ? "Autos de Etchevers" : catalogoVista === "trabajo" ? "Vehículos de trabajo" : "Catálogo general"}>
+          {vistaEtchevers && (
+            <p className="ap-nota-interna">
+              Clasificación interna: solo la ve el equipo en este panel. No aparece en la página pública.
+            </p>
+          )}
           <div className="adm-cuentas">
             {filtros.map((f) => (
               <button
@@ -763,6 +836,19 @@ export default function Admin() {
                 ))}
               </select>
             </label>
+            {!vistaEtchevers && (
+              <label>
+                <span className="ap-oculto">Filtrar por clasificación interna</span>
+                <select
+                  value={filtroClasificacion}
+                  onChange={(e) => setFiltroClasificacion(e.target.value as "todos" | Clasificacion)}
+                >
+                  <option value="todos">Todos ({autosCatalogo.length})</option>
+                  <option value="neutro">Neutros ({cuentaClase("neutro")})</option>
+                  <option value="etchevers">Etchevers ({cuentaClase("etchevers")})</option>
+                </select>
+              </label>
+            )}
             <label>
               <span className="ap-oculto">Ordenar</span>
               <select value={orden} onChange={(e) => setOrden(e.target.value)}>
@@ -778,8 +864,12 @@ export default function Admin() {
 
           {autosCatalogo.length === 0 && (
             <div className="ap-vacio">
-              <p>{catalogoVista === "trabajo" ? "Aún no hay vehículos de trabajo." : "Aún no hay autos cargados."}</p>
-              <button type="button" className="btn fill" onClick={() => nuevo(catalogoVista)}>Publicar el primero</button>
+              <p>
+                {vistaEtchevers
+                  ? "Aún no hay autos de Etchevers. Puedes clasificar uno existente desde su listado o publicar uno nuevo."
+                  : catalogoVista === "trabajo" ? "Aún no hay vehículos de trabajo." : "Aún no hay autos cargados."}
+              </p>
+              <button type="button" className="btn fill" onClick={() => nuevo(catalogoVista, vistaEtchevers ? "etchevers" : "")}>Publicar el primero</button>
             </div>
           )}
           {autosCatalogo.length > 0 && autosFiltrados.length === 0 && (
@@ -809,6 +899,8 @@ export default function Admin() {
                       </span>
                     )}
                     {enVitrina(a) && <span className="adm-en-exhibicion">★ En exhibición</span>}
+                    {clasificacionDe(a.id) === "etchevers" && <span className="ap-clase">Etchevers</span>}
+                    {vistaEtchevers && a.catalogo === "trabajo" && <span className="ap-ref">Vehículo de trabajo</span>}
                     <span className="ap-ref">Ref. {a.codigo}</span>
                   </div>
                   <h3>{a.marca || "Sin marca"} {a.modelo || "Sin modelo"}</h3>
@@ -827,6 +919,14 @@ export default function Admin() {
                     <select value={a.estado} onChange={(e) => cambiarEstado(a, e.target.value)}>
                       {ESTADOS.map((s) => (
                         <option key={s.v} value={s.v}>{s.t}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="ap-estado-rapido">
+                    <span className="ap-oculto">Clasificación interna</span>
+                    <select value={clasificacionDe(a.id)} onChange={(e) => cambiarClasificacion(a, e.target.value as Clasificacion)}>
+                      {CLASIFICACIONES.map((c) => (
+                        <option key={c.v} value={c.v}>{c.t}</option>
                       ))}
                     </select>
                   </label>
@@ -899,6 +999,20 @@ export default function Admin() {
                 </label>
               ))}
             </div>
+            <label className="ap-clasificacion">
+              Clasificación interna <span className="ap-obligatorio">(obligatoria)</span>
+              <select
+                required
+                value={form.clasificacion}
+                onChange={(e) => setForm({ ...form, clasificacion: e.target.value as Clasificacion | "" })}
+              >
+                <option value="" disabled>Elige una opción…</option>
+                {CLASIFICACIONES.map((c) => (
+                  <option key={c.v} value={c.v}>{c.t}</option>
+                ))}
+              </select>
+              <small>Solo la ve el equipo en este panel. Nunca aparece en la página pública.</small>
+            </label>
           </fieldset>
 
           <fieldset className="ap-bloque">
