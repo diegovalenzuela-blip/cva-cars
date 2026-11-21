@@ -7,6 +7,8 @@
 .pie nav a { color: var(--crema); text-decoration: none; }
 .pie nav a:hover { color: var(--rojo); }
 .pie-final { margin-top: 26px; padding-top: 18px; border-top: 1px solid rgba(139, 90, 43, .4); color: #c9bb88; font-size: .88rem; }
+.pie-final a { color: var(--crema); text-decoration: underline; text-underline-offset: 3px; }
+.pie-final a:hover { color: var(--rojo-texto); }
 
 @media (max-width: 860px) {
   .pie .pie-grid { grid-template-columns: 1fr 1fr; }
