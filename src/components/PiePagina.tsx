@@ -31,7 +31,12 @@ export default function PiePagina() {
       </div>
       <div className="wrap pie-final">
         <span>© Chillán Vende Autos</span>
-        <span>Hecho con CVA Cars</span>
+        <span>
+          Hecho por{" "}
+          <a href="https://www.instagram.com/valenzueladiegou/" target="_blank" rel="noopener noreferrer">
+            Diego Valenzuela
+          </a>
+        </span>
       </div>
     </footer>
   );
