@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Aparece from "@/components/Aparece";
+import CompartirAuto from "@/components/CompartirAuto";
 import { useEffect, useMemo, useState } from "react";
 import { wa } from "@/lib/datos";
 import { imgSrc, imgSrcSet } from "@/lib/img";
@@ -302,6 +303,7 @@ export default function CatalogoCliente({
                 <div className="foto">Foto próximamente</div>
               )}
             </Link>
+            <CompartirAuto codigo={x.codigo} titulo={x.marca + " " + x.modelo + " " + x.anio} />
             <div className="in">
               <h3><Link href={"/autos/" + x.codigo}>{x.marca} {x.modelo}</Link></h3>
               {x.tipo && <span className="tipo-tag">{x.tipo}</span>}

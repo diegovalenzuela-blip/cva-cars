@@ -85,6 +85,13 @@
 .ap-catalogos span { font-size: .85rem; color: #c9bb88; }
 .ap-catalogos b { display: block; color: var(--crema); font-size: .98rem; }
 
+/* Clasificación interna (solo panel) */
+.ap-clasificacion { display: block; margin-top: 12px; max-width: 360px; }
+.ap-clasificacion small { display: block; margin-top: 4px; color: #8c7f5d; font-size: .78rem; }
+.ap-obligatorio { color: #8c7f5d; font-weight: 400; font-size: .85em; }
+.ap-clase { padding: 1px 8px; border: 1px solid #b38a4a; color: #e8c98a; font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.ap-nota-interna { margin: 0 0 12px; padding: 10px 12px; border-left: 3px solid #b38a4a; background: #120d08; color: #c9bb88; font-size: .88rem; }
+
 .ap-soltar {
   position: relative; display: grid !important; place-items: center; gap: 4px; padding: 28px 16px; text-align: center; cursor: pointer;
   border: 2px dashed var(--bronce); background: #0d0a07; transition: border-color .2s ease, background .2s ease;

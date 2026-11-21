@@ -5,6 +5,7 @@ import Link from "next/link";
 import { wa } from "@/lib/datos";
 import { imgSrc, imgSrcSet } from "@/lib/img";
 import Aparece from "./Aparece";
+import CompartirAuto from "./CompartirAuto";
 
 export type AutoVitrina = {
   id: string;
@@ -115,6 +116,11 @@ export default function Vitrina({
                   >
                     Consultar por WhatsApp
                   </a>
+                  <CompartirAuto
+                    variante="boton"
+                    codigo={estrella.codigo}
+                    titulo={estrella.marca + " " + estrella.modelo + " " + estrella.anio}
+                  />
                 </div>
               </div>
             </article>
@@ -145,6 +151,7 @@ export default function Vitrina({
                     {x.destacado && <span className="vit-estrellita" aria-label="Destacado">★</span>}
                     <span className="vit-brillo" aria-hidden="true" />
                   </Link>
+                  <CompartirAuto codigo={x.codigo} titulo={x.marca + " " + x.modelo + " " + x.anio} />
                   <div className="vit-info">
                     <h3>
                       <Link href={"/autos/" + x.codigo}>{x.marca} {x.modelo}</Link>

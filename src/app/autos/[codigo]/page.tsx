@@ -7,6 +7,7 @@ import { wa } from "@/lib/datos";
 import { imgSrc, imgSrcSet } from "@/lib/img";
 import { JsonLd, autoJson } from "@/lib/seo";
 import Galeria from "./Galeria";
+import CompartirAuto from "@/components/CompartirAuto";
 
 export const revalidate = 60;
 
@@ -106,6 +107,7 @@ export default async function Detalle({ params }: Props) {
           {/* El botón va junto al precio: es lo primero que se busca al decidir escribir. */}
           <div className="det-acciones">
             <a className="btn fill" href={consulta} target="_blank" rel="noopener noreferrer">Consultar por WhatsApp</a>
+            <CompartirAuto variante="boton" codigo={auto.codigo} titulo={titulo + " " + auto.anio} />
           </div>
           <dl className="det-specs">
             {datos.filter(([, v]) => v).map(([k, v]) => (
