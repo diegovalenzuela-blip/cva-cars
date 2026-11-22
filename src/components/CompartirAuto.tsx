@@ -8,8 +8,9 @@ type Props = {
   codigo: string;
   // Nombre visible del auto, por ejemplo "Ford F-150 2020". Solo datos públicos.
   titulo: string;
-  // "icono": botón redondo sobre la foto de la tarjeta. "boton": botón con texto (ficha).
-  variante?: "icono" | "boton";
+  // "icono": botón redondo sobre la foto de la tarjeta. "chico": el mismo botón
+  // redondo, en línea (junto al precio). "boton": botón con texto (ficha).
+  variante?: "icono" | "chico" | "boton";
 };
 
 // Enlace público de la ficha del auto. Siempre el dominio oficial, para que el
@@ -101,14 +102,17 @@ export default function CompartirAuto({ codigo, titulo, variante = "icono" }: Pr
   }
 
   return (
-    <div className={"cmp " + (variante === "icono" ? "cmp-sobre-foto" : "cmp-en-ficha")} ref={caja}>
+    <div
+      className={"cmp " + (variante === "icono" ? "cmp-sobre-foto" : variante === "chico" ? "cmp-en-linea" : "cmp-en-ficha")}
+      ref={caja}
+    >
       <button
         type="button"
-        className={variante === "icono" ? "cmp-icono" : "btn cmp-boton"}
+        className={variante === "boton" ? "btn cmp-boton" : "cmp-icono"}
         aria-haspopup="menu"
         aria-expanded={abierto}
         aria-controls={idMenu}
-        aria-label={variante === "icono" ? "Compartir " + titulo : undefined}
+        aria-label={variante === "boton" ? undefined : "Compartir " + titulo}
         onClick={() => setAbierto((v) => !v)}
       >
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

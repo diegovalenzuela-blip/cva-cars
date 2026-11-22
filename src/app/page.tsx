@@ -67,7 +67,7 @@ export default async function Home() {
         precio: reciente.precio,
         foto: reciente.fotos[0],
         reservado: reciente.estado === "reservado",
-        etiqueta: elegido || reciente === estrella ? "Auto destacado" : "Recién publicado",
+        etiqueta: elegido || reciente === estrella ? "Recomendado" : "Recién publicado",
       }
     : null;
 

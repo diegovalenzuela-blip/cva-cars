@@ -98,8 +98,15 @@ export default function Vitrina({
                   ))}
                 </ul>
                 {estrella.estado === "reservado" && <p className="det-reservado">RESERVADO</p>}
-                <div className="vit-precio">{plata(estrella.precio)}</div>
-                <div className="acc">
+                <div className="vit-precio-fila">
+                  <div className="vit-precio">{plata(estrella.precio)}</div>
+                  <CompartirAuto
+                    variante="chico"
+                    codigo={estrella.codigo}
+                    titulo={estrella.marca + " " + estrella.modelo + " " + estrella.anio}
+                  />
+                </div>
+                <div className="acc vit-estrella-acc">
                   <Link
                     className="btn fill"
                     href={"/autos/" + estrella.codigo}
@@ -116,11 +123,6 @@ export default function Vitrina({
                   >
                     Consultar por WhatsApp
                   </a>
-                  <CompartirAuto
-                    variante="boton"
-                    codigo={estrella.codigo}
-                    titulo={estrella.marca + " " + estrella.modelo + " " + estrella.anio}
-                  />
                 </div>
               </div>
             </article>
@@ -133,7 +135,7 @@ export default function Vitrina({
             return (
               <Aparece key={x.id} retraso={(i % 4) * 90}>
                 <article className="vit-card">
-                  <Link href={"/autos/" + x.codigo} className="vit-foto" aria-label={"Ver " + x.marca + " " + x.modelo}>
+                  <Link href={"/autos/" + x.codigo} className="vit-foto" tabIndex={-1} aria-hidden="true">
                     {foto ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -154,10 +156,11 @@ export default function Vitrina({
                   <CompartirAuto codigo={x.codigo} titulo={x.marca + " " + x.modelo + " " + x.anio} />
                   <div className="vit-info">
                     <h3>
-                      <Link href={"/autos/" + x.codigo}>{x.marca} {x.modelo}</Link>
+                      {/* Toda la tarjeta lleva a la ficha (el enlace se estira sobre ella). */}
+                      <Link className="vit-enlace" href={"/autos/" + x.codigo}>{x.marca} {x.modelo}</Link>
                     </h3>
                     <p className="dat">
-                      {x.anio} · {x.km ? x.km.toLocaleString("es-CL") + " km" : "km por confirmar"} · Ref {x.codigo}
+                      {x.anio} · {x.km ? x.km.toLocaleString("es-CL") + " km" : "km por confirmar"} · <span className="vit-ref">Ref {x.codigo}</span>
                       {x.estado === "reservado" ? " · RESERVADO" : ""}
                     </p>
                     {x.ubicacion && (
@@ -167,17 +170,17 @@ export default function Vitrina({
                       </p>
                     )}
                     <div className="vit-acc">
-                      <Link className="btn" href={"/autos/" + x.codigo} aria-label={"Ver fotos y detalles de " + x.marca + " " + x.modelo}>
-                        Ver fotos y detalles
-                      </Link>
                       <a
-                        className="btn"
+                        className="vit-wsp"
                         href={wa(
                           "Hola, me interesa el " + x.marca + " " + x.modelo + " " + x.anio + " (Ref " + x.codigo + ")"
                         )}
+                        aria-label={"Consultar por WhatsApp por el " + x.marca + " " + x.modelo}
                       >
-                        Consultar por WhatsApp
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.7-1.2 2.2 2.2 0 0 0 .2-1.2c-.1-.1-.3-.2-.5-.3z" /></svg>
+                        Consultar
                       </a>
+                      <span className="vit-ver" aria-hidden="true">Ver ficha →</span>
                     </div>
                   </div>
                 </article>

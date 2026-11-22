@@ -85,8 +85,12 @@ export default function DondeEstamos({ banner = "" }: { banner?: string }) {
             </li>
             <li>
               <Icono>
-                <rect x="3" y="11" width="18" height="10" rx="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                {/* Auto visto de frente */}
+                <path d="M5 11l1.6-4.4A2 2 0 0 1 8.5 5h7a2 2 0 0 1 1.9 1.6L19 11" />
+                <rect x="3" y="11" width="18" height="6" rx="2" />
+                <path d="M6 17v2M18 17v2" />
+                <circle cx="7.5" cy="14" r="1" />
+                <circle cx="16.5" cy="14" r="1" />
               </Icono>
               <div>
                 <strong>Visitas</strong>
