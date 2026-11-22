@@ -121,3 +121,20 @@
   .por-busca { grid-template-columns: 1fr 1fr; }
   .por-busca .btn { grid-column: 1 / -1; }
 }
+
+/* ===== Celular: el auto aparece en la primera pantalla =====
+   Orden: título, frase, tarjeta del auto, botones y buscador. "Autos en exhibición"
+   se oculta en celular porque la tarjeta y la vitrina quedan justo debajo. */
+@media (max-width: 760px) {
+  .por-sec .hero.por { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
+  .por-sec .por-texto { display: contents; }
+  .por-sec .por-titulo { order: 1; }
+  .por-sec .por-linea { order: 2; }
+  .por-sec .por-texto p { order: 3; margin: 14px 0 18px; font-size: 1.02rem; }
+  .por-sec .por-auto { order: 4; }
+  .por-sec .por-logo { order: 4; margin: 0 auto 8px; }
+  .por-sec .acc { order: 5; grid-template-columns: 1fr 1fr; margin-top: 16px; }
+  .por-sec .acc .btn:first-child { display: none; }
+  .por-sec .acc .btn { min-height: 48px; padding: 10px 8px; font-size: .9rem; }
+  .por-busca { order: 6; }
+}

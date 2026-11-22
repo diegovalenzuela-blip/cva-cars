@@ -312,3 +312,43 @@ section.vit { border-top: 0; }
   .vid-fila { scroll-behavior: auto; }
   .vid-brillo { display: none; }
 }
+
+/* ===== Tarjeta grande: precio con compartir y dos botones parejos ===== */
+.vit-precio-fila { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.vit-estrella-acc { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.vit-estrella-acc .btn { display: flex; align-items: center; justify-content: center; margin: 0; min-height: 52px; padding: 10px 12px; text-align: center; }
+@media (max-width: 420px) { .vit-estrella-acc { grid-template-columns: 1fr; } }
+
+/* ===== Tarjetas de la vitrina: toda la tarjeta lleva a la ficha ===== */
+.vit-card .vit-enlace::after { content: ""; position: absolute; inset: 0; z-index: 1; }
+.vit-card .vit-enlace:focus-visible { outline: none; }
+.vit-card:has(.vit-enlace:focus-visible) { outline: 3px solid var(--crema); outline-offset: 3px; }
+.vit-acc { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.vit-wsp {
+  position: relative; z-index: 2; display: inline-flex; align-items: center; gap: 7px; padding: 8px 12px;
+  border: 1px solid var(--bronce); background: rgba(0, 0, 0, .35); color: var(--crema); text-decoration: none;
+  font: 700 .82rem var(--f-titulo), sans-serif; text-transform: uppercase; letter-spacing: .05em;
+}
+.vit-wsp svg { color: #25d366; flex: none; }
+.vit-wsp:hover, .vit-wsp:focus-visible { border-color: #25d366; background: #0f2a17; }
+.vit-ver { font: 700 .85rem var(--f-titulo), sans-serif; text-transform: uppercase; letter-spacing: .05em; color: var(--crema); white-space: nowrap; }
+.vit-card:hover .vit-ver { color: #fff; }
+
+/* Celular: tarjeta horizontal (foto a la izquierda), entran el doble de autos por pantalla. */
+@media (max-width: 760px) {
+  .vit-grid { grid-template-columns: 1fr; gap: 12px; }
+  .vit-card { display: grid; grid-template-columns: 42% 1fr; }
+  .vit-card .vit-foto { aspect-ratio: auto; height: 100%; min-height: 150px; }
+  .vit-card .vit-precio-tag { left: 6px; bottom: 6px; padding: 2px 8px; font-size: 1rem; border-left-width: 3px; }
+  .vit-card .vit-estrellita { width: 26px; height: 26px; font-size: .85rem; top: 6px; right: 6px; }
+  .vit-card .cmp-sobre-foto { top: 6px; left: 6px; }
+  .vit-card .cmp-icono { width: 32px; height: 32px; }
+  .vit-info { padding: 10px 12px; gap: 3px; min-width: 0; }
+  .vit-info h3 { font-size: 1.12rem; line-height: 1.1; }
+  .vit-info .dat { font-size: .82rem; margin: 0; }
+  .vit-info .ubic { font-size: .82rem; }
+  .vit-acc { padding-top: 6px; }
+  .vit-ver { display: none; }
+  .vit-wsp { padding: 7px 10px; font-size: .78rem; }
+}
+.vit-ref { white-space: nowrap; }
