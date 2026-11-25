@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Oswald, Archivo } from "next/font/google";
 import "./globals.css";
 import Menu from "@/components/Menu";
@@ -14,6 +15,11 @@ const archivo = Archivo({ subsets: ["latin"], weight: ["400", "600"], display: "
 
 // Título y descripción con lo que la gente busca en Google: "autos usados Chillán",
 // "camionetas en venta Ñuble", "consignación de autos".
+// Google Analytics 4 (gtag.js). Se carga una sola vez para todo el sitio, después
+// de que la página ya es interactiva, para no hacerla más lenta. Las visitas al
+// cambiar de página sin recargar las registra GA4 solo ("Medición mejorada").
+const GA_ID = "G-HJNYPKHK2D";
+
 const TITULO = "Autos y camionetas usados en Chillán | Chillán Vende Autos";
 const DESCRIPCION =
   "Compra y venta de autos y camionetas usados en Chillán, región de Ñuble. Vehículos revisados, fotos reales y precio claro. Consignamos tu auto. Escríbenos por WhatsApp.";
@@ -60,6 +66,13 @@ export default function RootLayout({
         <TikTokFlotante />
         <WhatsAppFlotante />
         <Suscripcion />
+        <Script src={"https://www.googletagmanager.com/gtag/js?id=" + GA_ID} strategy="afterInteractive" />
+        <Script id="ga4" strategy="afterInteractive">
+          {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${GA_ID}');`}
+        </Script>
       </body>
     </html>
   );
