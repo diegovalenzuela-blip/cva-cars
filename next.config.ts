@@ -17,12 +17,15 @@ const origenSupabase = supabase ? supabase.origin : "https://*.supabase.co";
 // perdería el caché, que es lo que la mantiene rápida.
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  // Google Analytics 4: el script viene de googletagmanager.com y envía las visitas
+  // a google-analytics.com, analytics.google.com y www.google.com (más doubleclick
+  // si se activan las señales de Google). Lista de la guía de CSP de Google.
+  "script-src 'self' 'unsafe-inline' https://*.googletagmanager.com",
   "style-src 'self' 'unsafe-inline'",
-  `img-src 'self' data: blob: ${origenSupabase} https://*.supabase.co`,
+  `img-src 'self' data: blob: ${origenSupabase} https://*.supabase.co https://*.google-analytics.com https://*.googletagmanager.com https://*.google.com https://*.g.doubleclick.net`,
   "media-src 'self'",
   "font-src 'self' data:",
-  `connect-src 'self' ${origenSupabase} https://*.supabase.co wss://*.supabase.co`,
+  `connect-src 'self' ${origenSupabase} https://*.supabase.co wss://*.supabase.co https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://*.google.com https://*.g.doubleclick.net`,
   "frame-src https://www.google.com https://*.google.com",
   "object-src 'none'",
   "base-uri 'self'",
